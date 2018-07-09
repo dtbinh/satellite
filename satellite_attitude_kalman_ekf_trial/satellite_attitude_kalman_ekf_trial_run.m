@@ -88,7 +88,7 @@ Rp  = CONST.Re+h_p;              % [m] radius of perigee
 Ra  = CONST.Re+h_a;              % [m] radius of apogee
 e   = (Ra-Rp)/(Ra+Rp);           % [m/m] eccentricity
 a   = (Ra+Rp)/2;                 % [m] semi-major axis
-ho  = sqrt(a*CONST.mu*(1-e^2));  % [mˆ2/s] Initial Angular momentum
+
 P   = 2*pi*sqrt(a^3/CONST.mu);   % [sec] Orbit Period
 w_O = 2*pi/P;                    % [rad/s] Orbit Angular Velocity
 
@@ -100,7 +100,8 @@ CONST.RAAN = RAAN;               % [rad] Initial Right Ascention - Angle on Equa
 i_ss = acos((CONST.OmegaDot*(1-e^2)^2*a^(7/2))/(-3/2*sqrt(CONST.mu)*CONST.J2*CONST.Re^2)); % [rad] Orbit Inclination required for Sun-synchornous (eqn 4.47 from Curtis)
 i = 95/180*pi;                                                                           % [rad] Orbit Inclination 
 
-[R_0,V_0,Q] = sv_from_coe(CONST.mu,[ho e RAAN i w TAo]);% initial orbital state vector in ECF Frame- computes the magnitude of state vector (r,v) from the classical orbital elements (coe) 
+[R_0,V_0] = coe2rv(a, e, i,RAAN, w, TAo,'curtis');% initial orbital state vector in ECF Frame- computes the magnitude of state vector (r,v) from the classical orbital elements (coe) 
+
 
 %% INITIAL CONDITIONS
 R_O_I   = dcm(1,-90*D2R)*dcm(3,(TAo+90)*D2R)*dcm(1,i)*dcm(3,RAAN); % [3x3] Rotation Matrix from Inertial (X axis is vernal equinox) to Orbit Frame (x is orbit direction)
@@ -208,7 +209,7 @@ dt_mg    = 0.5;   % [sec] Sampling Time of Magnetometer
 %% TEMPERATURE SENSOR
 sigTemp = 0.002;       % [C] Sigma of Temperature Sensor
 varTemp = sigTemp^2;   % [C^2] Variance of Temperature Sensor
-dt_ts   = 1;        % [sec] Sampling Time of Temperature Sensor
+dt_ts   = 1;           % [sec] Sampling Time of Temperature Sensor
 
 %% KALMAN FILTER
 dt           = 0.5;              % [sec] (20 Hz) Model speed
@@ -229,8 +230,8 @@ CONST.varST_z = varST_z;
 ReferenceOmega = w_B_OI_0;
 
 %% SOLVER
-fprintf("\nsatellite_attitude_kalman_ekf_model running\n");
-tdur = 5*P;              
+fprintf('\nsatellite_attitude_kalman_ekf_model running\n');
+tdur = 0.125*P;              
 sim('satellite_attitude_kalman_ekf_model',tdur);
 
 %% POST PROCESSING
@@ -335,7 +336,7 @@ set(earth,'facecolor','none','edgecolor',0.7*[1 1 1],'LineStyle',':');
 %  MagneticField();
 
 % UPDATE SIMULATION PLOT
-d=5;
+d=1;
 for i=1:10*d:(length(tout)-1)
 
 rotate(earth,[0 0 1],0.005*d)
