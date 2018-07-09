@@ -1,0 +1,2131 @@
+Library {
+  Name			  "spacecraft_simulink_library"
+  Version		  7.0
+  MdlSubVersion		  0
+  SavedCharacterEncoding  "windows-1252"
+  LibraryType		  "BlockLibrary"
+  SaveDefaultBlockParams  on
+  SampleTimeColors	  off
+  LibraryLinkDisplay	  "none"
+  WideLines		  off
+  ShowLineDimensions	  off
+  ShowPortDataTypes	  off
+  ShowLoopsOnError	  on
+  IgnoreBidirectionalLines off
+  ShowStorageClass	  off
+  ShowTestPointIcons	  on
+  ShowViewerIcons	  on
+  SortedOrder		  off
+  ExecutionContextIcon	  off
+  ShowLinearizationAnnotations on
+  ScopeRefreshTime	  0.035000
+  OverrideScopeRefreshTime on
+  DisableAllScopes	  off
+  BlockNameDataTip	  off
+  BlockParametersDataTip  off
+  BlockDescriptionStringDataTip	off
+  ToolBar		  on
+  StatusBar		  on
+  BrowserShowLibraryLinks off
+  BrowserLookUnderMasks	  off
+  Created		  "Wed Feb 20 22:51:49 2008"
+  Creator		  "HARDAC_S"
+  UpdateHistory		  "UpdateHistoryNever"
+  ModifiedByFormat	  "%<Auto>"
+  LastModifiedBy	  "HARDAC_S"
+  ModifiedDateFormat	  "%<Auto>"
+  LastModifiedDate	  "Thu Mar 10 07:20:03 2011"
+  RTWModifiedTimeStamp	  0
+  ModelVersionFormat	  "1.%<AutoIncrement:26>"
+  ConfigurationManager	  "None"
+  SimulationMode	  "normal"
+  LinearizationMsg	  "none"
+  Profile		  off
+  ParamWorkspaceSource	  "MATLABWorkspace"
+  CovSaveName		  "covdata"
+  CovMetricSettings	  "dw"
+  CovNameIncrementing	  off
+  CovHtmlReporting	  on
+  covSaveCumulativeToWorkspaceVar on
+  CovSaveSingleToWorkspaceVar on
+  CovCumulativeReport	  off
+  CovReportOnPause	  on
+  ExtModeBatchMode	  off
+  ExtModeEnableFloating	  on
+  ExtModeTrigType	  "manual"
+  ExtModeTrigMode	  "normal"
+  ExtModeTrigPort	  "1"
+  ExtModeTrigElement	  "any"
+  ExtModeTrigDuration	  1000
+  ExtModeTrigDurationFloating "auto"
+  ExtModeTrigHoldOff	  0
+  ExtModeTrigDelay	  0
+  ExtModeTrigDirection	  "rising"
+  ExtModeTrigLevel	  0
+  ExtModeArchiveMode	  "off"
+  ExtModeAutoIncOneShot	  off
+  ExtModeIncDirWhenArm	  off
+  ExtModeAddSuffixToVar	  off
+  ExtModeWriteAllDataToWs off
+  ExtModeArmWhenConnect	  on
+  ExtModeSkipDownloadWhenConnect off
+  ExtModeLogAll		  on
+  ExtModeAutoUpdateStatusClock on
+  ShowModelReferenceBlockVersion off
+  ShowModelReferenceBlockIO off
+  BlockDefaults {
+    Orientation		    "right"
+    ForegroundColor	    "black"
+    BackgroundColor	    "white"
+    DropShadow		    off
+    NamePlacement	    "normal"
+    FontName		    "Helvetica"
+    FontSize		    10
+    FontWeight		    "normal"
+    FontAngle		    "normal"
+    ShowName		    on
+  }
+  BlockParameterDefaults {
+    Block {
+      BlockType		      Demux
+      Outputs		      "4"
+      DisplayOption	      "none"
+      BusSelectionMode	      off
+    }
+    Block {
+      BlockType		      Gain
+      Gain		      "1"
+      Multiplication	      "Element-wise(K.*u)"
+      ParamMin		      "[]"
+      ParamMax		      "[]"
+      ParameterDataTypeMode   "Same as input"
+      ParameterDataType	      "fixdt(1,16,0)"
+      ParameterScalingMode    "Best Precision: Matrix-wise"
+      ParameterScaling	      "[]"
+      OutMin		      "[]"
+      OutMax		      "[]"
+      OutDataTypeMode	      "Same as input"
+      OutDataType	      "fixdt(1,16,0)"
+      OutScaling	      "[]"
+      LockScale		      off
+      RndMeth		      "Floor"
+      SaturateOnIntegerOverflow	on
+      SampleTime	      "-1"
+    }
+    Block {
+      BlockType		      Inport
+      Port		      "1"
+      UseBusObject	      off
+      BusObject		      "BusObject"
+      BusOutputAsStruct	      off
+      PortDimensions	      "-1"
+      SampleTime	      "-1"
+      OutMin		      "[]"
+      OutMax		      "[]"
+      DataType		      "auto"
+      OutDataType	      "fixdt(1,16,0)"
+      OutScaling	      "[]"
+      SignalType	      "auto"
+      SamplingMode	      "auto"
+      LatchByDelayingOutsideSignal off
+      LatchByCopyingInsideSignal off
+      Interpolate	      on
+    }
+    Block {
+      BlockType		      Integrator
+      ExternalReset	      "none"
+      InitialConditionSource  "internal"
+      InitialCondition	      "0"
+      LimitOutput	      off
+      UpperSaturationLimit    "inf"
+      LowerSaturationLimit    "-inf"
+      ShowSaturationPort      off
+      ShowStatePort	      off
+      AbsoluteTolerance	      "auto"
+      IgnoreLimit	      off
+      ZeroCross		      on
+      ContinuousStateAttributes	"''"
+    }
+    Block {
+      BlockType		      Mux
+      Inputs		      "4"
+      DisplayOption	      "none"
+      UseBusObject	      off
+      BusObject		      "BusObject"
+      NonVirtualBus	      off
+    }
+    Block {
+      BlockType		      Outport
+      Port		      "1"
+      UseBusObject	      off
+      BusObject		      "BusObject"
+      BusOutputAsStruct	      off
+      PortDimensions	      "-1"
+      SampleTime	      "-1"
+      OutMin		      "[]"
+      OutMax		      "[]"
+      DataType		      "auto"
+      OutDataType	      "fixdt(1,16,0)"
+      OutScaling	      "[]"
+      SignalType	      "auto"
+      SamplingMode	      "auto"
+      OutputWhenDisabled      "held"
+      InitialOutput	      "[]"
+    }
+    Block {
+      BlockType		      "S-Function"
+      FunctionName	      "system"
+      SFunctionModules	      "''"
+      PortCounts	      "[]"
+    }
+    Block {
+      BlockType		      SubSystem
+      ShowPortLabels	      "FromPortIcon"
+      Permissions	      "ReadWrite"
+      PermitHierarchicalResolution "All"
+      TreatAsAtomicUnit	      off
+      SystemSampleTime	      "-1"
+      RTWFcnNameOpts	      "Auto"
+      RTWFileNameOpts	      "Auto"
+      RTWMemSecFuncInitTerm   "Inherit from model"
+      RTWMemSecFuncExecute    "Inherit from model"
+      RTWMemSecDataConstants  "Inherit from model"
+      RTWMemSecDataInternal   "Inherit from model"
+      RTWMemSecDataParameters "Inherit from model"
+      SimViewingDevice	      off
+      DataTypeOverride	      "UseLocalSettings"
+      MinMaxOverflowLogging   "UseLocalSettings"
+    }
+    Block {
+      BlockType		      Sum
+      IconShape		      "rectangular"
+      Inputs		      "++"
+      CollapseMode	      "All dimensions"
+      CollapseDim	      "1"
+      InputSameDT	      on
+      OutMin		      "[]"
+      OutMax		      "[]"
+      OutDataTypeMode	      "Same as first input"
+      OutDataType	      "fixdt(1,16,0)"
+      OutScaling	      "[]"
+      LockScale		      off
+      RndMeth		      "Floor"
+      SaturateOnIntegerOverflow	on
+      SampleTime	      "-1"
+    }
+    Block {
+      BlockType		      Switch
+      Criteria		      "u2 >= Threshold"
+      Threshold		      "0"
+      InputSameDT	      on
+      OutMin		      "[]"
+      OutMax		      "[]"
+      OutDataTypeMode	      "Inherit via internal rule"
+      OutDataType	      "fixdt(1,16,0)"
+      OutScaling	      "[]"
+      LockScale		      off
+      RndMeth		      "Floor"
+      SaturateOnIntegerOverflow	on
+      ZeroCross		      on
+      SampleTime	      "-1"
+    }
+    Block {
+      BlockType		      Terminator
+    }
+    Block {
+      BlockType		      Abs
+      ZeroCross		      on
+      SampleTime	      "-1"
+      OutMax		      "[]"
+      OutDataTypeMode	      "Same as input"
+      OutDataType	      "fixdt(1,16,0)"
+      OutScaling	      "[]"
+      LockScale		      off
+      RndMeth		      "Floor"
+      SaturateOnIntegerOverflow	on
+    }
+    Block {
+      BlockType		      Constant
+      Value		      "1"
+      VectorParams1D	      on
+      SamplingMode	      "Sample based"
+      OutMin		      "[]"
+      OutMax		      "[]"
+      OutDataTypeMode	      "Inherit from 'Constant value'"
+      OutDataType	      "fixdt(1,16,0)"
+      ConRadixGroup	      "Use specified scaling"
+      OutScaling	      "[]"
+      SampleTime	      "inf"
+      FramePeriod	      "inf"
+    }
+    Block {
+      BlockType		      Saturate
+      UpperLimit	      "0.5"
+      LowerLimit	      "-0.5"
+      LinearizeAsGain	      on
+      ZeroCross		      on
+      SampleTime	      "-1"
+      OutMin		      "[]"
+      OutMax		      "[]"
+      OutDataTypeMode	      "Same as input"
+      OutDataType	      "fixdt(1,16,0)"
+      OutScaling	      "[]"
+      LockScale		      off
+      RndMeth		      "Floor"
+    }
+  }
+  AnnotationDefaults {
+    HorizontalAlignment	    "center"
+    VerticalAlignment	    "middle"
+    ForegroundColor	    "black"
+    BackgroundColor	    "white"
+    DropShadow		    off
+    FontName		    "Helvetica"
+    FontSize		    10
+    FontWeight		    "normal"
+    FontAngle		    "normal"
+    UseDisplayTextAsClickCallback off
+  }
+  LineDefaults {
+    FontName		    "Helvetica"
+    FontSize		    9
+    FontWeight		    "normal"
+    FontAngle		    "normal"
+  }
+  System {
+    Name		    "spacecraft_simulink_library"
+    Location		    [108, 154, 829, 508]
+    Open		    on
+    ModelBrowserVisibility  off
+    ModelBrowserWidth	    200
+    ScreenColor		    "white"
+    PaperOrientation	    "landscape"
+    PaperPositionMode	    "auto"
+    PaperType		    "A4"
+    PaperUnits		    "centimeters"
+    TiledPaperMargins	    [0.500000, 0.500000, 0.500000, 0.500000]
+    TiledPageScale	    1
+    ShowPageBoundaries	    off
+    ZoomFactor		    "100"
+    ReportName		    "simulink-default.rpt"
+    Block {
+      BlockType		      SubSystem
+      Name		      "Combined PWM & RCS"
+      Ports		      [1, 1]
+      Position		      [275, 155, 385, 215]
+      MinAlgLoopOccurrences   off
+      RTWSystemCode	      "Auto"
+      FunctionWithSeparateData off
+      MaskPromptString	      "Torque deadbands [X Y Z] [Nm]|Torque saturation [X Y Z] [Nm]|RCS gain [X Y Z]"
+      MaskStyleString	      "edit,edit,edit"
+      MaskTunableValueString  "on,on,on"
+      MaskCallbackString      "||"
+      MaskEnableString	      "on,on,on"
+      MaskVisibilityString    "on,on,on"
+      MaskToolTipString	      "on,on,on"
+      MaskVarAliasString      ",,"
+      MaskVariables	      "T_deadband=@1;T_saturation=@2;K_rcs=@3;"
+      MaskIconFrame	      on
+      MaskIconOpaque	      on
+      MaskIconRotate	      "none"
+      MaskIconUnits	      "autoscale"
+      MaskValueString	      "[0 0 0]|Trcs_saturation|[Krcs Krcs Krcs]"
+      MaskTabNameString	      ",,"
+      System {
+	Name			"Combined PWM & RCS"
+	Location		[206, 185, 1083, 679]
+	Open			off
+	ModelBrowserVisibility	off
+	ModelBrowserWidth	200
+	ScreenColor		"white"
+	PaperOrientation	"landscape"
+	PaperPositionMode	"auto"
+	PaperType		"A4"
+	PaperUnits		"centimeters"
+	TiledPaperMargins	[0.500000, 0.500000, 0.500000, 0.500000]
+	TiledPageScale		1
+	ShowPageBoundaries	off
+	ZoomFactor		"100"
+	Block {
+	  BlockType		  Inport
+	  Name			  "T_dem"
+	  Position		  [40, 178, 70, 192]
+	  IconDisplay		  "Port number"
+	  OutDataType		  "sfix(16)"
+	  OutScaling		  "2^0"
+	}
+	Block {
+	  BlockType		  Demux
+	  Name			  "Demux"
+	  Ports			  [1, 3]
+	  Position		  [110, 39, 115, 331]
+	  BackgroundColor	  "black"
+	  ShowName		  off
+	  Outputs		  "3"
+	}
+	Block {
+	  BlockType		  Gain
+	  Name			  "Gain"
+	  Position		  [430, 66, 500, 114]
+	  ShowName		  off
+	  Gain			  "K_rcs(1)"
+	  ParameterDataType	  "sfix(16)"
+	  ParameterScaling	  "2^0"
+	  OutDataType		  "sfix(16)"
+	  OutScaling		  "2^0"
+	}
+	Block {
+	  BlockType		  Gain
+	  Name			  "Gain1"
+	  Position		  [425, 160, 495, 210]
+	  ShowName		  off
+	  Gain			  "K_rcs(2)"
+	  ParameterDataType	  "sfix(16)"
+	  ParameterScaling	  "2^0"
+	  OutDataType		  "sfix(16)"
+	  OutScaling		  "2^0"
+	}
+	Block {
+	  BlockType		  Gain
+	  Name			  "Gain2"
+	  Position		  [425, 256, 495, 304]
+	  ShowName		  off
+	  Gain			  "K_rcs(3)"
+	  ParameterDataType	  "sfix(16)"
+	  ParameterScaling	  "2^0"
+	  OutDataType		  "sfix(16)"
+	  OutScaling		  "2^0"
+	}
+	Block {
+	  BlockType		  Mux
+	  Name			  "Mux"
+	  Ports			  [3, 1]
+	  Position		  [610, 40, 615, 330]
+	  ShowName		  off
+	  Inputs		  "3"
+	  DisplayOption		  "bar"
+	}
+	Block {
+	  BlockType		  SubSystem
+	  Name			  "X-axis ITF"
+	  Ports			  [1, 1]
+	  Position		  [165, 66, 280, 114]
+	  MinAlgLoopOccurrences	  off
+	  RTWSystemCode		  "Auto"
+	  FunctionWithSeparateData off
+	  MaskPromptString	  "Torque deadband [Nm]"
+	  MaskStyleString	  "edit"
+	  MaskTunableValueString  "on"
+	  MaskEnableString	  "on"
+	  MaskVisibilityString	  "on"
+	  MaskToolTipString	  "on"
+	  MaskVariables		  "T_db=@1;"
+	  MaskIconFrame		  on
+	  MaskIconOpaque	  on
+	  MaskIconRotate	  "none"
+	  MaskIconUnits		  "autoscale"
+	  MaskValueString	  "T_deadband(1)"
+	  System {
+	    Name		    "X-axis ITF"
+	    Location		    [540, 160, 1209, 531]
+	    Open		    off
+	    ModelBrowserVisibility  off
+	    ModelBrowserWidth	    200
+	    ScreenColor		    "white"
+	    PaperOrientation	    "landscape"
+	    PaperPositionMode	    "auto"
+	    PaperType		    "A4"
+	    PaperUnits		    "centimeters"
+	    TiledPaperMargins	    [0.500000, 0.500000, 0.500000, 0.500000]
+	    TiledPageScale	    1
+	    ShowPageBoundaries	    off
+	    ZoomFactor		    "100"
+	    Block {
+	      BlockType		      Inport
+	      Name		      "T_PWM_in"
+	      Position		      [40, 48, 70, 62]
+	      IconDisplay	      "Port number"
+	      OutDataType	      "sfix(16)"
+	      OutScaling	      "2^0"
+	    }
+	    Block {
+	      BlockType		      Abs
+	      Name		      "Abs"
+	      Position		      [115, 90, 145, 120]
+	      ShowName		      off
+	    }
+	    Block {
+	      BlockType		      Constant
+	      Name		      "Constant"
+	      Position		      [115, 140, 145, 170]
+	      ShowName		      off
+	      Value		      "0"
+	      OutDataType	      "sfix(16)"
+	      OutScaling	      "2^0"
+	    }
+	    Block {
+	      BlockType		      Switch
+	      Name		      "Switch"
+	      Position		      [185, 28, 215, 182]
+	      ShowName		      off
+	      Threshold		      "T_db"
+	      InputSameDT	      off
+	    }
+	    Block {
+	      BlockType		      Outport
+	      Name		      "T_PWM_out"
+	      Position		      [270, 98, 300, 112]
+	      IconDisplay	      "Port number"
+	    }
+	    Line {
+	      SrcBlock		      "Switch"
+	      SrcPort		      1
+	      DstBlock		      "T_PWM_out"
+	      DstPort		      1
+	    }
+	    Line {
+	      SrcBlock		      "T_PWM_in"
+	      SrcPort		      1
+	      Points		      [0, 0; 15, 0]
+	      Branch {
+		Points			[0, 50]
+		DstBlock		"Abs"
+		DstPort			1
+	      }
+	      Branch {
+		DstBlock		"Switch"
+		DstPort			1
+	      }
+	    }
+	    Line {
+	      SrcBlock		      "Constant"
+	      SrcPort		      1
+	      DstBlock		      "Switch"
+	      DstPort		      3
+	    }
+	    Line {
+	      SrcBlock		      "Abs"
+	      SrcPort		      1
+	      DstBlock		      "Switch"
+	      DstPort		      2
+	    }
+	    Annotation {
+	      Name		      "Implementation of PWM Initial Thresholding Function (ITF). \n\nNote that this version of the code does not have the full PWM implementation, Instead, the implicit assumption is the \ntransform from body to thruster axes within the PWM is \"perfect\" and therefore cancels out with the subsequent transform\nof the RCS output back to the body frame which is needed in the simulation to interface with the plant. Since this \ncancellation does not extend to the ITF, that part of the PWM does need to be implemented here.\n\nThe student is encouraged to experiment with the \"full\" PWM described in the lecture notes to verify the above."
+	      Position		      [41, 272]
+	      HorizontalAlignment     "left"
+	      DropShadow	      on
+	    }
+	  }
+	}
+	Block {
+	  BlockType		  SubSystem
+	  Name			  "X-axis ITF1"
+	  Ports			  [1, 1]
+	  Position		  [165, 161, 280, 209]
+	  MinAlgLoopOccurrences	  off
+	  RTWSystemCode		  "Auto"
+	  FunctionWithSeparateData off
+	  MaskPromptString	  "Torque deadband [Nm]"
+	  MaskStyleString	  "edit"
+	  MaskTunableValueString  "on"
+	  MaskEnableString	  "on"
+	  MaskVisibilityString	  "on"
+	  MaskToolTipString	  "on"
+	  MaskVariables		  "T_db=@1;"
+	  MaskIconFrame		  on
+	  MaskIconOpaque	  on
+	  MaskIconRotate	  "none"
+	  MaskIconUnits		  "autoscale"
+	  MaskValueString	  "T_deadband(2)"
+	  System {
+	    Name		    "X-axis ITF1"
+	    Location		    [540, 160, 1209, 531]
+	    Open		    off
+	    ModelBrowserVisibility  off
+	    ModelBrowserWidth	    200
+	    ScreenColor		    "white"
+	    PaperOrientation	    "landscape"
+	    PaperPositionMode	    "auto"
+	    PaperType		    "A4"
+	    PaperUnits		    "centimeters"
+	    TiledPaperMargins	    [0.500000, 0.500000, 0.500000, 0.500000]
+	    TiledPageScale	    1
+	    ShowPageBoundaries	    off
+	    ZoomFactor		    "100"
+	    Block {
+	      BlockType		      Inport
+	      Name		      "T_PWM_in"
+	      Position		      [40, 48, 70, 62]
+	      IconDisplay	      "Port number"
+	      OutDataType	      "sfix(16)"
+	      OutScaling	      "2^0"
+	    }
+	    Block {
+	      BlockType		      Abs
+	      Name		      "Abs"
+	      Position		      [115, 90, 145, 120]
+	      ShowName		      off
+	    }
+	    Block {
+	      BlockType		      Constant
+	      Name		      "Constant"
+	      Position		      [115, 140, 145, 170]
+	      ShowName		      off
+	      Value		      "0"
+	      OutDataType	      "sfix(16)"
+	      OutScaling	      "2^0"
+	    }
+	    Block {
+	      BlockType		      Switch
+	      Name		      "Switch"
+	      Position		      [185, 28, 215, 182]
+	      ShowName		      off
+	      Threshold		      "T_db"
+	      InputSameDT	      off
+	    }
+	    Block {
+	      BlockType		      Outport
+	      Name		      "T_PWM_out"
+	      Position		      [270, 98, 300, 112]
+	      IconDisplay	      "Port number"
+	    }
+	    Line {
+	      SrcBlock		      "Abs"
+	      SrcPort		      1
+	      DstBlock		      "Switch"
+	      DstPort		      2
+	    }
+	    Line {
+	      SrcBlock		      "Constant"
+	      SrcPort		      1
+	      DstBlock		      "Switch"
+	      DstPort		      3
+	    }
+	    Line {
+	      SrcBlock		      "T_PWM_in"
+	      SrcPort		      1
+	      Points		      [0, 0; 15, 0]
+	      Branch {
+		DstBlock		"Switch"
+		DstPort			1
+	      }
+	      Branch {
+		Points			[0, 50]
+		DstBlock		"Abs"
+		DstPort			1
+	      }
+	    }
+	    Line {
+	      SrcBlock		      "Switch"
+	      SrcPort		      1
+	      DstBlock		      "T_PWM_out"
+	      DstPort		      1
+	    }
+	    Annotation {
+	      Name		      "Implementation of PWM Initial Thresholding Function (ITF). \n\nNote that this version of the code does not have the full PWM implementation, Instead, the implicit assumption is the \ntransform from body to thruster axes within the PWM is \"perfect\" and therefore cancels out with the subsequent transform\nof the RCS output back to the body frame which is needed in the simulation to interface with the plant. Since this \ncancellation does not extend to the ITF, that part of the PWM does need to be implemented here.\n\nThe student is encouraged to experiment with the \"full\" PWM described in the lecture notes to verify the above."
+	      Position		      [41, 272]
+	      HorizontalAlignment     "left"
+	      DropShadow	      on
+	    }
+	  }
+	}
+	Block {
+	  BlockType		  SubSystem
+	  Name			  "X-axis ITF2"
+	  Ports			  [1, 1]
+	  Position		  [165, 256, 280, 304]
+	  MinAlgLoopOccurrences	  off
+	  RTWSystemCode		  "Auto"
+	  FunctionWithSeparateData off
+	  MaskPromptString	  "Torque deadband [Nm]"
+	  MaskStyleString	  "edit"
+	  MaskTunableValueString  "on"
+	  MaskEnableString	  "on"
+	  MaskVisibilityString	  "on"
+	  MaskToolTipString	  "on"
+	  MaskVariables		  "T_db=@1;"
+	  MaskIconFrame		  on
+	  MaskIconOpaque	  on
+	  MaskIconRotate	  "none"
+	  MaskIconUnits		  "autoscale"
+	  MaskValueString	  "T_deadband(3)"
+	  System {
+	    Name		    "X-axis ITF2"
+	    Location		    [540, 160, 1209, 531]
+	    Open		    off
+	    ModelBrowserVisibility  off
+	    ModelBrowserWidth	    200
+	    ScreenColor		    "white"
+	    PaperOrientation	    "landscape"
+	    PaperPositionMode	    "auto"
+	    PaperType		    "A4"
+	    PaperUnits		    "centimeters"
+	    TiledPaperMargins	    [0.500000, 0.500000, 0.500000, 0.500000]
+	    TiledPageScale	    1
+	    ShowPageBoundaries	    off
+	    ZoomFactor		    "100"
+	    Block {
+	      BlockType		      Inport
+	      Name		      "T_PWM_in"
+	      Position		      [40, 48, 70, 62]
+	      IconDisplay	      "Port number"
+	      OutDataType	      "sfix(16)"
+	      OutScaling	      "2^0"
+	    }
+	    Block {
+	      BlockType		      Abs
+	      Name		      "Abs"
+	      Position		      [115, 90, 145, 120]
+	      ShowName		      off
+	    }
+	    Block {
+	      BlockType		      Constant
+	      Name		      "Constant"
+	      Position		      [115, 140, 145, 170]
+	      ShowName		      off
+	      Value		      "0"
+	      OutDataType	      "sfix(16)"
+	      OutScaling	      "2^0"
+	    }
+	    Block {
+	      BlockType		      Switch
+	      Name		      "Switch"
+	      Position		      [185, 28, 215, 182]
+	      ShowName		      off
+	      Threshold		      "T_db"
+	      InputSameDT	      off
+	    }
+	    Block {
+	      BlockType		      Outport
+	      Name		      "T_PWM_out"
+	      Position		      [270, 98, 300, 112]
+	      IconDisplay	      "Port number"
+	    }
+	    Line {
+	      SrcBlock		      "Switch"
+	      SrcPort		      1
+	      DstBlock		      "T_PWM_out"
+	      DstPort		      1
+	    }
+	    Line {
+	      SrcBlock		      "T_PWM_in"
+	      SrcPort		      1
+	      Points		      [0, 0; 15, 0]
+	      Branch {
+		Points			[0, 50]
+		DstBlock		"Abs"
+		DstPort			1
+	      }
+	      Branch {
+		DstBlock		"Switch"
+		DstPort			1
+	      }
+	    }
+	    Line {
+	      SrcBlock		      "Constant"
+	      SrcPort		      1
+	      DstBlock		      "Switch"
+	      DstPort		      3
+	    }
+	    Line {
+	      SrcBlock		      "Abs"
+	      SrcPort		      1
+	      DstBlock		      "Switch"
+	      DstPort		      2
+	    }
+	    Annotation {
+	      Name		      "Implementation of PWM Initial Thresholding Function (ITF). \n\nNote that this version of the code does not have the full PWM implementation, Instead, the implicit assumption is the \ntransform from body to thruster axes within the PWM is \"perfect\" and therefore cancels out with the subsequent transform\nof the RCS output back to the body frame which is needed in the simulation to interface with the plant. Since this \ncancellation does not extend to the ITF, that part of the PWM does need to be implemented here.\n\nThe student is encouraged to experiment with the \"full\" PWM described in the lecture notes to verify the above."
+	      Position		      [41, 272]
+	      HorizontalAlignment     "left"
+	      DropShadow	      on
+	    }
+	  }
+	}
+	Block {
+	  BlockType		  Saturate
+	  Name			  "X-axis saturation"
+	  Position		  [540, 75, 570, 105]
+	  UpperLimit		  "+T_saturation(1)"
+	  LowerLimit		  "-T_saturation(1)"
+	}
+	Block {
+	  BlockType		  Saturate
+	  Name			  "Y-axis saturation"
+	  Position		  [540, 170, 570, 200]
+	  UpperLimit		  "T_saturation(2)"
+	  LowerLimit		  "-T_saturation(2)"
+	}
+	Block {
+	  BlockType		  Saturate
+	  Name			  "Z-axis saturation"
+	  Position		  [540, 265, 570, 295]
+	  UpperLimit		  "T_saturation(3)"
+	  LowerLimit		  "-T_saturation(3)"
+	}
+	Block {
+	  BlockType		  Outport
+	  Name			  "T_rcs"
+	  Position		  [650, 178, 680, 192]
+	  IconDisplay		  "Port number"
+	}
+	Line {
+	  SrcBlock		  "Gain2"
+	  SrcPort		  1
+	  DstBlock		  "Z-axis saturation"
+	  DstPort		  1
+	}
+	Line {
+	  SrcBlock		  "Gain1"
+	  SrcPort		  1
+	  DstBlock		  "Y-axis saturation"
+	  DstPort		  1
+	}
+	Line {
+	  SrcBlock		  "Gain"
+	  SrcPort		  1
+	  DstBlock		  "X-axis saturation"
+	  DstPort		  1
+	}
+	Line {
+	  SrcBlock		  "X-axis ITF2"
+	  SrcPort		  1
+	  DstBlock		  "Gain2"
+	  DstPort		  1
+	}
+	Line {
+	  SrcBlock		  "X-axis ITF1"
+	  SrcPort		  1
+	  DstBlock		  "Gain1"
+	  DstPort		  1
+	}
+	Line {
+	  SrcBlock		  "X-axis ITF"
+	  SrcPort		  1
+	  DstBlock		  "Gain"
+	  DstPort		  1
+	}
+	Line {
+	  SrcBlock		  "T_dem"
+	  SrcPort		  1
+	  DstBlock		  "Demux"
+	  DstPort		  1
+	}
+	Line {
+	  SrcBlock		  "Demux"
+	  SrcPort		  3
+	  DstBlock		  "X-axis ITF2"
+	  DstPort		  1
+	}
+	Line {
+	  SrcBlock		  "Demux"
+	  SrcPort		  2
+	  DstBlock		  "X-axis ITF1"
+	  DstPort		  1
+	}
+	Line {
+	  SrcBlock		  "Demux"
+	  SrcPort		  1
+	  DstBlock		  "X-axis ITF"
+	  DstPort		  1
+	}
+	Line {
+	  SrcBlock		  "Z-axis saturation"
+	  SrcPort		  1
+	  DstBlock		  "Mux"
+	  DstPort		  3
+	}
+	Line {
+	  SrcBlock		  "Y-axis saturation"
+	  SrcPort		  1
+	  DstBlock		  "Mux"
+	  DstPort		  2
+	}
+	Line {
+	  SrcBlock		  "X-axis saturation"
+	  SrcPort		  1
+	  DstBlock		  "Mux"
+	  DstPort		  1
+	}
+	Line {
+	  SrcBlock		  "Mux"
+	  SrcPort		  1
+	  DstBlock		  "T_rcs"
+	  DstPort		  1
+	}
+	Annotation {
+	  Name			  "Note that very simple PWM and RCS models are currently implemented here. The student is\nencouraged to experiment with the more complicated PWM model described in the lecture \nnotes and consider what a more complex RCS model would involve (it is not recommended\nyou code this up however since RCS models quickly become very complicated)."
+	  Position		  [168, 431]
+	  HorizontalAlignment	  "left"
+	  DropShadow		  on
+	}
+	Annotation {
+	  Name			  "RCS model"
+	  Position		  [507, 346]
+	  DropShadow		  on
+	}
+	Annotation {
+	  Name			  "PWM model"
+	  Position		  [217, 346]
+	  DropShadow		  on
+	}
+      }
+    }
+    Block {
+      BlockType		      SubSystem
+      Name		      "Plant Model"
+      Ports		      [1, 2]
+      Position		      [70, 148, 165, 237]
+      MinAlgLoopOccurrences   off
+      RTWSystemCode	      "Auto"
+      FunctionWithSeparateData off
+      System {
+	Name			"Plant Model"
+	Location		[253, 202, 1196, 738]
+	Open			off
+	ModelBrowserVisibility	off
+	ModelBrowserWidth	200
+	ScreenColor		"white"
+	PaperOrientation	"landscape"
+	PaperPositionMode	"auto"
+	PaperType		"A4"
+	PaperUnits		"centimeters"
+	TiledPaperMargins	[0.500000, 0.500000, 0.500000, 0.500000]
+	TiledPageScale		1
+	ShowPageBoundaries	off
+	ZoomFactor		"100"
+	Block {
+	  BlockType		  Inport
+	  Name			  "T_ext"
+	  Position		  [70, 173, 100, 187]
+	  IconDisplay		  "Port number"
+	}
+	Block {
+	  BlockType		  Constant
+	  Name			  "Constant1"
+	  Position		  [70, 210, 100, 240]
+	  ShowName		  off
+	  Value			  "I_sc"
+	  OutDataType		  "sfix(16)"
+	  OutScaling		  "2^0"
+	}
+	Block {
+	  BlockType		  Constant
+	  Name			  "Constant2"
+	  Position		  [300, 184, 400, 216]
+	  ShowName		  off
+	  Value			  "[q_bi0; w_bi0]"
+	  OutDataType		  "sfix(16)"
+	  OutScaling		  "2^0"
+	}
+	Block {
+	  BlockType		  Demux
+	  Name			  "Demux"
+	  Ports			  [1, 2]
+	  Position		  [500, 102, 505, 253]
+	  BackgroundColor	  "black"
+	  ShowName		  off
+	  Outputs		  "[4 3]"
+	  DisplayOption		  "bar"
+	}
+	Block {
+	  BlockType		  Integrator
+	  Name			  "Integrator"
+	  Ports			  [2, 1]
+	  Position		  [420, 141, 460, 219]
+	  ShowName		  off
+	  InitialConditionSource  "external"
+	}
+	Block {
+	  BlockType		  SubSystem
+	  Name			  "Plant"
+	  Ports			  [4, 1]
+	  Position		  [145, 71, 265, 244]
+	  PermitHierarchicalResolution "ExplicitOnly"
+	  MinAlgLoopOccurrences	  off
+	  RTWSystemCode		  "Auto"
+	  FunctionWithSeparateData off
+	  MaskType		  "Stateflow"
+	  MaskDescription	  "Embedded MATLAB block"
+	  MaskDisplay		  "disp('fcn');"
+	  MaskSelfModifiable	  on
+	  MaskIconFrame		  on
+	  MaskIconOpaque	  off
+	  MaskIconRotate	  "none"
+	  MaskIconUnits		  "autoscale"
+	  System {
+	    Name		    "Plant"
+	    Location		    [257, 457, 812, 717]
+	    Open		    off
+	    ModelBrowserVisibility  off
+	    ModelBrowserWidth	    200
+	    ScreenColor		    "white"
+	    PaperOrientation	    "landscape"
+	    PaperPositionMode	    "auto"
+	    PaperType		    "A4"
+	    PaperUnits		    "centimeters"
+	    TiledPaperMargins	    [0.500000, 0.500000, 0.500000, 0.500000]
+	    TiledPageScale	    1
+	    ShowPageBoundaries	    off
+	    ZoomFactor		    "100"
+	    Block {
+	      BlockType		      Inport
+	      Name		      "q"
+	      Position		      [20, 101, 40, 119]
+	      IconDisplay	      "Port number"
+	      OutDataType	      "sfix(16)"
+	      OutScaling	      "2^0"
+	    }
+	    Block {
+	      BlockType		      Inport
+	      Name		      "w"
+	      Position		      [20, 136, 40, 154]
+	      Port		      "2"
+	      IconDisplay	      "Port number"
+	    }
+	    Block {
+	      BlockType		      Inport
+	      Name		      "T_ext"
+	      Position		      [20, 171, 40, 189]
+	      Port		      "3"
+	      IconDisplay	      "Port number"
+	    }
+	    Block {
+	      BlockType		      Inport
+	      Name		      "I_sc"
+	      Position		      [20, 206, 40, 224]
+	      Port		      "4"
+	      IconDisplay	      "Port number"
+	    }
+	    Block {
+	      BlockType		      Demux
+	      Name		      " Demux "
+	      Ports		      [1, 1]
+	      Position		      [270, 205, 320, 245]
+	      Outputs		      "1"
+	    }
+	    Block {
+	      BlockType		      "S-Function"
+	      Name		      " SFunction "
+	      Tag		      "Stateflow S-Function spacecraft_simulink_library 2"
+	      Ports		      [4, 2]
+	      Position		      [180, 102, 230, 203]
+	      FunctionName	      "sf_sfun"
+	      PortCounts	      "[4 2]"
+	      EnableBusSupport	      on
+	      Port {
+		PortNumber		2
+		Name			"x_dot"
+		RTWStorageClass		"Auto"
+		DataLoggingNameMode	"SignalName"
+	      }
+	    }
+	    Block {
+	      BlockType		      Terminator
+	      Name		      " Terminator "
+	      Position		      [460, 216, 480, 234]
+	    }
+	    Block {
+	      BlockType		      Outport
+	      Name		      "x_dot"
+	      Position		      [460, 101, 480, 119]
+	      IconDisplay	      "Port number"
+	      OutDataType	      "sfix(16)"
+	      OutScaling	      "2^0"
+	    }
+	    Line {
+	      SrcBlock		      " SFunction "
+	      SrcPort		      1
+	      Points		      [0, 95]
+	      DstBlock		      " Demux "
+	      DstPort		      1
+	    }
+	    Line {
+	      SrcBlock		      " Demux "
+	      SrcPort		      1
+	      DstBlock		      " Terminator "
+	      DstPort		      1
+	    }
+	    Line {
+	      SrcBlock		      "q"
+	      SrcPort		      1
+	      DstBlock		      " SFunction "
+	      DstPort		      1
+	    }
+	    Line {
+	      Name		      "x_dot"
+	      Labels		      [0, 0]
+	      SrcBlock		      " SFunction "
+	      SrcPort		      2
+	      DstBlock		      "x_dot"
+	      DstPort		      1
+	    }
+	    Line {
+	      SrcBlock		      "w"
+	      SrcPort		      1
+	      Points		      [120, 0]
+	      DstBlock		      " SFunction "
+	      DstPort		      2
+	    }
+	    Line {
+	      SrcBlock		      "T_ext"
+	      SrcPort		      1
+	      DstBlock		      " SFunction "
+	      DstPort		      3
+	    }
+	    Line {
+	      SrcBlock		      "I_sc"
+	      SrcPort		      1
+	      DstBlock		      " SFunction "
+	      DstPort		      4
+	    }
+	  }
+	}
+	Block {
+	  BlockType		  Outport
+	  Name			  "q"
+	  Position		  [615, 133, 645, 147]
+	  IconDisplay		  "Port number"
+	}
+	Block {
+	  BlockType		  Outport
+	  Name			  "w"
+	  Position		  [615, 208, 645, 222]
+	  Port			  "2"
+	  IconDisplay		  "Port number"
+	}
+	Line {
+	  SrcBlock		  "Plant"
+	  SrcPort		  1
+	  DstBlock		  "Integrator"
+	  DstPort		  1
+	}
+	Line {
+	  SrcBlock		  "Integrator"
+	  SrcPort		  1
+	  DstBlock		  "Demux"
+	  DstPort		  1
+	}
+	Line {
+	  SrcBlock		  "Demux"
+	  SrcPort		  1
+	  Points		  [25, 0]
+	  Branch {
+	    DstBlock		    "q"
+	    DstPort		    1
+	  }
+	  Branch {
+	    Points		    [0, -110; -505, 0; 0, 60]
+	    DstBlock		    "Plant"
+	    DstPort		    1
+	  }
+	}
+	Line {
+	  SrcBlock		  "Demux"
+	  SrcPort		  2
+	  Points		  [25, 0]
+	  Branch {
+	    DstBlock		    "w"
+	    DstPort		    1
+	  }
+	  Branch {
+	    Points		    [0, 90; -505, 0; 0, -170]
+	    DstBlock		    "Plant"
+	    DstPort		    2
+	  }
+	}
+	Line {
+	  SrcBlock		  "T_ext"
+	  SrcPort		  1
+	  DstBlock		  "Plant"
+	  DstPort		  3
+	}
+	Line {
+	  SrcBlock		  "Constant1"
+	  SrcPort		  1
+	  DstBlock		  "Plant"
+	  DstPort		  4
+	}
+	Line {
+	  SrcBlock		  "Constant2"
+	  SrcPort		  1
+	  DstBlock		  "Integrator"
+	  DstPort		  2
+	}
+      }
+    }
+    Block {
+      BlockType		      SubSystem
+      Name		      "Sun sensor"
+      Ports		      [1, 2]
+      Position		      [225, 35, 305, 95]
+      MinAlgLoopOccurrences   off
+      RTWSystemCode	      "Auto"
+      FunctionWithSeparateData off
+      System {
+	Name			"Sun sensor"
+	Location		[508, 350, 974, 546]
+	Open			off
+	ModelBrowserVisibility	off
+	ModelBrowserWidth	200
+	ScreenColor		"white"
+	PaperOrientation	"landscape"
+	PaperPositionMode	"auto"
+	PaperType		"A4"
+	PaperUnits		"centimeters"
+	TiledPaperMargins	[0.500000, 0.500000, 0.500000, 0.500000]
+	TiledPageScale		1
+	ShowPageBoundaries	off
+	ZoomFactor		"100"
+	Block {
+	  BlockType		  Inport
+	  Name			  "s_b"
+	  Position		  [155, 38, 185, 52]
+	  IconDisplay		  "Port number"
+	}
+	Block {
+	  BlockType		  Constant
+	  Name			  "Constant"
+	  Position		  [20, 65, 145, 95]
+	  ShowName		  off
+	  Value			  "sun_sensor_model_type"
+	  OutDataType		  "sfix(16)"
+	  OutScaling		  "2^0"
+	}
+	Block {
+	  BlockType		  SubSystem
+	  Name			  "Sun sensor"
+	  Ports			  [2, 2]
+	  Position		  [210, 26, 320, 99]
+	  PermitHierarchicalResolution "ExplicitOnly"
+	  MinAlgLoopOccurrences	  off
+	  RTWSystemCode		  "Auto"
+	  FunctionWithSeparateData off
+	  MaskType		  "Stateflow"
+	  MaskDescription	  "Embedded MATLAB block"
+	  MaskDisplay		  "disp('SunSensor');"
+	  MaskSelfModifiable	  on
+	  MaskIconFrame		  on
+	  MaskIconOpaque	  off
+	  MaskIconRotate	  "none"
+	  MaskIconUnits		  "autoscale"
+	  System {
+	    Name		    "Sun sensor"
+	    Location		    [257, 457, 812, 717]
+	    Open		    off
+	    ModelBrowserVisibility  off
+	    ModelBrowserWidth	    200
+	    ScreenColor		    "white"
+	    PaperOrientation	    "landscape"
+	    PaperPositionMode	    "auto"
+	    PaperType		    "A4"
+	    PaperUnits		    "centimeters"
+	    TiledPaperMargins	    [0.500000, 0.500000, 0.500000, 0.500000]
+	    TiledPageScale	    1
+	    ShowPageBoundaries	    off
+	    ZoomFactor		    "100"
+	    Block {
+	      BlockType		      Inport
+	      Name		      "s_b"
+	      Position		      [20, 101, 40, 119]
+	      IconDisplay	      "Port number"
+	      OutDataType	      "sfix(16)"
+	      OutScaling	      "2^0"
+	    }
+	    Block {
+	      BlockType		      Inport
+	      Name		      "model_mode"
+	      Position		      [20, 136, 40, 154]
+	      Port		      "2"
+	      IconDisplay	      "Port number"
+	    }
+	    Block {
+	      BlockType		      Demux
+	      Name		      " Demux "
+	      Ports		      [1, 1]
+	      Position		      [270, 180, 320, 220]
+	      Outputs		      "1"
+	    }
+	    Block {
+	      BlockType		      "S-Function"
+	      Name		      " SFunction "
+	      Tag		      "Stateflow S-Function spacecraft_simulink_library 1"
+	      Ports		      [2, 3]
+	      Position		      [180, 100, 230, 180]
+	      FunctionName	      "sf_sfun"
+	      PortCounts	      "[2 3]"
+	      Port {
+		PortNumber		2
+		Name			"alpha"
+		RTWStorageClass		"Auto"
+		DataLoggingNameMode	"SignalName"
+	      }
+	      Port {
+		PortNumber		3
+		Name			"beta"
+		RTWStorageClass		"Auto"
+		DataLoggingNameMode	"SignalName"
+	      }
+	    }
+	    Block {
+	      BlockType		      Terminator
+	      Name		      " Terminator "
+	      Position		      [460, 191, 480, 209]
+	    }
+	    Block {
+	      BlockType		      Outport
+	      Name		      "alpha"
+	      Position		      [460, 101, 480, 119]
+	      IconDisplay	      "Port number"
+	      OutDataType	      "sfix(16)"
+	      OutScaling	      "2^0"
+	    }
+	    Block {
+	      BlockType		      Outport
+	      Name		      "beta"
+	      Position		      [460, 136, 480, 154]
+	      Port		      "2"
+	      IconDisplay	      "Port number"
+	    }
+	    Line {
+	      SrcBlock		      " SFunction "
+	      SrcPort		      1
+	      Points		      [0, 85]
+	      DstBlock		      " Demux "
+	      DstPort		      1
+	    }
+	    Line {
+	      SrcBlock		      " Demux "
+	      SrcPort		      1
+	      DstBlock		      " Terminator "
+	      DstPort		      1
+	    }
+	    Line {
+	      SrcBlock		      "s_b"
+	      SrcPort		      1
+	      DstBlock		      " SFunction "
+	      DstPort		      1
+	    }
+	    Line {
+	      Name		      "alpha"
+	      Labels		      [0, 0]
+	      SrcBlock		      " SFunction "
+	      SrcPort		      2
+	      DstBlock		      "alpha"
+	      DstPort		      1
+	    }
+	    Line {
+	      SrcBlock		      "model_mode"
+	      SrcPort		      1
+	      Points		      [120, 0]
+	      DstBlock		      " SFunction "
+	      DstPort		      2
+	    }
+	    Line {
+	      Name		      "beta"
+	      Labels		      [0, 0]
+	      SrcBlock		      " SFunction "
+	      SrcPort		      3
+	      DstBlock		      "beta"
+	      DstPort		      1
+	    }
+	  }
+	}
+	Block {
+	  BlockType		  Outport
+	  Name			  "alpha"
+	  Position		  [345, 38, 375, 52]
+	  IconDisplay		  "Port number"
+	}
+	Block {
+	  BlockType		  Outport
+	  Name			  "beta"
+	  Position		  [345, 73, 375, 87]
+	  Port			  "2"
+	  IconDisplay		  "Port number"
+	}
+	Line {
+	  SrcBlock		  "Constant"
+	  SrcPort		  1
+	  DstBlock		  "Sun sensor"
+	  DstPort		  2
+	}
+	Line {
+	  SrcBlock		  "s_b"
+	  SrcPort		  1
+	  DstBlock		  "Sun sensor"
+	  DstPort		  1
+	}
+	Line {
+	  SrcBlock		  "Sun sensor"
+	  SrcPort		  1
+	  DstBlock		  "alpha"
+	  DstPort		  1
+	}
+	Line {
+	  SrcBlock		  "Sun sensor"
+	  SrcPort		  2
+	  DstBlock		  "beta"
+	  DstPort		  1
+	}
+      }
+    }
+    Block {
+      BlockType		      SubSystem
+      Name		      "single axis PD attitude controller"
+      Ports		      [2, 1]
+      Position		      [375, 39, 505, 101]
+      MinAlgLoopOccurrences   off
+      RTWSystemCode	      "Auto"
+      FunctionWithSeparateData off
+      MaskPromptString	      "Proportional gain Kp|Derivative gain Kd"
+      MaskStyleString	      "edit,edit"
+      MaskTunableValueString  "on,on"
+      MaskCallbackString      "|"
+      MaskEnableString	      "on,on"
+      MaskVisibilityString    "on,on"
+      MaskToolTipString	      "on,on"
+      MaskVarAliasString      ","
+      MaskVariables	      "Kp=@1;Kd=@2;"
+      MaskIconFrame	      on
+      MaskIconOpaque	      on
+      MaskIconRotate	      "none"
+      MaskIconUnits	      "autoscale"
+      MaskValueString	      "0|0"
+      MaskTabNameString	      ","
+      System {
+	Name			"single axis PD attitude controller"
+	Location		[433, 441, 1003, 684]
+	Open			off
+	ModelBrowserVisibility	off
+	ModelBrowserWidth	200
+	ScreenColor		"white"
+	PaperOrientation	"landscape"
+	PaperPositionMode	"auto"
+	PaperType		"A4"
+	PaperUnits		"centimeters"
+	TiledPaperMargins	[0.500000, 0.500000, 0.500000, 0.500000]
+	TiledPageScale		1
+	ShowPageBoundaries	off
+	ZoomFactor		"100"
+	Block {
+	  BlockType		  Inport
+	  Name			  "att_error"
+	  Position		  [25, 33, 55, 47]
+	  IconDisplay		  "Port number"
+	  OutDataType		  "sfix(16)"
+	  OutScaling		  "2^0"
+	}
+	Block {
+	  BlockType		  Inport
+	  Name			  "rate_error"
+	  Position		  [25, 78, 55, 92]
+	  Port			  "2"
+	  IconDisplay		  "Port number"
+	  OutDataType		  "sfix(16)"
+	  OutScaling		  "2^0"
+	}
+	Block {
+	  BlockType		  Gain
+	  Name			  "Kd"
+	  Position		  [240, 25, 305, 55]
+	  Gain			  "Kd"
+	  ParameterDataType	  "sfix(16)"
+	  ParameterScaling	  "2^0"
+	  OutDataType		  "sfix(16)"
+	  OutScaling		  "2^0"
+	}
+	Block {
+	  BlockType		  Gain
+	  Name			  "Kp/Kd"
+	  Position		  [80, 25, 145, 55]
+	  ShowName		  off
+	  Gain			  "Kp/Kd"
+	  ParameterDataType	  "sfix(16)"
+	  ParameterScaling	  "2^0"
+	  OutDataType		  "sfix(16)"
+	  OutScaling		  "2^0"
+	}
+	Block {
+	  BlockType		  Sum
+	  Name			  "Sum"
+	  Ports			  [2, 1]
+	  Position		  [180, 30, 200, 50]
+	  ShowName		  off
+	  IconShape		  "round"
+	  Inputs		  "|++"
+	  CollapseMode		  "All dimensions"
+	  InputSameDT		  off
+	  OutDataTypeMode	  "Inherit via internal rule"
+	  OutDataType		  "sfix(16)"
+	  OutScaling		  "2^0"
+	}
+	Block {
+	  BlockType		  Outport
+	  Name			  "T_dem"
+	  Position		  [345, 33, 375, 47]
+	  IconDisplay		  "Port number"
+	}
+	Line {
+	  SrcBlock		  "Kp/Kd"
+	  SrcPort		  1
+	  DstBlock		  "Sum"
+	  DstPort		  1
+	}
+	Line {
+	  SrcBlock		  "Sum"
+	  SrcPort		  1
+	  DstBlock		  "Kd"
+	  DstPort		  1
+	}
+	Line {
+	  SrcBlock		  "Kd"
+	  SrcPort		  1
+	  DstBlock		  "T_dem"
+	  DstPort		  1
+	}
+	Line {
+	  SrcBlock		  "att_error"
+	  SrcPort		  1
+	  DstBlock		  "Kp/Kd"
+	  DstPort		  1
+	}
+	Line {
+	  SrcBlock		  "rate_error"
+	  SrcPort		  1
+	  Points		  [130, 0]
+	  DstBlock		  "Sum"
+	  DstPort		  2
+	}
+	Annotation {
+	  Name			  "Model of SISO PD controller\n"
+	  Position		  [129, 129]
+	  HorizontalAlignment	  "left"
+	  DropShadow		  on
+	}
+      }
+    }
+    Block {
+      BlockType		      SubSystem
+      Name		      "transform vector"
+      Ports		      [2, 1]
+      Position		      [50, 34, 180, 96]
+      PermitHierarchicalResolution "ExplicitOnly"
+      MinAlgLoopOccurrences   off
+      RTWSystemCode	      "Auto"
+      FunctionWithSeparateData off
+      MaskType		      "Stateflow"
+      MaskDescription	      "Embedded MATLAB block"
+      MaskDisplay	      "disp('TransformVector');"
+      MaskSelfModifiable      on
+      MaskIconFrame	      on
+      MaskIconOpaque	      off
+      MaskIconRotate	      "none"
+      MaskIconUnits	      "autoscale"
+      System {
+	Name			"transform vector"
+	Location		[257, 457, 812, 717]
+	Open			off
+	ModelBrowserVisibility	off
+	ModelBrowserWidth	200
+	ScreenColor		"white"
+	PaperOrientation	"landscape"
+	PaperPositionMode	"auto"
+	PaperType		"A4"
+	PaperUnits		"centimeters"
+	TiledPaperMargins	[0.500000, 0.500000, 0.500000, 0.500000]
+	TiledPageScale		1
+	ShowPageBoundaries	off
+	ZoomFactor		"100"
+	Block {
+	  BlockType		  Inport
+	  Name			  "q"
+	  Position		  [20, 101, 40, 119]
+	  IconDisplay		  "Port number"
+	  OutDataType		  "sfix(16)"
+	  OutScaling		  "2^0"
+	}
+	Block {
+	  BlockType		  Inport
+	  Name			  "v1"
+	  Position		  [20, 136, 40, 154]
+	  Port			  "2"
+	  IconDisplay		  "Port number"
+	}
+	Block {
+	  BlockType		  Demux
+	  Name			  " Demux "
+	  Ports			  [1, 1]
+	  Position		  [270, 160, 320, 200]
+	  Outputs		  "1"
+	}
+	Block {
+	  BlockType		  "S-Function"
+	  Name			  " SFunction "
+	  Tag			  "Stateflow S-Function spacecraft_simulink_library 3"
+	  Ports			  [2, 2]
+	  Position		  [180, 100, 230, 160]
+	  FunctionName		  "sf_sfun"
+	  PortCounts		  "[2 2]"
+	  Port {
+	    PortNumber		    2
+	    Name		    "v2"
+	    RTWStorageClass	    "Auto"
+	    DataLoggingNameMode	    "SignalName"
+	  }
+	}
+	Block {
+	  BlockType		  Terminator
+	  Name			  " Terminator "
+	  Position		  [460, 171, 480, 189]
+	}
+	Block {
+	  BlockType		  Outport
+	  Name			  "v2"
+	  Position		  [460, 101, 480, 119]
+	  IconDisplay		  "Port number"
+	  OutDataType		  "sfix(16)"
+	  OutScaling		  "2^0"
+	}
+	Line {
+	  SrcBlock		  " SFunction "
+	  SrcPort		  1
+	  Points		  [0, 65]
+	  DstBlock		  " Demux "
+	  DstPort		  1
+	}
+	Line {
+	  SrcBlock		  " Demux "
+	  SrcPort		  1
+	  DstBlock		  " Terminator "
+	  DstPort		  1
+	}
+	Line {
+	  SrcBlock		  "q"
+	  SrcPort		  1
+	  DstBlock		  " SFunction "
+	  DstPort		  1
+	}
+	Line {
+	  Name			  "v2"
+	  Labels		  [0, 0]
+	  SrcBlock		  " SFunction "
+	  SrcPort		  2
+	  DstBlock		  "v2"
+	  DstPort		  1
+	}
+	Line {
+	  SrcBlock		  "v1"
+	  SrcPort		  1
+	  DstBlock		  " SFunction "
+	  DstPort		  2
+	}
+      }
+    }
+  }
+}
+# Finite State Machines
+#
+#    Stateflow Version 6.7 (R2007b) dated Aug  7 2007, 16:48:14
+#
+#
+
+
+Stateflow {
+  machine {
+    id			    1
+    name		    "spacecraft_simulink_library"
+    created		    "10-Mar-2011 06:44:42"
+    isLibrary		    1
+    firstTarget		    29
+    sfVersion		    67014000.000001
+  }
+  chart {
+    id			    2
+    name		    "Sun sensor/Sun sensor"
+    windowPosition	    [317.039 353.766 200.25 189.75]
+    viewLimits		    [0 156.75 0 153.75]
+    screen		    [1 1 1440 900 1.333333333333333]
+    treeNode		    [0 3 0 0]
+    firstTransition	    5
+    firstJunction	    4
+    viewObj		    2
+    machine		    1
+    toolbarMode		    LIBRARY_TOOLBAR
+    decomposition	    CLUSTER_CHART
+    type		    EML_CHART
+    firstData		    6
+    chartFileNumber	    1
+    disableImplicitCasting  1
+    eml {
+      name		      "SunSensor"
+    }
+  }
+  state {
+    id			    3
+    labelString		    "eML_blk_kernel()"
+    position		    [18 64.5 118 66]
+    fontSize		    12
+    chart		    2
+    treeNode		    [2 0 0 0]
+    superState		    SUBCHART
+    subviewer		    2
+    type		    FUNC_STATE
+    decomposition	    CLUSTER_STATE
+    eml {
+      isEML		      1
+      script		      "function  [alpha, beta] = SunSensor(s_b,model_mode)\n% SunSensor. Models Sun sensor by converting input sun vector (in body\n% frame) to Sun sensor [alpha, beta] angles.\n%\n% Format:\n%   [alpha, beta] = SunSensor(s_b, model_mode)\n% where:\n%   u           is the sun vector in the body frame\n%   model_mode  selects ideal sensor (=1) or non-linear sensor (=2)\n%   angles      is [alpha, beta] angles measured by the sun sensor\n% Uses the method described in section 4.1 of P6 notes\n\n% calculate [alpha, beta] angles - note this algorithm only works when the\n% sun vector lies within 90deg of the sensor boresight (=Z axis - see\n% figure 3-8 of P4 notes)\nalpha = atan2(+s_b(2),s_b(3));\nbeta  = atan2(-s_b(1),s_b(3));\n\n% apply non-linear characteristic if requested by user input\nif model_mode==2\n    alpha = SunSensorResponse(alpha);\n    beta  = SunSensorResponse(beta);\nend\n\nreturn\n\n% =========================================================================\n% Private functions (can only be called from the SunSensor function\n% =========================================================================\nfunction meas_angle = SunSensorResponse(true_angle)\n% SunSensorResponse. Implements the sun sensor response shown in lecture notes.\nmeas_angle     = 0;\ntrue_angle_max = 83*pi/180;\nmeas_angle_max = 0.5*(sin(7*pi/180) + cos(7*pi/180)*tan(true_angle_max))./(1+tan(true_angle_max).^2).^0.5;\nif abs(true_angle)<7*pi/180\n	meas_angle = true_angle;\nelseif true_angle>0&&true_angle<83*pi/180\n    meas_angle = 0.5*(sin(7*pi/180) + cos(7*pi/180)*tan(true_angle))./(1+tan(true_angle).^2).^0.5;\nelseif true_angle<0&&true_angle>-83*pi/180\n    meas_angle = -0.5*(sin(7*pi/180) - cos(7*pi/180)*tan(true_angle))./(1+tan(true_angle).^2).^0.5;\nelseif true_angle>=83*pi/180\n    meas_angle = -meas_angle_max/(7*pi/180)*(true_angle-pi/2);\nelseif true_angle<=-83*pi/180\n    meas_angle = -meas_angle_max/(7*pi/180)*(true_angle+pi/2);\nend\n\n"
+      editorLayout	      "100 M4x1[146 214 1448 880]"
+    }
+  }
+  junction {
+    id			    4
+    position		    [23.5747 49.5747 7]
+    chart		    2
+    linkNode		    [2 0 0]
+    subviewer		    2
+    type		    CONNECTIVE_JUNCTION
+  }
+  transition {
+    id			    5
+    labelString		    "{eML_blk_kernel();}"
+    labelPosition	    [32.125 19.875 102.544 14.964]
+    fontSize		    12
+    src {
+      intersection	      [0 0 1 0 23.5747 14.625 0 0]
+    }
+    dst {
+      id		      4
+      intersection	      [7 0 -1 -1 23.5747 42.5747 0 0]
+    }
+    midPoint		    [23.5747 24.9468]
+    chart		    2
+    linkNode		    [2 0 0]
+    dataLimits		    [23.575 23.575 14.625 34.575]
+    subviewer		    2
+    drawStyle		    SMART
+    executionOrder	    1
+  }
+  data {
+    id			    6
+    name		    "s_b"
+    linkNode		    [2 0 7]
+    scope		    INPUT_DATA
+    machine		    1
+    props {
+      array {
+	size			"-1"
+      }
+      type {
+	method			SF_INHERITED_TYPE
+      }
+      complexity	      SF_COMPLEX_INHERITED
+    }
+    dataType		    "inherited"
+    fixptType {
+      slope		      1
+      baseType		      SF_INT16_TYPE
+    }
+    complexity		    SF_COMPLEX_INHERITED
+  }
+  data {
+    id			    7
+    name		    "alpha"
+    linkNode		    [2 6 8]
+    scope		    OUTPUT_DATA
+    machine		    1
+    props {
+      array {
+	size			"-1"
+      }
+      type {
+	method			SF_INHERITED_TYPE
+      }
+      complexity	      SF_COMPLEX_INHERITED
+      frame		      SF_FRAME_NO
+    }
+    dataType		    "inherited"
+    fixptType {
+      slope		      1
+      baseType		      SF_INT16_TYPE
+    }
+    complexity		    SF_COMPLEX_INHERITED
+  }
+  data {
+    id			    8
+    name		    "model_mode"
+    linkNode		    [2 7 9]
+    scope		    INPUT_DATA
+    machine		    1
+    props {
+      array {
+	size			"-1"
+      }
+      type {
+	method			SF_INHERITED_TYPE
+	primitive		SF_DOUBLE_TYPE
+	isSigned		1
+	wordLength		"16"
+      }
+      complexity	      SF_COMPLEX_INHERITED
+      frame		      SF_FRAME_INHERITED
+    }
+    dataType		    "inherited"
+    complexity		    SF_COMPLEX_INHERITED
+  }
+  data {
+    id			    9
+    name		    "beta"
+    linkNode		    [2 8 0]
+    scope		    OUTPUT_DATA
+    machine		    1
+    props {
+      array {
+	size			"-1"
+      }
+      type {
+	method			SF_INHERITED_TYPE
+	primitive		SF_DOUBLE_TYPE
+	isSigned		1
+	wordLength		"16"
+      }
+      complexity	      SF_COMPLEX_INHERITED
+      frame		      SF_FRAME_NO
+    }
+    dataType		    "inherited"
+    complexity		    SF_COMPLEX_INHERITED
+  }
+  instance {
+    id			    10
+    name		    "Sun sensor/Sun sensor"
+    machine		    1
+    chart		    2
+  }
+  chart {
+    id			    11
+    name		    "Plant Model/Plant"
+    windowPosition	    [332.039 338.766 200.25 189.75]
+    viewLimits		    [0 156.75 0 153.75]
+    screen		    [1 1 1440 900 1.333333333333333]
+    treeNode		    [0 12 0 0]
+    firstTransition	    14
+    firstJunction	    13
+    viewObj		    11
+    machine		    1
+    decomposition	    CLUSTER_CHART
+    type		    EML_CHART
+    firstData		    15
+    chartFileNumber	    2
+    disableImplicitCasting  1
+    eml {
+      name		      "fcn"
+    }
+  }
+  state {
+    id			    12
+    labelString		    "eML_blk_kernel()"
+    position		    [18 64.5 118 66]
+    fontSize		    12
+    chart		    11
+    treeNode		    [11 0 0 0]
+    superState		    SUBCHART
+    subviewer		    11
+    type		    FUNC_STATE
+    decomposition	    CLUSTER_STATE
+    eml {
+      isEML		      1
+      script		      "function x_dot = fcn(q,w,T_ext,I_sc)\n\n% derivative of quaternion part of state vector:\nOMEGA   = [    0  w(3) -w(2)  w(1);\n           -w(3)     0  w(1)  w(2);\n            w(2) -w(1)     0  w(3);\n           -w(1) -w(2) -w(3)     0];\nq_dot   = 0.5*OMEGA*q;\n\n\n% derivative of rate vector part of state vector:\nw_dot   = inv(I_sc)*(T_ext - cross(w,I_sc*w));\n\n\n% overall state vector derivative:\nx_dot   = [q_dot; w_dot];\n"
+      editorLayout	      "100 M4x1[146 74 1448 880]"
+    }
+  }
+  junction {
+    id			    13
+    position		    [23.5747 49.5747 7]
+    chart		    11
+    linkNode		    [11 0 0]
+    subviewer		    11
+    type		    CONNECTIVE_JUNCTION
+  }
+  transition {
+    id			    14
+    labelString		    "{eML_blk_kernel();}"
+    labelPosition	    [32.125 19.875 102.544 14.964]
+    fontSize		    12
+    src {
+      intersection	      [0 0 1 0 23.5747 14.625 0 0]
+    }
+    dst {
+      id		      13
+      intersection	      [7 0 -1 -1 23.5747 42.5747 0 0]
+    }
+    midPoint		    [23.5747 24.9468]
+    chart		    11
+    linkNode		    [11 0 0]
+    dataLimits		    [23.575 23.575 14.625 34.575]
+    subviewer		    11
+    drawStyle		    SMART
+    executionOrder	    1
+  }
+  data {
+    id			    15
+    name		    "q"
+    linkNode		    [11 0 16]
+    scope		    INPUT_DATA
+    machine		    1
+    props {
+      array {
+	size			"-1"
+      }
+      type {
+	method			SF_INHERITED_TYPE
+      }
+      complexity	      SF_COMPLEX_INHERITED
+    }
+    dataType		    "inherited"
+    fixptType {
+      slope		      1
+      baseType		      SF_INT16_TYPE
+    }
+    complexity		    SF_COMPLEX_INHERITED
+  }
+  data {
+    id			    16
+    name		    "x_dot"
+    linkNode		    [11 15 17]
+    scope		    OUTPUT_DATA
+    machine		    1
+    props {
+      array {
+	size			"-1"
+      }
+      type {
+	method			SF_INHERITED_TYPE
+      }
+      complexity	      SF_COMPLEX_INHERITED
+      frame		      SF_FRAME_NO
+    }
+    dataType		    "inherited"
+    fixptType {
+      slope		      1
+      baseType		      SF_INT16_TYPE
+    }
+    complexity		    SF_COMPLEX_INHERITED
+  }
+  data {
+    id			    17
+    name		    "w"
+    linkNode		    [11 16 18]
+    scope		    INPUT_DATA
+    machine		    1
+    props {
+      array {
+	size			"-1"
+      }
+      type {
+	method			SF_INHERITED_TYPE
+	primitive		SF_DOUBLE_TYPE
+	isSigned		1
+	wordLength		"16"
+      }
+      complexity	      SF_COMPLEX_INHERITED
+      frame		      SF_FRAME_INHERITED
+    }
+    dataType		    "inherited"
+    complexity		    SF_COMPLEX_INHERITED
+  }
+  data {
+    id			    18
+    name		    "T_ext"
+    linkNode		    [11 17 19]
+    scope		    INPUT_DATA
+    machine		    1
+    props {
+      array {
+	size			"-1"
+      }
+      type {
+	method			SF_INHERITED_TYPE
+	primitive		SF_DOUBLE_TYPE
+	isSigned		1
+	wordLength		"16"
+      }
+      complexity	      SF_COMPLEX_INHERITED
+      frame		      SF_FRAME_INHERITED
+    }
+    dataType		    "inherited"
+    complexity		    SF_COMPLEX_INHERITED
+  }
+  data {
+    id			    19
+    name		    "I_sc"
+    linkNode		    [11 18 0]
+    scope		    INPUT_DATA
+    machine		    1
+    props {
+      array {
+	size			"-1"
+      }
+      type {
+	method			SF_INHERITED_TYPE
+	primitive		SF_DOUBLE_TYPE
+	isSigned		1
+	wordLength		"16"
+      }
+      complexity	      SF_COMPLEX_INHERITED
+      frame		      SF_FRAME_INHERITED
+    }
+    dataType		    "inherited"
+    complexity		    SF_COMPLEX_INHERITED
+  }
+  instance {
+    id			    20
+    name		    "Plant Model/Plant"
+    machine		    1
+    chart		    11
+  }
+  chart {
+    id			    21
+    name		    "transform vector"
+    windowPosition	    [317.039 353.766 200.25 189.75]
+    viewLimits		    [0 156.75 0 153.75]
+    screen		    [1 1 1440 900 1.333333333333333]
+    treeNode		    [0 22 0 0]
+    firstTransition	    24
+    firstJunction	    23
+    viewObj		    21
+    machine		    1
+    toolbarMode		    LIBRARY_TOOLBAR
+    decomposition	    CLUSTER_CHART
+    type		    EML_CHART
+    firstData		    25
+    chartFileNumber	    3
+    disableImplicitCasting  1
+    eml {
+      name		      "TransformVector"
+    }
+  }
+  state {
+    id			    22
+    labelString		    "eML_blk_kernel()"
+    position		    [18 64.5 118 66]
+    fontSize		    12
+    chart		    21
+    treeNode		    [21 0 0 0]
+    superState		    SUBCHART
+    subviewer		    21
+    type		    FUNC_STATE
+    decomposition	    CLUSTER_STATE
+    eml {
+      isEML		      1
+      script		      "function  v2 = TransformVector(q,v1)\n% TransformVector. Transforms a vector from one frame to another. \n%\n% Format:\n%   v2 = TransformVector(q,v1)\n% where:\n%   q   is the quaternion representing the transformation\n%   v1  is the vector being transformed.\n%   v2  is the transformed vector.\n\n% compute DCM\nDCM = [q(1)^2-q(2)^2-q(3)^2+q(4)^2        2*(q(1)*q(2)+q(3)*q(4))        2*(q(1)*q(3)-q(2)*q(4));\n           2*(q(1)*q(2)-q(3)*q(4))   -q(1)^2+q(2)^2-q(3)^2+q(4)^2	       2*(q(2)*q(3)+q(1)*q(4));\n		   2*(q(1)*q(3)+q(2)*q(4))        2*(q(2)*q(3)-q(1)*q(4))   -q(1)^2-q(2)^2+q(3)^2+q(4)^2];\n	   \n% transform vector from one frame to another\nv2  = DCM*v1;\n\nreturn"
+      editorLayout	      "100 M4x1[146 214 1448 880]"
+    }
+  }
+  junction {
+    id			    23
+    position		    [23.5747 49.5747 7]
+    chart		    21
+    linkNode		    [21 0 0]
+    subviewer		    21
+    type		    CONNECTIVE_JUNCTION
+  }
+  transition {
+    id			    24
+    labelString		    "{eML_blk_kernel();}"
+    labelPosition	    [32.125 19.875 102.544 14.964]
+    fontSize		    12
+    src {
+      intersection	      [0 0 1 0 23.5747 14.625 0 0]
+    }
+    dst {
+      id		      23
+      intersection	      [7 0 -1 -1 23.5747 42.5747 0 0]
+    }
+    midPoint		    [23.5747 24.9468]
+    chart		    21
+    linkNode		    [21 0 0]
+    dataLimits		    [23.575 23.575 14.625 34.575]
+    subviewer		    21
+    drawStyle		    SMART
+    executionOrder	    1
+  }
+  data {
+    id			    25
+    name		    "q"
+    linkNode		    [21 0 26]
+    scope		    INPUT_DATA
+    machine		    1
+    props {
+      array {
+	size			"-1"
+      }
+      type {
+	method			SF_INHERITED_TYPE
+      }
+      complexity	      SF_COMPLEX_INHERITED
+    }
+    dataType		    "inherited"
+    fixptType {
+      slope		      1
+      baseType		      SF_INT16_TYPE
+    }
+    complexity		    SF_COMPLEX_INHERITED
+  }
+  data {
+    id			    26
+    name		    "v2"
+    linkNode		    [21 25 27]
+    scope		    OUTPUT_DATA
+    machine		    1
+    props {
+      array {
+	size			"-1"
+      }
+      type {
+	method			SF_INHERITED_TYPE
+      }
+      complexity	      SF_COMPLEX_INHERITED
+      frame		      SF_FRAME_NO
+    }
+    dataType		    "inherited"
+    fixptType {
+      slope		      1
+      baseType		      SF_INT16_TYPE
+    }
+    complexity		    SF_COMPLEX_INHERITED
+  }
+  data {
+    id			    27
+    name		    "v1"
+    linkNode		    [21 26 0]
+    scope		    INPUT_DATA
+    machine		    1
+    props {
+      array {
+	size			"-1"
+      }
+      type {
+	method			SF_INHERITED_TYPE
+	primitive		SF_DOUBLE_TYPE
+	isSigned		1
+	wordLength		"16"
+      }
+      complexity	      SF_COMPLEX_INHERITED
+      frame		      SF_FRAME_INHERITED
+    }
+    dataType		    "inherited"
+    complexity		    SF_COMPLEX_INHERITED
+  }
+  instance {
+    id			    28
+    name		    "transform vector"
+    machine		    1
+    chart		    21
+  }
+  target {
+    id			    29
+    name		    "sfun"
+    description		    "Default Simulink S-Function Target."
+    machine		    1
+    linkNode		    [1 0 0]
+  }
+}
