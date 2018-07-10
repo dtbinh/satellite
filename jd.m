@@ -3,7 +3,7 @@
 % The function otputs the julian date given the year, month, day, hour,
 % min, sec. The output unit is in days.
 % 
-%  inputs          description                    range / units
+% inputs          description                    range / units
 %    year        - year                           1900 .. 2100
 %    mon         - month                          1 .. 12
 %    day         - day                            1 .. 28,29,30,31
