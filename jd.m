@@ -12,9 +12,10 @@
 %    sec         - universal time sec             0.0 .. 59.999
 %
 %  outputs       :
-%    jd          - julian date                    days from 4713 bc
+%    jd          julian date                    days from 4713 bc
 %  references    :
 %    vallado       2013 page 183
+% Testing ith
 
 function jday = jd(yr,mo,d,h,m,s)
 
@@ -24,4 +25,4 @@ jday = 367*yr...
         + floor(275*mo/9)...
         + d+1721013.5...
         + ((s/60+m)/60+h)/24;
-
+end
