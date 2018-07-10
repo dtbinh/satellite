@@ -238,7 +238,7 @@ ReferenceOmega = w_B_OI_0;
 
 %% SOLVER
 fprintf('\nsatellite_attitude_kalman_ekf_model running\n');
-tdur = 91.3125*86400;              
+tdur = 30*86400;              
 sim('satellite_attitude_kalman_ekf_model',tdur);
 
 %% POST PROCESSING
