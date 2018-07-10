@@ -7,6 +7,9 @@ clc
 R2D = 180/pi;
 D2R = pi/180;
 
+%% MODEL PARAMETER
+dt           = 30;              % [sec] Model speed
+
 %% TORQUE TOGGLE SWITCH
 
 Tgg_toggle    = 1; % Toggle Torque Gravity Gradient 
@@ -86,7 +89,7 @@ TAo  = 0;  % [deg] Initial True Anomaly - Angle on Orbital Plane from Perigee to
 
 Rp  = CONST.Re+h_p;              % [m] radius of perigee
 Ra  = CONST.Re+h_a;              % [m] radius of apogee
-e   = (Ra-Rp)/(Ra+Rp);           % [m/m] eccentricity
+ecc = (Ra-Rp)/(Ra+Rp);           % [m/m] eccentricity
 a   = (Ra+Rp)/2;                 % [m] semi-major axis
 
 P   = 2*pi*sqrt(a^3/CONST.mu);   % [sec] Orbit Period
@@ -97,14 +100,14 @@ CONST.a   = a;                   % [m] semi-major axis
 CONST.w_O = w_O;                 % [rad/s] Orbit Angular Velocity
 CONST.RAAN = RAAN;               % [rad] Initial Right Ascention - Angle on Equatorial Plane from Vernal Equinox to Ascending Node
 
-i_ss = acos((CONST.OmegaDot*(1-e^2)^2*a^(7/2))/(-3/2*sqrt(CONST.mu)*CONST.J2*CONST.Re^2)); % [rad] Orbit Inclination required for Sun-synchornous (eqn 4.47 from Curtis)
-i = 95/180*pi;                                                                           % [rad] Orbit Inclination 
+incl = acos((CONST.OmegaDot*(1-ecc^2)^2*a^(7/2))/(-3/2*sqrt(CONST.mu)*CONST.J2*CONST.Re^2)); % [rad] Orbit iination required for Sun-synchornous (eqn 4.47 from Curtis)                                                                          % [rad] Orbit iination 
 
-[R_0,V_0] = coe2rv(a, e, i,RAAN, w, TAo,'curtis');% initial orbital state vector in ECF Frame- computes the magnitude of state vector (r,v) from the classical orbital elements (coe) 
+[R_0,V_0] = coe2rv(a, ecc, incl,RAAN, w, TAo,'curtis');% initial orbital state vector in ECF Frame- computes the magnitude of state vector (r,v) from the classical orbital elements (coe) 
 
-
+CONST.incl = incl;
+CONST.ecc = ecc;
 %% INITIAL CONDITIONS
-R_O_I   = dcm(1,-90*D2R)*dcm(3,(TAo+90)*D2R)*dcm(1,i)*dcm(3,RAAN); % [3x3] Rotation Matrix from Inertial (X axis is vernal equinox) to Orbit Frame (x is orbit direction)
+R_O_I   = dcm(1,-90*D2R)*dcm(3,(TAo+90)*D2R)*dcm(1,incl)*dcm(3,RAAN); % [3x3] Rotation Matrix from Inertial (X axis is vernal equinox) to Orbit Frame (x is orbit direction)
 
 Euler_I_B_0  = [ -pi/4 ; 0 ; 0 ]; % [rad] Euler Angle from Body Frame to Inertial Frame (Initial)
 Euler_O_I_0 = dcm2eul(R_O_I,'zyx');   % [rad] Initial Euler Angle transforming from Inertial Frame to Orbit Frame (ZYX means rotate X, then Y, then Z)
@@ -157,7 +160,7 @@ Var_ARW     = N_ARW^2;                     % [rad^2/s]      Variance of Angular 
 Var_RRW     = K_RRW^2/3;                   % [rad^2/s^3]    Variance of Bias Rate
 VarW        = N_W^2;                       % [rad^2/s] 
 
-R_G_B   = dcm(2,pi/2);              % [-] Rotation Matrix from Body Frame to Gyro Frame
+R_G_B   = dcm(2,pi/2);                     % [-] Rotation Matrix from Body Frame to Gyro Frame (Used in Temperature Sensor)
 
 GYRO_Mis = [0.0;0.0;0.0]*pi/180;           % [rad] Gyro Misalignment Euler Angles (3-2-1)
 Ug  = dcm(3,GYRO_Mis(3))*dcm(2,GYRO_Mis(2))*dcm(1,GYRO_Mis(1));
@@ -180,6 +183,9 @@ ST2_Mis    = [0.0;0.0;0.0]*pi/180;     % [rad] Star Tracker Misalignment Euler A
 Ust2       = eul2dcm(ST2_Mis,'zyx');   % [-] Misalignment Matrix
 
 dt_st   = 1;                      % [s] Sampling Time of Star Tracker
+if dt_st < dt
+    dt_st = dt;
+end
 
 %% SUN SENSOR
 SSaxis   = [1; 1; 1; 1];               % [axis] Sun Sensor rotation axis 1 = x, 2 = y, 3 = z
@@ -190,7 +196,7 @@ R_S3_B   = dcm(SSaxis(3),SSangles(3)); % [-] Rotation Matrix from Body Frame to 
 R_S4_B   = dcm(SSaxis(4),SSangles(4)); % [-] Rotation Matrix from Body Frame to Sun Sensor 4 Frame (Z-axis of sun sensor aligned with -X-axis)
 
 sigSS = 0.1*pi/180; % [rad] Standard Deviation
-dt_ss = 0.5;        % [sec] Sampling Time of Sun Sensors
+dt_ss = dt;        % [sec] Sampling Time of Sun Sensors
 
 FOV   = 70*pi/180;  % [rad] Field of View of Sun Sensors
 
@@ -204,15 +210,16 @@ Gmg      = eye(3).*(-0.02+0.04*rand(3)) +...
             (ones(3,3)-eye(3)).*(-0.0028+0.0056*rand(3)); % [%] MisAlignment
 Umg      = eye(3) + Gmg;
 
-dt_mg    = 0.5;   % [sec] Sampling Time of Magnetometer                                       
+dt_mg    = dt;   % [sec] Sampling Time of Magnetometer                                       
 
 %% TEMPERATURE SENSOR
 sigTemp = 0.002;       % [C] Sigma of Temperature Sensor
 varTemp = sigTemp^2;   % [C^2] Variance of Temperature Sensor
-dt_ts   = 1;           % [sec] Sampling Time of Temperature Sensor
+dt_ts   = dt;           % [sec] Sampling Time of Temperature Sensor
+
 
 %% KALMAN FILTER
-dt           = 0.5;              % [sec] (20 Hz) Model speed
+
 dt_ekf       = dt;               % [sec] (20 Hz) EKF speed
 
 CONST.dt     = dt;               % [sec] (20 Hz) Model speed
@@ -231,7 +238,7 @@ ReferenceOmega = w_B_OI_0;
 
 %% SOLVER
 fprintf('\nsatellite_attitude_kalman_ekf_model running\n');
-tdur = 0.125*P;              
+tdur = 91.3125*86400;              
 sim('satellite_attitude_kalman_ekf_model',tdur);
 
 %% POST PROCESSING
@@ -262,7 +269,7 @@ Pdiag(6,i)        = Pk_f(6,6,i);
 end
 
 %% PLOT
-satellite_attitude_kalman_ekf_plot
+% satellite_attitude_kalman_ekf_plot
 
 %% SIMULATION
 % Figure Setting
@@ -312,12 +319,8 @@ Z_emf = plotvector(R_I_E(:,:,1)*R_E_M*[0 ;0 ;1], [0 0 0], 'm');
 % Eclipse Status
 eclipse_lab = text(1.5,1.5,1.5,strcat('Eclipse:',int2str(ECLIPSE(1))));
 
-
 % Velocity Vector
-% Vtplot = plotvector(Vt(:,1,1), R(:,1,1), 'r'); % Tangential Vector
-% Vrplot = plotvector(Vr(:,1,1), R(:,1,1), 'r'); % Radial Vector
 Vplot  = plotvector(V(:,1,1), R(:,1,1), 'r');  % Velocity Vector
-
 
 % Satellite Position
 R_sat = plotPosition(R,'b','s');
@@ -336,7 +339,7 @@ set(earth,'facecolor','none','edgecolor',0.7*[1 1 1],'LineStyle',':');
 %  MagneticField();
 
 % UPDATE SIMULATION PLOT
-d=1;
+d=0.1;
 for i=1:10*d:(length(tout)-1)
 
 rotate(earth,[0 0 1],0.005*d)

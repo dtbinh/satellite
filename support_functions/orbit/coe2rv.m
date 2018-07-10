@@ -1,4 +1,4 @@
-%  [r,v] = coe2rv ( p,ecc,incl,omega,argp,nu,arglat,truelon,lonper );
+%  [r,v] = coe2rv ( p,ecc,incl,omega,argp,nu);
 %  ------------------------------------------------------------ 
 %  This function finds the position and velocity vectors in geocentric
 %  equatorial (ijk) system given the classical orbit elements.
@@ -38,22 +38,7 @@
 %  author        :  
 %    rusty       - initiate               08 jul 2018
 
-function [r,v] = coe2rv(a,ecc,incl,omega,argp,nu,opt,arglat,truelon,lonper)
-if ~exist('opt','var')
-    opt = 'curtis';
-end
-
-if ~exist('arglat','var')
-    arglat = 0.0;
-end
-
-if ~exist('truelon','var')
-    truelon = 0.0;
-end
-
-if ~exist('lonper','var')
-    lonper = 0.0;
-end
+function [r,v] = coe2rv(a,ecc,incl,omega,argp,nu,opt)
 
 mu = 398.6004118e12;      % [m3/s2]
 
@@ -73,26 +58,7 @@ switch opt
     case 'vallado'
         % Constants
         small = 1.0e-10;
-        
-        % Orbit Types
-        if ( ecc < small )
-            %  Circular Equatorial 
-            if (incl < small) || ( abs(incl-pi) < small )
-                argp  = 0.0;
-                omega = 0.0;
-                nu    = truelon;
-            else
-            % Circular Inclined 
-                argp= 0.0;
-                nu  = arglat;
-            end
-        else
-            % Elliptical Equatorial
-            if ( ( incl < small) || (abs(incl-pi) < small) )
-                argp  = lonper;
-                omega = 0.0;
-            end
-        end
+ 
         % Semilatus Rectum
         p = a*(1-ecc^2);
 
