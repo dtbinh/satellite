@@ -1,13 +1,19 @@
 function [f,torq,ss,q_d,w_d] = wheel_track_fun(x,t,theta_d,phir_d,psir_d,d,j,jtrue,k,g,eps)
 % Input
-% x
-% t
-% 
-% 
+% x         - state variable [q1 q2 q3 q4 w1 w2 w3 h1 h2 h3]
+% t         - instantaenous time 
+% theta_d   - desired pitch angle
+% phir_d    - desired roll rate
+% psir_d    - desired yaw rate
+% d         - disturbance
+% j         - moment of inertia (assumed)
+% jtrue     - moment of inertia (true)
+% k         - sliding controller gain
+% g         - G matrix
+% eps       - boundary layer
 
 % Pre-Allocate Space
-f = zeros(10,1);
-d = d(:);
+f    = zeros(10,1);
 q_d  = zeros(4,1);
 w_d  = zeros(3,1);
 w_dd = zeros(3,1);
@@ -52,7 +58,8 @@ qc_d = [  0    -q_d(3) q_d(2);
 % Xi Matrices
 xiq   = [q(4)*eye(3)+qc;-q(1:3)'];
 xiq_d = [q_d(4)*eye(3)+qc_d;-q_d(1:3)'];
-dq    = [xiq_d'*q;q_d'*q];             % dq(4)
+dq    = [xiq_d'*q;q_d'*q];         
+
 % Sliding Surface
 ss = w-w_d+k*sign(dq(4,1))*dq(1:3,1);
 
@@ -68,9 +75,9 @@ torq = wc*(j*w+wh)-j*(0.5*k*sign(q_d'*q)*dqd-w_dd + g*usat);
 om  = [-wc w;
        -w' 0];
  
-qdot = 0.5*om*q;
-wdot = inv(jtrue)*(-wc*jtrue*w+torq);
-hdot = -wc*wh-torq;
+qdot = 0.5*om*q;                      % Satellite Kinetics
+wdot = inv(jtrue)*(-wc*jtrue*w+torq); % Satellite Dynamics
+hdot = -wc*wh-torq;                   % Satellite Angular Momentum
 
 f(1:4,:)  = qdot; % Quaternion Rate
 f(5:7,:)  = wdot; % Angular Acceleration
