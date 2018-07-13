@@ -25,7 +25,7 @@ bias = bias_0;
 
 S     = [1500 1000 1500;
           500 1000 2000;
-         1000 1500 1500]/1e6;   % [ppm] Gyro Scale Factors
+         1000 1500 1500]/1e6;    % [ppm] Gyro Scale Factors
 
 P_a_0 = (1*pi/180)^2*eye(3);     % Initial Covariance - Attitude
 P_b_0 = (2*pi/180/3600)^2*eye(3);   % Initial Covariance - Gyro Bias
@@ -33,8 +33,7 @@ P_s_0 = (20000*1e-6/3)^2*eye(3); % Initial Covariance - Scale Factor
 P_u_0 = (20000*1e-6/3)^2*eye(3); % Initial Covariance - Upper Misalignment
 P_l_0 = (20000*1e-6/3)^2*eye(3); % Initial Covariance - Lower Misalignment
 
-w_B_BI_0 = [0.0;0.0;0.0/180*pi];                   % Initial Angular Velocity
-
+w_B_BI_0 = [0.0;0.0;0.0/180*pi];  % Initial Angular Velocity
 q_B_I_0  = 1/sqrt(2)*[1; 0;0; 1]; % Initial Quaternion
 omega_m  = [0;0;0];
 
@@ -50,7 +49,7 @@ for i=1:N
  omega = [cos(1/2*norm(w(:,i))*dt)*eye(3)-smtrx(psik)       psik;
                     -psik'                       cos(1/2*norm(w(:,i))*dt) ];
    
- q(:,i+1)=omega*q(:,i);
+ q(:,i+1) = omega*q(:,i);
 end
 
 w_B_BI = w;
@@ -59,8 +58,8 @@ q_B_I  = q;
 
 %% SENSOR MEASUREMENT
 for i=1:length(tout)
-    bias(:,i+1) = bias(:,i)+sig_u*dt^0.5*[randn(1,1);randn(1,1);randn(1,1)];
-    bias_m(:,i) = 0.5*(bias(:,i+1)+bias(:,i));
+    bias(:,i+1)   = bias(:,i)+sig_u*dt^0.5*[randn(1,1);randn(1,1);randn(1,1)];
+    bias_m(:,i)   = 0.5*(bias(:,i+1)+bias(:,i));
     w_B_BI_m(:,i) = (eye(3)+S)*w_B_BI(:,i)+sqrt(sig_v^2/dt+1/12*sig_u^2*dt)*[randn(1,1);randn(1,1);randn(1,1)]+bias_m(:,i);
 
     q_B_I_m(:,i)  = qmult(q_B_I(:,i),[0.5*sig_st*[randn(1,1);randn(1,1);randn(1,1)];1]);
@@ -70,14 +69,14 @@ end
 
 %% EXTENDED KALMAN FILTER
 % Initialise
-	qk1   = q_B_I(:,1);  % Initial Quaternion (xyzw) for internal variable
-    bk1   = [0.0;0.0;0.0]; % Initial Bias Value 
-    sk1   = [0.0;0.0;0.0]; % Initial Bias Value 
-    uk1   = [0.0;0.0;0.0]; % Initial Bias Value 
-    lk1   = [0.0;0.0;0.0]; % Initial Bias Value
-    wk1   = [0.0;0.0;0.0]; % Initial Angular Velocity
+	qk1  = q_B_I(:,1);  % Initial Quaternion (xyzw) for internal variable
+    bk1  = [0.0;0.0;0.0]; % Initial Bias Value 
+    sk1  = [0.0;0.0;0.0]; % Initial Bias Value 
+    uk1  = [0.0;0.0;0.0]; % Initial Bias Value 
+    lk1  = [0.0;0.0;0.0]; % Initial Bias Value
+    wk1  = [0.0;0.0;0.0]; % Initial Angular Velocity
     
-    xest  = zeros(15,1);   % State Estimate
+    xest = zeros(15,1);   % State Estimate
 
 	Pk1  = blkdiag(P_a_0,P_b_0,P_s_0, P_u_0, P_l_0);
 	qcov = blkdiag(sig_v^2*eye(3),sig_u^2*eye(3));
@@ -96,7 +95,6 @@ for i=2:length(tout)-1
   
     % Measurement 
         qmm = qmult(qk1,[q_B_I_m(1,i);q_B_I_m(2,i);q_B_I_m(3,i);-q_B_I_m(4,i)]);
-
         inn = 2*[qmm(1);qmm(2);qmm(3)];
   
         H    = [eye(3) zeros(3,12)];     % Sensitivity Matrix
@@ -186,17 +184,17 @@ subplot(311)
 plot(tout/60,sig3(1,:),'--r',tout/60,erre(1,:),'b',tout/60,-sig3(1,:),'--r');
 ylabel('Roll [mrad]')
 grid
-axis([-inf inf -inf inf])
+axis([-inf inf -20 20])
 subplot(312)
 plot(tout/60,sig3(2,:),'--r',tout/60,erre(2,:),'b',tout/60,-sig3(2,:),'--r')
 ylabel('Pitch [mrad]')
 grid
-axis([-inf inf -inf inf])
+axis([-inf inf -20 20])
 subplot(313)
 plot(tout/60,sig3(3,:),'--r',tout/60,erre(3,:),'b',tout/60,-sig3(3,:),'--r');
 ylabel('Yaw [mrad]')
 grid
-axis([-inf inf -inf inf])
+axis([-inf inf -20 20])
 xlabel('Time [min]')
  
 %% Biases
@@ -205,17 +203,17 @@ subplot(311)
 plot(tout/60,sig3(4,:),'--r',tout/60,(bias_f(1,:)-bias_m(1,:))*180/pi*3600,'b',tout/60,-sig3(4,:),'--r');
 ylabel('X [deg/h]')
 grid
-axis([-inf inf -inf inf])
+axis([-inf inf -0.02 0.02])
 subplot(312)
 plot(tout/60,sig3(5,:),'--r',tout/60,(bias_f(2,:)-bias_m(2,:))*180/pi*3600,'b',tout/60,-sig3(5,:),'--r');
 ylabel('Y [deg/h]')
 grid
-axis([-inf inf -inf inf])
+axis([-inf inf -0.02 0.02])
 subplot(313)
 plot(tout/60,sig3(6,:),'--r',tout/60,(bias_f(3,:)-bias_m(3,:))*180/pi*3600,'b',tout/60,-sig3(6,:),'--r');
 ylabel('Z [deg/h]')
 grid
-axis([-inf inf -inf inf])
+axis([-inf inf -0.02 0.02])
 xlabel('Time [min]')
 
 %% Scale Factors
@@ -303,4 +301,3 @@ set(gca,'Xtick',[0 15 30 45 60 75 90])
 set(gca,'Ytick',[-60 0 60])
 xlabel('Time (Min)')
 
-plotfigure(tout,bias_m);

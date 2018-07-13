@@ -1,5 +1,5 @@
 
-function updateVector(plot, V, R, factor)
+function updatevector(plot, V, R, factor)
 if ~exist('factor','var')
     factor = 1.0;
 end

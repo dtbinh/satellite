@@ -3,12 +3,11 @@ clear all
 clc
 
 %% GLOBAL
-
 R2D = 180/pi;
 D2R = pi/180;
 
 %% MODEL PARAMETER
-dt           = 30;              % [sec] Model speed
+dt           = 0.5;              % [sec] Model speed
 
 %% TORQUE TOGGLE SWITCH
 
@@ -106,6 +105,7 @@ incl = acos((CONST.OmegaDot*(1-ecc^2)^2*a^(7/2))/(-3/2*sqrt(CONST.mu)*CONST.J2*C
 
 CONST.incl = incl;
 CONST.ecc = ecc;
+
 %% INITIAL CONDITIONS
 R_O_I   = dcm(1,-90*D2R)*dcm(3,(TAo+90)*D2R)*dcm(1,incl)*dcm(3,RAAN); % [3x3] Rotation Matrix from Inertial (X axis is vernal equinox) to Orbit Frame (x is orbit direction)
 
@@ -238,7 +238,7 @@ ReferenceOmega = w_B_OI_0;
 
 %% SOLVER
 fprintf('\nsatellite_attitude_kalman_ekf_model running\n');
-tdur = 30*86400;              
+tdur = 5*P;              
 sim('satellite_attitude_kalman_ekf_model',tdur);
 
 %% POST PROCESSING
@@ -249,7 +249,7 @@ for i=1:1:length(tout)
 Rx(i) = R(1,1,i); % Position Vector X of spacecraft
 Ry(i) = R(2,1,i); % Position Vector Y of spacecraft
 Rz(i) = R(3,1,i); % Position Vector Z of spacecraft
-
+    
 vr(i) = norm(Vr(:,1,i));
 vt(i) = norm(Vt(:,1,i));
 v(i)  = sqrt(vr(i)^2+vt(i));
@@ -283,9 +283,9 @@ set(gca,'CameraViewAngle',6); % Set Zoom of Graph
 axis(3.5*[-1 1 -1 1 -1 1]);    % Set Limit of Axis  
 
 % Earth Centered Inertial Frame
-X_eci = plotvector([1 ;0 ;0], [0 0 0], 'k', 'X_eci');
-Y_eci = plotvector([0 ;1 ;0], [0 0 0], 'k', 'Y_eci');
-Z_eci = plotvector([0 ;0 ;1], [0 0 0], 'k', 'Z_eci');
+X_eci = plotvector([1 ;0 ;0], [0 0 0], 'k', 'X_e_c_i');
+Y_eci = plotvector([0 ;1 ;0], [0 0 0], 'k', 'Y_e_c_i');
+Z_eci = plotvector([0 ;0 ;1], [0 0 0], 'k', 'Z_e_c_i');
 
 % Earth Centered Fixed Frame
 X_ecf = plotvector(R_I_E(:,:,1)*[1 ;0 ;0], [0 0 0], 'r');
@@ -323,7 +323,7 @@ eclipse_lab = text(1.5,1.5,1.5,strcat('Eclipse:',int2str(ECLIPSE(1))));
 Vplot  = plotvector(V(:,1,1), R(:,1,1), 'r');  % Velocity Vector
 
 % Satellite Position
-R_sat = plotPosition(R,'b','s');
+R_sat = plotposition(R,'b','s');
 hold on;
 
 % Plot Satellite Orbit Track
@@ -343,54 +343,50 @@ d=0.1;
 for i=1:10*d:(length(tout)-1)
 
 rotate(earth,[0 0 1],0.005*d)
-% Update Axes Label
-
 
 % Update Satellite Position
-updatePosition(R_sat, R(:,1,i));
+updateposition(R_sat, R(:,1,i));
 
 % Update ECF Frames
-updateVector(X_ecf, R_I_E(:,:,i)*[1 ;0 ;0], [0 0 0]);
-updateVector(Y_ecf, R_I_E(:,:,i)*[0 ;1 ;0], [0 0 0]);
-updateVector(Z_ecf, R_I_E(:,:,i)*[0 ;0 ;1], [0 0 0]);
+updatevector(X_ecf, R_I_E(:,:,i)*[1 ;0 ;0], [0 0 0]);
+updatevector(Y_ecf, R_I_E(:,:,i)*[0 ;1 ;0], [0 0 0]);
+updatevector(Z_ecf, R_I_E(:,:,i)*[0 ;0 ;1], [0 0 0]);
 
 % Update EMF Frames
-updateVector(X_emf, R_I_E(:,:,i)*R_E_M*[1 ;0 ;0], [0 0 0]);
-updateVector(Y_emf, R_I_E(:,:,i)*R_E_M*[0 ;1 ;0], [0 0 0]);
-updateVector(Z_emf, R_I_E(:,:,i)*R_E_M*[0 ;0 ;1], [0 0 0]);
+updatevector(X_emf, R_I_E(:,:,i)*R_E_M*[1 ;0 ;0], [0 0 0]);
+updatevector(Y_emf, R_I_E(:,:,i)*R_E_M*[0 ;1 ;0], [0 0 0]);
+updatevector(Z_emf, R_I_E(:,:,i)*R_E_M*[0 ;0 ;1], [0 0 0]);
 
 % Update Earth Centered Sun Frame
-updateVector(S_sun, S_I(:,i),  [0 0 0],2);
+updatevector(S_sun, S_I(:,i),  [0 0 0],2);
 
 % Update Earth Centered Sun Frame
-updateVector(S_hat, -S_I_hat(:,i),  [0 0 0],2);
+updatevector(S_hat, -S_I_hat(:,i),  [0 0 0],2);
 
 % Update Orbit Frame
-updateVector(X_orb, R_O_I(:,:,i)'*[1 ;0 ;0],  R(:,1,i),0.5);
-updateVector(Y_orb, R_O_I(:,:,i)'*[0 ;1 ;0],  R(:,1,i),0.5);
-updateVector(Z_orb, R_O_I(:,:,i)'*[0 ;0 ;1],  R(:,1,i),0.5);
+updatevector(X_orb, R_O_I(:,:,i)'*[1 ;0 ;0],  R(:,1,i),0.5);
+updatevector(Y_orb, R_O_I(:,:,i)'*[0 ;1 ;0],  R(:,1,i),0.5);
+updatevector(Z_orb, R_O_I(:,:,i)'*[0 ;0 ;1],  R(:,1,i),0.5);
 set(X_orb_lab,'Position',R_O_I(:,:,i)'*[1 ;0 ;0]+R(:,1,i));
 set(Y_orb_lab,'Position',R_O_I(:,:,i)'*[0 ;1 ;0]+R(:,1,i));
 set(Z_orb_lab,'Position',R_O_I(:,:,i)'*[0 ;0 ;1]+R(:,1,i));
 
 % Update Satellite Body Frame
-updateVector(X_sat, R_B_I(:,:,i)'*[1 ;0 ;0],  R(:,1,i),0.5);
-updateVector(Y_sat, R_B_I(:,:,i)'*[0 ;1 ;0],  R(:,1,i),0.5);
-updateVector(Z_sat, R_B_I(:,:,i)'*[0 ;0 ;1],  R(:,1,i),0.5);
+updatevector(X_sat, R_B_I(:,:,i)'*[1 ;0 ;0],  R(:,1,i),0.5);
+updatevector(Y_sat, R_B_I(:,:,i)'*[0 ;1 ;0],  R(:,1,i),0.5);
+updatevector(Z_sat, R_B_I(:,:,i)'*[0 ;0 ;1],  R(:,1,i),0.5);
 set(X_sat_lab,'Position',R_B_I(:,:,i)'*[1 ;0 ;0]+R(:,1,i));
 set(Y_sat_lab,'Position',R_B_I(:,:,i)'*[0 ;1 ;0]+R(:,1,i));
 set(Z_sat_lab,'Position',R_B_I(:,:,i)'*[0 ;0 ;1]+R(:,1,i));
 
 % Update Satellite Body Frame
-updateVector(B_mag, B_I(:,i),  R(:,1,i));
+updatevector(B_mag, B_I(:,i),  R(:,1,i));
 
 % Update Eclipse
 set(eclipse_lab,'String',strcat('Eclipse:',int2str(ECLIPSE(i))));
 
 % Update Velocity Vectors
-% updateVector(Vtplot, Vt(:,1,i), R(:,1,i));
-% updateVector(Vrplot, Vr(:,1,i), R(:,1,i));
-updateVector(Vplot, V(:,1,i), R(:,1,i));
+updatevector(Vplot, V(:,1,i), R(:,1,i));
 
 drawnow;  
     

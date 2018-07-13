@@ -1,8 +1,8 @@
 close all
 clear all
 clc
-fprintf("---------ALLAN VARIANCE ANALYSIS SIMULATION--------");
-fprintf("\nInitialising Parameters");
+fprintf('---------ALLAN VARIANCE ANALYSIS SIMULATION--------');
+fprintf('\nInitialising Parameters');
 dt   = 1/10;          % [s] Gyro Sampling Time 
 tdur = 2000;          % [s] Time Duration
 N    = tdur/dt;        % [] Number of Samples
@@ -14,7 +14,7 @@ sig_u = 2e-4/180*pi;   % [rad/s^1.5] Rate Random Walk
 bias(1)  = 0.2;
 
 %% DISCRETE GYRO MODELING MEASUREMENT
-fprintf("\nGenerating Gyro Modelling Measurement");
+fprintf('\nGenerating Gyro Modelling Measurement');
 for i = 1:N+1
    bias(i+1) = bias(i)+sig_u*dt^0.5*normrnd(0,1);
    y(i) = sqrt(sig_v^2/dt)*normrnd(0,1)+0.5*(bias(i+1)+bias(i));
@@ -27,18 +27,18 @@ tau_array = [0.01 0.05 0.1 0.2 0.5 1 2 5 10 20 50 100 200 300 400 500 600 700 80
 
 % for each tau value
 for t = 1:1:length(tau_array)
-fprintf("\n\n---------Running Allan Variance Calculation--------\n");
+fprintf('\n\n---------Running Allan Variance Calculation--------\n');
     
 tau = tau_array(t);    
 M   = tau/dt; % [] Number of Points per Cluster
 K   = N/M;    % [] Number of Clusters
 
-fprintf("Number of Samples  = %.2f [-]\n",N);
-fprintf("Test Duration      = %.2f [s]\n",tdur);
-fprintf("Sampling Period    = %.2f [s]\n",dt);
-fprintf("Cluster Period     = %.2f [s]\n",tau);
-fprintf("Cluster Samples    = %d \n",M);
-fprintf("Number of Clusters = %d \n",K);
+fprintf('Number of Samples  = %.2f [-]\n',N);
+fprintf('Test Duration      = %.2f [s]\n',tdur);
+fprintf('Sampling Period    = %.2f [s]\n',dt);
+fprintf('Cluster Period     = %.2f [s]\n',tau);
+fprintf('Cluster Samples    = %d \n',M);
+fprintf('Number of Clusters = %d \n',K);
 
 k = 1; % index for timeset
 % for each measurement
@@ -93,14 +93,14 @@ axis([-inf inf -inf inf])
 [row,col] = find(tau_array==1);
 sig_ARW = sqrt(var_A(col));
 
-fprintf("\n\n---------------ALLAN VARIANCE REPORT--------------")
-fprintf("\nGyro Model Hz = %d   [Hz]",1/dt);
-fprintf("\nStandard Dev  = %.6f [deg/s]",std(y));
-fprintf("\nActual ARW    = %.6f [deg/s^0.5]",sig_v/pi*180);
-fprintf("\nEstimated ARW = %.6f [deg/s^0.5]",sig_ARW);
-fprintf("\nActual RRW    = %.6f [deg/s^1.5]",sig_u/pi*180);
-fprintf("\nEstimated ARW = %.6f [deg/s^1.5]",sig_ARW);    
-fprintf("\n");
+fprintf('\n\n---------------ALLAN VARIANCE REPORT--------------')
+fprintf('\nGyro Model Hz = %d   [Hz]',1/dt);
+fprintf('\nStandard Dev  = %.6f [deg/s]',std(y));
+fprintf('\nActual ARW    = %.6f [deg/s^0.5]',sig_v/pi*180);
+fprintf('\nEstimated ARW = %.6f [deg/s^0.5]',sig_ARW);
+fprintf('\nActual RRW    = %.6f [deg/s^1.5]',sig_u/pi*180);
+fprintf('\nEstimated ARW = %.6f [deg/s^1.5]',sig_ARW);    
+fprintf('\n');
 %% ALLAN VARIANCE PLOT
 close all
 xmin = 1e-2;

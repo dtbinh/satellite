@@ -1,4 +1,4 @@
-function [f,torq,ss,q_d,w_d] = wheel_track_fun(x,t,theta_d,phir_d,psir_d,d,j,jtrue,k,g,eps)
+function [f,torq,ss,q_d,w_d] = satellite_model(x,t,theta_d,phir_d,psir_d,d,j,jtrue,k,g,eps)
 % Input
 % x         - state variable [q1 q2 q3 q4 w1 w2 w3 h1 h2 h3]
 % t         - instantaenous time 
@@ -63,17 +63,32 @@ dq    = [xiq_d'*q;q_d'*q];
 % Sliding Surface
 ss = w-w_d+k*sign(dq(4,1))*dq(1:3,1);
 
-% Control Torque for Wheel
-usat = [sat1(ss(1),eps);
-        sat1(ss(2),eps);
-        sat1(ss(3),eps)];
+% Sliding Mode Control
+usat = [saturation(ss(1),eps);
+        saturation(ss(2),eps);
+        saturation(ss(3),eps)];
     
-dqd  = xiq_d'*xiq*w-xiq'*xiq_d*w_d;
-torq = wc*(j*w+wh)-j*(0.5*k*sign(q_d'*q)*dqd-w_dd + g*usat);
+qd   = 0.5*xiq*w;
+qd_d = 0.5*xiq_d*w_d;
+
+% dqd  = xiq_d'*xiq*w-xiq'*xiq_d*w_d;
+% torq = wc*(j*w+wh)-j*(0.5*k*sign(q_d'*q)*dqd-w_dd + g*usat);
+
+dqd  = xiq_d'*2*qd-xiq'*2*qd_d;
+torq = wc*(j*w+wh) - j*(k/2*sign(dq(4,1))*dqd - w_dd + g*usat);
+
+% torq = j*(0.5*k*(abs(dq(4,1))*(w-w_d)-sign(dq(4,1))*cross(dq(1:3,1),(w+w_d))) + w_dd - g*usat)+wc*(j*w+wh);
+
+% Nonlinear Control
+% kp = 5.05;
+% kd = 10.05;
+% torq = -kp*sign(dq(4,1))*dq(1:3,1) - kd*w;
+
+
 
 % Integration Functions
-om  = [-wc w;
-       -w' 0];
+om   = [-wc w;
+        -w' 0];
  
 qdot = 0.5*om*q;                      % Satellite Kinetics
 wdot = inv(jtrue)*(-wc*jtrue*w+torq); % Satellite Dynamics

@@ -1,10 +1,10 @@
 % This program tracks an attitude trajectory using sliding mode control.
 % The WMAP spacecraft is the model used for the simulation.
-
+%
 % Fundamentals of Spacecraft Attitude Determination and Control by Markley and Crassidis
 % Example 7.3
 
-% Other Required Routines: wheel_track_fun.m, sat1.m
+% Other Required Routines: satellite_model.m, saturation.m
 
 % Written by John L. Crassidis 8/13
 
@@ -18,9 +18,9 @@ intrue=[ 399 ,-2.81,-1.31;
         -1.31, 2.54, 377 ];
 
 % Assumed Inertia
-in = [  380,-2.81,  -1.31;
-       -2.81,  360,  2.54;
-       -1.31, 2.54,  340 ];
+in = [  380,-2.90,  -1.30;
+       -2.90,  360,  2.50;
+       -1.30, 2.50,  340 ];
 
 % Time 
 dt = 0.1;        % [sec] Sample Time
@@ -42,6 +42,7 @@ i1000 = 0;
 
 % Disturbance Torque
 dist = [0.005*sin(0.05*t) 0.003*ones(m,1) 0.005*cos(0.05*t)]; 
+
 null = 1; % Set null=1 for Tracking and null=0 for Regulation 
 
 % To provide the scan pattern, 
@@ -81,7 +82,9 @@ qc_d =[   0    -q_d(1,3)  q_d(1,2);
 
 xiq_d  = [q_d(1,4)*eye(3)+qc_d;-q_d(1,1:3)];
 q(1,:) = ([xiq_d q_d(1,:)']*[0;0;sin(60/2*pi/180);cos(60/2*pi/180)])';
-w(1,:) = 0;
+q(1,:) = [0.7071;0;0;0.7071];
+w(1,:) = [0.001;0.003;0.0003];
+w(1,:) = [0;0;0];
 xa(1,:)= [q(1,:) w(1,:) 0 0 0];
 
 fprintf('Initial Quaternion  : %.4f %.4f %.4f %.4f  [ ]\n',q(1,:))
@@ -93,32 +96,26 @@ g   = 0.15*eye(3);
 eps = 0.01;
   
 % Initial Torque, Sliding Manifold, Desired Quaternion and Angular Velocity
-[ff,torq,ss,qq,ww] = wheel_track_fun(xa(1,:),t(1),theta_d,phir_d,psir_d,dist(1,:),in,intrue,k,g,eps);
+[ff,torq,ss,qq,ww] = satellite_model(xa(1,:),t(1),theta_d,phir_d,psir_d,dist(1,:),in,intrue,k,g,eps);
 u(1,:)     = torq(:)';
 slide(1,:) = ss(:)';
 q_d(1,:)   = qq(:)';
 w_d(1,:)   = ww(:)';
-
+R_I_B(:,:,1) = q2dcm(q(1,:)','xyzw');
+track(1,:)   = R_I_B(:,:,1)'*[0 ;0 ;1];
 
 % Main Loop
 for i=1:m-1
 
-if (i1000==1000),
- disp(sprintf('      Program has reached point %5i',i-1))
- i1000=0;
-end
-
-i1000=i1000+1; 
-
 % Runge Kutta Iterative Method
-f1 = wheel_track_fun(xa(i,:)           ,t(i)       ,theta_d,phir_d,psir_d,dist(i,:),in,intrue,k,g,eps);
-f2 = wheel_track_fun(xa(i,:)+0.5*f1'*dt,t(i)+0.5*dt,theta_d,phir_d,psir_d,dist(i,:),in,intrue,k,g,eps);
-f3 = wheel_track_fun(xa(i,:)+0.5*f2'*dt,t(i)+0.5*dt,theta_d,phir_d,psir_d,dist(i,:),in,intrue,k,g,eps);
-f4 = wheel_track_fun(xa(i,:)+f3'*dt    ,t(i)+dt    ,theta_d,phir_d,psir_d,dist(i,:),in,intrue,k,g,eps);
+f1 = satellite_model(xa(i,:)           ,t(i)       ,theta_d,phir_d,psir_d,dist(i,:),in,intrue,k,g,eps);
+f2 = satellite_model(xa(i,:)+0.5*f1'*dt,t(i)+0.5*dt,theta_d,phir_d,psir_d,dist(i,:),in,intrue,k,g,eps);
+f3 = satellite_model(xa(i,:)+0.5*f2'*dt,t(i)+0.5*dt,theta_d,phir_d,psir_d,dist(i,:),in,intrue,k,g,eps);
+f4 = satellite_model(xa(i,:)+f3'*dt    ,t(i)+dt    ,theta_d,phir_d,psir_d,dist(i,:),in,intrue,k,g,eps);
 xa(i+1,:) = xa(i,:)+1/6*(f1'+2*f2'+2*f3'+f4')*dt;
 
 % Get Torque, Sliding Manifold, Desired Quaternion and Angular Velocity
-[ff,torq,ss,qq,ww] = wheel_track_fun(xa(i+1,:),t(i+1,:),theta_d,phir_d,psir_d,dist(i+1,:),in,intrue,k,g,eps);
+[ff,torq,ss,qq,ww] = satellite_model(xa(i+1,:),t(i+1,:),theta_d,phir_d,psir_d,dist(i+1,:),in,intrue,k,g,eps);
 u(i+1,:) = torq(:)';
 slide(i+1,:) = ss(:)';
 q_d(i+1,:) = qq(:)';
@@ -128,6 +125,9 @@ w_d(i+1,:) = ww(:)';
 q(i+1,:) = xa(i+1,1:4);
 w(i+1,:) = xa(i+1,5:7);
 wheel(i+1,:) = xa(i+1,8:10);
+
+R_I_B(:,:,i+1) = q2dcm(q(i+1,:)','xyzw');
+track(i+1,:) = R_I_B(:,:,i+1)'*[0 ;0 ;1];
 
 end
 
@@ -227,10 +227,10 @@ xlabel('Time (Min)');
 figure
 
 % Scan Plot
-e1=cos(theta_d).*cos(psi_d).*cos(phi_d)-cos(theta_d).^2.*sin(psi_d).*sin(phi_d)+sin(theta_d).^2.*sin(phi_d);
-e2=cos(theta_d).*cos(psi_d).*sin(phi_d)+cos(theta_d).^2.*sin(psi_d).*cos(phi_d)-sin(theta_d).^2.*cos(phi_d);
-e3=cos(theta_d).*sin(theta_d).*(sin(psi_d)+1);
-x=e1./(1+e3);y=e2./(1+e3);
+e1 = cos(theta_d).*cos(psi_d).*cos(phi_d)-cos(theta_d).^2.*sin(psi_d).*sin(phi_d)+sin(theta_d).^2.*sin(phi_d);
+e2 = cos(theta_d).*cos(psi_d).*sin(phi_d)+cos(theta_d).^2.*sin(psi_d).*cos(phi_d)-sin(theta_d).^2.*cos(phi_d);
+e3 = cos(theta_d).*sin(theta_d).*(sin(psi_d)+1);
+x = e1./(1+e3);y=e2./(1+e3);
 plot(x,y);
 set(gca,'fontsize',12);
 set(gca,'XTicklabels',[])
@@ -239,3 +239,36 @@ set(gca,'XTick',[])
 set(gca,'YTick',[])
 set(gca,'DataAspectRatio',[1 1 1])
 axis([-1.05 1.05 -1.05 1.05])
+%% SIMULATION
+% Figure Setting
+fig = figure;
+screensize = get(0,'ScreenSize');
+set(fig,'Position',[0 0 screensize(4)*0.8 screensize(4)*0.8]);
+grid on; axis fill;
+cameratoolbar('SetMode','orbit')   
+set(gca,'Position',[0 0 1 1]); % Set Position of Graph
+set(gca,'CameraViewAngle',6);  % Set Zoom of Graph
+axis(3.5*[-1 1 -1 1 -1 1]);    % Set Limit of Axis 
+
+
+
+% Earth Centered Inertial Frame
+asun = plotvector([0 ;0 ;1], [0 0 0], 'k', 'Anti-Sun Vector',2);
+
+% Satellite Body Frame
+[X_sat,X_sat_lab] = plotvector(R_I_B(:,:,1)'*[1 ;0 ;0], [0 ;0 ;0], 'r');
+[Y_sat,Y_sat_lab] = plotvector(R_I_B(:,:,1)'*[0 ;1 ;0], [0 ;0 ;0], 'g');
+[Z_sat,Z_sat_lab] = plotvector(R_I_B(:,:,1)'*[0 ;0 ;1], [0 ;0 ;0], 'b');
+
+% Track
+plot3(track(:,1),track(:,2),track(:,3))
+
+for i=1:10:m-1
+updatevector(X_sat, R_I_B(:,:,i)'*[1 ;0 ;0], [0 ;0 ;0],1);
+updatevector(Y_sat, R_I_B(:,:,i)'*[0 ;1 ;0], [0 ;0 ;0],1);
+updatevector(Z_sat, R_I_B(:,:,i)'*[0 ;0 ;1], [0 ;0 ;0],1);   
+    
+
+drawnow;     
+end
+    

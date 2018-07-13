@@ -76,7 +76,7 @@ delX   = zeros(12,1); % Matrix Initiation for delX
 for i = 1:length(mflag)
      if( (mflag(i) == 1) && (i <= MaxST) )
             % Star Tracker Measurement 
-            Xi = XI(qk);                     
+            Xi = xi(qk);                     
             H  = [1/2*Xi(1:3,:) zeros(3,3) zeros(3,3) zeros(3,3) ]; 
             R  = sig_st(i)^2*eye(3);             
             
@@ -138,7 +138,7 @@ end
 
 %% UPDATE
 % Update of Quaternion(xyzw)
-qk    = qk+1/2*XI(qk)*delX(1:3,:);   
+qk    = qk+1/2*xi(qk)*delX(1:3,:);   
 qk    = qnorm(qk);               
 
 % Update of Bias  

@@ -14,12 +14,15 @@ q_wxyz_B_I = [   cos(angle/2);
             vector(1)*sin(angle/2);
             vector(2)*sin(angle/2);
             vector(3)*sin(angle/2)]; % q = [ eta eps1 eps2 eps3]
+        
 q_wxyz_B_I = q_wxyz_B_I/norm(q_wxyz_B_I)
 q_xyzw_B_I = [  vector(1)*sin(angle/2);
                 vector(2)*sin(angle/2);
                 vector(3)*sin(angle/2);
-                cos(angle/2)]; % q = [eps1 eps2 eps3 eta]    
+                cos(angle/2)]; % q = [eps1 eps2 eps3 eta] 
+            
 q_xyzw_B_I = q_xyzw_B_I/norm(q_xyzw_B_I)
+
 %% Transformation/Rotation from Frame B to Frame I
 angle  = -45/180*pi;
 vector = [0;1;0];
@@ -40,14 +43,14 @@ q_xyzw_I_B = q_xyzw_I_B/norm(q_xyzw_I_B)
 %% ROTATION
 
 V = X
-% q2R('wxyz','rot',q_wxyz_I_B)*V
-% q2R('wxyz','tsf',q_wxyz_I_B)*V % Transformation
+% q2dcm('wxyz','rot',q_wxyz_I_B)*V
+% q2dcm('wxyz','tsf',q_wxyz_I_B)*V % Transformation
 % % 
-R_B_I = q2R('xyzw','rot',q_xyzw_I_B)*V % Quaternion Rotation from B to I
-R_I_B = q2R('xyzw','tsf',q_xyzw_I_B)*V % Quaternion Transformation from B to I
+R_B_I = q2dcm('xyzw','rot',q_xyzw_I_B)*V % Quaternion Rotation from B to I
+R_I_B = q2dcm('xyzw','tsf',q_xyzw_I_B)*V % Quaternion Transformation from B to I
 
-R_I_B = q2R('xyzw','rot',q_xyzw_B_I)*V
-R_B_I = q2R('xyzw','tsf',q_xyzw_B_I)*V
+R_I_B = q2dcm('xyzw','rot',q_xyzw_B_I)*V
+R_B_I = q2dcm('xyzw','tsf',q_xyzw_B_I)*V
 return
 Rquat(q_wxyz)*V % Rotation Matrix of vector from Frame A to Frame B
 ATT(q_xyzw)*V  % Transformation Matrix of vector from Frame A expressed to Frame B

@@ -1,4 +1,4 @@
-function out = sat1(s,e)
+function out = saturation(s,e)
 %function out=sat1(s,e);
 % This function outputs the saturation function.
 % This function processes a vector of input x. 

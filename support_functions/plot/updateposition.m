@@ -1,5 +1,5 @@
 
-function updatePosition(plot, R)
+function updateposition(plot, R)
 
 % Update Plot
 set(plot,'XData',R(1));
