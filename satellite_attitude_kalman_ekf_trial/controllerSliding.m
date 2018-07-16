@@ -28,7 +28,7 @@ usat = [saturation(ss(1),eps);
         saturation(ss(3),eps)];
 
 dqdot_B_I = xi(q_B_I_d)'*xi(q_B_I)*w_B_BI-xi(q_B_I)'*xi(q_B_I_d)*w_B_BI_d;
-torq      = smtrx(w_B_BI)*(J*w_B_BI) - J*(k/2*sign(dq_B_I(4,1))*dqdot_B_I - wdot_B_BI_d + g*usat);
+torq      = smtrx(w_B_BI)*(I*w_B_BI) - I*(k/2*sign(dq_B_I(4,1))*dqdot_B_I - wdot_B_BI_d + g*usat);
 
 
 output = torq;    % [Nm] 

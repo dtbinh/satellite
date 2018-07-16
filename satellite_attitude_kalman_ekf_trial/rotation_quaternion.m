@@ -1,14 +1,13 @@
 function output = rotation_quaternion(input)
 %% INPUT
-q_B_O = input(1:4); % Rotation Quaternion of Body from Orbital Frame  (true)
-q_B_I = input(5:8); % Rotation Quaternion of Body from Inertia Frame (true)
+q_B_O = input(1:4); % Quaternion (xyzw) of Body from Orbital Frame (true)
+q_B_I = input(5:8); % Quaternion (xyzw) of Body from Inertia Frame (true)
 
-q_B_O   = q_B_O./norm(q_B_O); % Normalisation of Quaternions(wxyz) Body Frame from Orbit Frame
-q_B_I   = q_B_I./norm(q_B_I); % Normalisation of Quaternions(wxyz) Body Frame from Inertia Frame
-
+q_B_O = qnorm(q_B_O);% Normalisation of Quaternions(xyzw) Body Frame from Orbit Frame
+q_B_I = qnorm(q_B_I); % Normalisation of Quaternions(xyzw) Body Frame from Inertia Frame
 %% TRANSFORMATION MATRIX
-R_B_O = q2dcm(q_B_O,'wxyz','tsf'); % Transformation Matrix of Orbit Frame to Body Frame
-R_B_I = q2dcm(q_B_I,'wxyz','tsf'); % Transformation Matrix of Inertial Frame to Body Frame
+R_B_O = q2dcm(q_B_O,'xyzw','tsf'); % Transformation Matrix of Orbit Frame to Body Frame
+R_B_I = q2dcm(q_B_I,'xyzw','tsf'); % Transformation Matrix of Inertial Frame to Body Frame
 R_O_B = R_B_O';
 R_O_I = R_O_B*R_B_I;      % Transformation Matrix Inertial Frame to Orbit Frame
 

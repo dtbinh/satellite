@@ -79,8 +79,8 @@ CONST.K_p   = K_p;      % [-] Controller Gain
 
 
 %% ORBITAL ELEMENTS
-h_p = 499.99e3; % [m] Altitude Perigee 
-h_a = 500.01e3; % [m] Altitude Apogee
+h_p = 499.9999999e3; % [m] Altitude Perigee 
+h_a = 500.0000001e3; % [m] Altitude Apogee
 
 RAAN = 0;  % [rad] Initial Right Ascention - Angle on Equatorial Plane from Vernal Equinox to Ascending Node
 w    = 0;  % [rad] Initial Argument of perigee - Angle on Orbital Plane from Ascending Node to Perigee
@@ -114,14 +114,14 @@ Euler_O_I_0 = dcm2eul(R_O_I,'zyx');   % [rad] Initial Euler Angle transforming f
 
 R_I_B_0 = eul2dcm(Euler_I_B_0,'zyx'); % Transformation Matrix from Body to Inertial (Initial)   
 R_O_I_0 = eul2dcm(Euler_O_I_0,'zyx'); % Transformation Matrix from Inertial to Body (Initial)
-R_O_B_0 = R_O_I_0*R_I_B_0;          % Transformation Matrix from Body to Orbital (Initial)
+R_O_B_0 = R_O_I_0*R_I_B_0;            % Transformation Matrix from Body to Orbital (Initial)
 
-q_I_B_0 = dcm2q(R_I_B_0,'tsf','wxyz'); % Quaternion Rotation of Body Frame from Inertial Frame
-q_O_I_0 = dcm2q(R_O_I_0,'tsf','wxyz'); % Quaternion Rotation of Inertial Frame From Body Frame
-q_O_B_0 = dcm2q(R_O_B_0,'tsf','wxyz'); % Quaternion Rotation of Body Frame from Orbit Frame
+q_I_B_0 = dcm2q(R_I_B_0,'tsf','xyzw'); % Quaternion Rotation of Body Frame from Inertial Frame
+q_O_I_0 = dcm2q(R_O_I_0,'tsf','xyzw'); % Quaternion Rotation of Inertial Frame From Body Frame
+q_O_B_0 = dcm2q(R_O_B_0,'tsf','xyzw'); % Quaternion Rotation of Body Frame from Orbit Frame
 
-q_B_I_0 = [q_I_B_0(1);-q_I_B_0(2);-q_I_B_0(3);-q_I_B_0(4)];
-q_B_O_0 = [q_O_B_0(1);-q_O_B_0(2);-q_O_B_0(3);-q_O_B_0(4)];
+q_B_I_0 = qinvert(q_I_B_0,'xyzw');
+q_B_O_0 = qinvert(q_O_B_0,'xyzw');
 
 Euler_O_B_0 = dcm2eul(R_O_B_0,'zyx'); % Euler Angles from Body to Orbital (Initial)
 
@@ -269,7 +269,7 @@ Pdiag(6,i)        = Pk_f(6,6,i);
 end
 
 %% PLOT
-% satellite_attitude_kalman_ekf_plot
+satellite_attitude_kalman_ekf_plot
 
 %% SIMULATION
 % Figure Setting
@@ -305,7 +305,7 @@ Z_emf = plotvector(R_I_E(:,:,1)*R_E_M*[0 ;0 ;1], [0 0 0], 'm');
 % Orbital Frame
 [X_orb,X_orb_lab] = plotvector(R_O_I(:,:,1)'*[1 ;0 ;0], R(:,1,1), 'g', 'x_o',0.5);
 [Y_orb,Y_orb_lab] = plotvector(R_O_I(:,:,1)'*[0 ;1 ;0], R(:,1,1), 'g', 'y_o',0.5);
-[Z_orb,Z_orb_lab] = plotvector(R_O_I(:,:,1)'*[0 ;0 ;1], R(:,1,1), 'g', 'z_o',0.5);
+[Z_orb,Z_orb_lab] = plotvector(R_O_I(:,:,1)'*[0 ;0 ;1], R(:,1,1), 'g', 'z_o',a/CONST.Re);
 
 % Magnetic Field 
 [B_mag,B_mag_lab] = plotvector(B_I(:,1), R(:,1,1), 'm', 'B',0.25);
@@ -339,10 +339,8 @@ set(earth,'facecolor','none','edgecolor',0.7*[1 1 1],'LineStyle',':');
 %  MagneticField();
 
 % UPDATE SIMULATION PLOT
-d=0.1;
-for i=1:10*d:(length(tout)-1)
-
-rotate(earth,[0 0 1],0.005*d)
+d=10;
+for i=1:d:(length(tout)-1)
 
 % Update Satellite Position
 updateposition(R_sat, R(:,1,i));
@@ -366,7 +364,7 @@ updatevector(S_hat, -S_I_hat(:,i),  [0 0 0],2);
 % Update Orbit Frame
 updatevector(X_orb, R_O_I(:,:,i)'*[1 ;0 ;0],  R(:,1,i),0.5);
 updatevector(Y_orb, R_O_I(:,:,i)'*[0 ;1 ;0],  R(:,1,i),0.5);
-updatevector(Z_orb, R_O_I(:,:,i)'*[0 ;0 ;1],  R(:,1,i),0.5);
+updatevector(Z_orb, R_O_I(:,:,i)'*[0 ;0 ;1],  R(:,1,i),a/CONST.Re);
 set(X_orb_lab,'Position',R_O_I(:,:,i)'*[1 ;0 ;0]+R(:,1,i));
 set(Y_orb_lab,'Position',R_O_I(:,:,i)'*[0 ;1 ;0]+R(:,1,i));
 set(Z_orb_lab,'Position',R_O_I(:,:,i)'*[0 ;0 ;1]+R(:,1,i));

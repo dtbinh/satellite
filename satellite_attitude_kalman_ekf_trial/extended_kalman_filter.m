@@ -70,13 +70,13 @@ type = 1;
 
 %% MEASUREMENT
 
-R_B_I  = ATT(qk);    % Attitude Transformation Matrix of  Quaternion (xyzw) from Inertial to Body
+R_B_I  = q2xi(qk)'*q2psi(qk);    % Attitude Transformation Matrix of  Quaternion (xyzw) from Inertial to Body
 delX   = zeros(12,1); % Matrix Initiation for delX
 
 for i = 1:length(mflag)
      if( (mflag(i) == 1) && (i <= MaxST) )
             % Star Tracker Measurement 
-            Xi = xi(qk);                     
+            Xi = q2xi(qk);                     
             H  = [1/2*Xi(1:3,:) zeros(3,3) zeros(3,3) zeros(3,3) ]; 
             R  = sig_st(i)^2*eye(3);             
             
@@ -138,7 +138,7 @@ end
 
 %% UPDATE
 % Update of Quaternion(xyzw)
-qk    = qk+1/2*xi(qk)*delX(1:3,:);   
+qk    = qk+1/2*q2xi(qk)*delX(1:3,:);   
 qk    = qnorm(qk);               
 
 % Update of Bias  
@@ -208,9 +208,9 @@ Gmm    = B*dt+ 0.5*B*dFdw*dt^2;
 wk    = phi_dw*wk + Gmm*uk;                                
 
 %% OUTPUT
-w_B_BI_f = wk;
-q_B_I_f  = qinvert(qk,'xyzw');         % Quaternions [w;x;y;z] 
-R_B_I_f  = q2dcm(q_B_I_f,'wxyz','tsf'); % Transformation Matrix from Inertia to Body
+w_B_BI_f = wk;                          % Angular Velocity of Body wrt to Inertial Frame 
+q_B_I_f  = qk;                          % Quaternion (xyzw) from Inertia to Body
+R_B_I_f  = q2dcm(q_B_I_f,'xyzw','tsf'); % Transformation Matrix from Inertia to Body
 e_B_I_f  = dcm2eul(R_B_I_f,'zyx');      % Euler Angles for Transformation from Inertia to Body
 
 output(1:3,1)     = w_B_BI_f;

@@ -21,7 +21,7 @@ P = [ -mu/r^2*3/2*J2*(Re/r)^2*(1-3*(sin(incl))^2*(sin(argp+nu))^2);
   
 P = dcm(3,-omega)*dcm(1,-incl)*dcm(3,-(argp+nu))*P;
 
-R_dotdot = -mu/r^3*R +P;
+R_dotdot = -mu/r^3*R+P;
 
 output = R_dotdot;
 end

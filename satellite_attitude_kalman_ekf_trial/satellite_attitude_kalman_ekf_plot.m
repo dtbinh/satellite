@@ -9,7 +9,7 @@ subplot(4,1,1)
 plot(tout,q_B_I(1,:),'b')
 title('Quaternion Rotation of Body to Inertial Frame')
 hold on;grid on;
-ylabel('w [-]');
+ylabel('x [-]');
 xlabel('time [s]');
 plot(tout,q_B_I_m_1(1,:),'r')
 plot(tout,q_B_I_m_2(1,:),'r')
@@ -18,7 +18,7 @@ plot(tout,q_B_I_f(1,:),'g')
 subplot(4,1,2)
 plot(tout,q_B_I(2,:),'b')
 hold on;grid on;
-ylabel('x [-]');
+ylabel('y [-]');
 xlabel('time [s]');
 plot(tout,q_B_I_m_1(2,:),'r')
 plot(tout,q_B_I_m_2(2,:),'r')
@@ -27,7 +27,7 @@ plot(tout,q_B_I_f(2,:),'g')
 subplot(4,1,3)
 plot(tout,q_B_I(3,:),'b')
 hold on;grid on;
-ylabel('y [-]');
+ylabel('z [-]');
 xlabel('time [s]');
 plot(tout,q_B_I_m_1(3,:),'r')
 plot(tout,q_B_I_m_2(3,:),'r')
@@ -36,7 +36,7 @@ plot(tout,q_B_I_f(3,:),'g')
 subplot(4,1,4)
 plot(tout,q_B_I(4,:),'b')
 hold on;grid on;
-ylabel('z [-]');
+ylabel('w [-]');
 xlabel('time [s]');
 plot(tout,q_B_I_m_1(4,:),'r')
 plot(tout,q_B_I_m_2(4,:),'r')
@@ -123,7 +123,7 @@ subplot(4,1,1)
 plot(tout,q_B_I_error(1,:),'b')
 title('Quaternions Error')
 hold on;grid on;
-ylabel('w [-]');
+ylabel('x [-]');
 xlabel('time [s]');
 axis([-Inf Inf ymin ymax])
 text(textx,texty,strcat('MEAN:',num2str(mean(q_B_I_error(1,end/2:end))),' STD:',num2str(std(q_B_I_error(1,ceil(end/4):end)))));
@@ -131,7 +131,7 @@ text(textx,texty,strcat('MEAN:',num2str(mean(q_B_I_error(1,end/2:end))),' STD:',
 subplot(4,1,2)
 plot(tout,q_B_I_error(2,:),'b')
 hold on;grid on;
-ylabel('x [-]');
+ylabel('y [-]');
 xlabel('time [s]');
 axis([-Inf Inf ymin ymax])
 text(textx,texty,strcat('MEAN:',num2str(mean(q_B_I_error(2,ceil(end/4):end))),' STD:',num2str(std(q_B_I_error(2,ceil(end/4):end)))));
@@ -139,7 +139,7 @@ text(textx,texty,strcat('MEAN:',num2str(mean(q_B_I_error(2,ceil(end/4):end))),' 
 subplot(4,1,3)
 plot(tout,q_B_I_error(3,:),'b')
 hold on;grid on;
-ylabel('y [-]');
+ylabel('z [-]');
 xlabel('time [s]');
 axis([-Inf Inf ymin ymax])
 text(textx,texty,strcat('MEAN:',num2str(mean(q_B_I_error(3,ceil(end/4):end))),' STD:',num2str(std(q_B_I_error(3,ceil(end/4):end)))));
@@ -147,7 +147,7 @@ text(textx,texty,strcat('MEAN:',num2str(mean(q_B_I_error(3,ceil(end/4):end))),' 
 subplot(4,1,4)
 plot(tout,q_B_I_error(4,:),'b')
 hold on;grid on;
-ylabel('z [-]');
+ylabel('w [-]');
 xlabel('time [s]');
 axis([-Inf Inf ymin ymax])
 text(textx,texty,strcat('MEAN:',num2str(mean(q_B_I_error(4,ceil(end/4):end))),' STD:',num2str(std(q_B_I_error(4,ceil(end/4):end)))));

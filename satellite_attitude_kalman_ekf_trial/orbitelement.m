@@ -16,7 +16,7 @@ V = input(4:6);% [m/s] Velocity Vector in Inertial Frame
 t = get_param('satellite_attitude_kalman_ekf_model','SimulationTime');
 
 r = norm(R); % [m]   Position Magnitude of satellite
-v = norm(V); % [m/s] Velocity Magnitude of Satellite
+
 u = u_0 + u_dot*t;  % [rad] Right ascension of the sun in the ecliptic plane
 
 %% RIGHT ASCENSION OF LINE OF NODES 
@@ -40,7 +40,6 @@ Vt = dot(RP,V)/norm(RP)*RP/norm(RP);% [m/s] Tangential Velocity
 
 AP = acos(N(1)/norm(N));  % [] Right Ascension of Ascending Node based on X axis of Perifocal Frame
 
-% E = 1/mu*((v^2-mu/r)*R-dot(R,V)*V); % [-] Eccentricity vector  pointing to Periapsis
 E = 1/mu*(cross(V,H)-mu*R/r);         % [-] Eccentricity vector pointing to Periapsis (Wertz 6-9)
 E = E/norm(E);                        % [-] Eccentricity vector pointing to Periapsis
 Y = cross(H,E);                       % [-] Y vector of Perifocal Frame
