@@ -42,7 +42,7 @@ CONST.u_0        = 6*pi/8;                  % [rad] Initial Sun Ascension (pi/2 
 m  = 2.00;  % [kg] Satellite Mass
 dx = 0.10;  % [m] Length X
 dy = 0.10;  % [m] Length Y
-dz = 0.40;  % [m] Length Z
+dz = 0.20;  % [m] Length Z
 
 Ix = (m/12)*(dy^2+dz^2); % [kg.m^2] X-axis Inertia
 Iy = (m/12)*(dx^2+dz^2); % [kg.m^2] Y-axis Inertia
@@ -52,12 +52,16 @@ I  = diag([Ix Iy Iz]);   % [kg.m^2] Inertia
 CONST.I          = I;     % [kgm^2] Spacecraft Moments of Inertia
 
 %% COIL PARAMETERS AND CONTROL ALLOCATION MATRIX
-V_max = 5; % [V] Max voltage
+V_max = 5;                % [V] Max voltage
 
-Ncoil = [355;355;800];                      % [-]   Number of turns in Coil
-Acoil = [0.08*0.18;0.08*0.18;0.08*0.08];    % [m^2] Area of Coil 
-Rcoil = [110;110;110];                      % [Ohm] Resistance in Coil 
-i_max = [V_max/Rcoil(1);V_max/Rcoil(2);V_max/Rcoil(3)]; % 
+Ncoil = [355;355;800];    % [-] Number of turns in Coil
+Acoil = [0.08*0.18;
+         0.08*0.18;
+         0.08*0.08];      % [m^2] Area of Coil 
+Rcoil = [110;110;110];    % [Ohm] Resistance in Coil 
+i_max = [V_max/Rcoil(1);
+         V_max/Rcoil(2);
+         V_max/Rcoil(3)]; % 
 
 % K Coil Matrix
 K_coil = [Ncoil(1)*Acoil(1)/Rcoil(1)   0        0        ;
@@ -238,7 +242,7 @@ ReferenceOmega = w_B_OI_0;
 
 %% SOLVER
 fprintf('\nsatellite_attitude_kalman_ekf_model running\n');
-tdur = 4*P;              
+tdur = 6*P;              
 sim('satellite_attitude_kalman_ekf_model',tdur);
 
 %% POST PROCESSING
@@ -339,7 +343,7 @@ set(earth,'facecolor','none','edgecolor',0.7*[1 1 1],'LineStyle',':');
 %  MagneticField();
 
 % UPDATE SIMULATION PLOT
-d=10;
+d=50;
 for i=1:d:(length(tout)-1)
 
 % Update Satellite Position
