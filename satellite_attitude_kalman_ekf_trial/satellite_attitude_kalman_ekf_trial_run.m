@@ -42,7 +42,7 @@ CONST.u_0        = 6*pi/8;                  % [rad] Initial Sun Ascension (pi/2 
 m  = 2.00;  % [kg] Satellite Mass
 dx = 0.10;  % [m] Length X
 dy = 0.10;  % [m] Length Y
-dz = 0.30;  % [m] Length Z
+dz = 0.40;  % [m] Length Z
 
 Ix = (m/12)*(dy^2+dz^2); % [kg.m^2] X-axis Inertia
 Iy = (m/12)*(dx^2+dz^2); % [kg.m^2] Y-axis Inertia
@@ -137,7 +137,7 @@ w_B_BI_0 = w_B_BO_0 + w_B_OI_0;   % [rad] Body Frame Angular Rate relative to In
 
 %% SENSORS FLAG
 mflag(1) = 1; % Star Tracker 1
-mflag(2) = 0; % Star Tracker 2
+mflag(2) = 1; % Star Tracker 2
 mflag(3) = 0; % Sun Sensor 1
 mflag(4) = 0; % Sun Sensor 2
 mflag(5) = 0; % Sun Sensor 3
@@ -238,7 +238,7 @@ ReferenceOmega = w_B_OI_0;
 
 %% SOLVER
 fprintf('\nsatellite_attitude_kalman_ekf_model running\n');
-tdur = 5*P;              
+tdur = 4*P;              
 sim('satellite_attitude_kalman_ekf_model',tdur);
 
 %% POST PROCESSING
