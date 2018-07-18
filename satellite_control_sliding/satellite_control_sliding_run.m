@@ -92,8 +92,8 @@ fprintf('Initial Ang Velocity: %.4f %.4f %.4f          [rad/s]     \n',w(1,:))
 
 % Gains
 k   = 0.015;
-g   = 0.15*eye(3);
-eps = 0.01;
+g   = 0.01*eye(3);
+eps = 0.0005;
   
 % Initial Torque, Sliding Manifold, Desired Quaternion and Angular Velocity
 [ff,torq,ss,qq,ww] = satellite_model(xa(1,:),t(1),theta_d,phir_d,psir_d,dist(1,:),in,intrue,k,g,eps);
@@ -143,21 +143,18 @@ erre(:,3) = erre(:,3)+360;
 clf
 subplot(311)
 plot(t/60,erre(:,1));
-set(gca,'fontsize',12);
 axis([0 60 -2 2])
 set(gca,'ytick',[-2 -1 0 1 2])
 ylabel('Roll (Deg)');
 
 subplot(312)
 plot(t/60,erre(:,2));
-set(gca,'fontsize',12);
 axis([0 60 -4 4])
 set(gca,'ytick',[-4 -2 0 2 4])
 ylabel('Pitch (Deg)');
 
 subplot(313)
 plot(t/60,erre(:,3));
-set(gca,'fontsize',12);
 axis([0 60 -60 30])
 set(gca,'ytick',[-60 -30 0 30])
 ylabel('Yaw (Deg)');
@@ -167,21 +164,18 @@ figure
 
 subplot(311)
 plot(t/60,werr(:,1));
-set(gca,'fontsize',12);
 axis([0 60 -0.02 0.02])
 set(gca,'ytick',[-0.02 -0.01 0 0.01 0.02])
 ylabel('dw1 (Deg/Sec)');
 
 subplot(312)
 plot(t/60,werr(:,2));
-set(gca,'fontsize',12);
 axis([0 60 -0.02 0.02])
 set(gca,'ytick',[-0.02 -0.01 0 0.01 0.02])
 ylabel('dw2 (Deg/Sec)');
 
 subplot(313)
 plot(t/60,werr(:,3));
-set(gca,'fontsize',12);
 axis([0 60 -0.2 0.4])
 set(gca,'ytick',[-0.2 0 0.2 0.4])
 ylabel('dw3 (Deg/Sec)');
@@ -191,54 +185,49 @@ figure
 
 subplot(311)
 plot(t/60,wheel(:,1));
-set(gca,'fontsize',12);
 axis([0 20 -0.4 0.4])
 set(gca,'ytick',[-0.4 -0.2 0 0.2 0.4])
 ylabel('h1 (Nms)');
 
 subplot(312)
 plot(t/60,wheel(:,2));
-set(gca,'fontsize',12);
 axis([0 20 -0.4 0.2])
 set(gca,'ytick',[-0.4 -0.2 0 0.2])
 ylabel('h2 (Nms)');
 
 subplot(313)
 plot(t/60,wheel(:,3));
-set(gca,'fontsize',12);
 axis([0 20 -20 -16])
 set(gca,'ytick',[-20 -19 -18 -17 -16])
 ylabel('h3 (Nms)');
 xlabel('Time (Min)');
-
+%%
 figure
 
 d_norm = (dist(:,1).^2+dist(:,2).^2+dist(:,3).^2).^(0.5);
 d_norm_max = max(d_norm);
 bound = norm(eps*inv(in*g),'fro')*d_norm_max*ones(m,1);
 slide_norm = (slide(:,1).^2+slide(:,2).^2+slide(:,3).^2).^(0.5);
-clf
 plot(t/60,slide_norm,t/60,bound)
-set(gca,'fontsize',12);
-axis([0 60 0 3e-6])
+
 ylabel('Slide Norm and Bound');
 xlabel('Time (Min)');
 
-figure
-
-% Scan Plot
-e1 = cos(theta_d).*cos(psi_d).*cos(phi_d)-cos(theta_d).^2.*sin(psi_d).*sin(phi_d)+sin(theta_d).^2.*sin(phi_d);
-e2 = cos(theta_d).*cos(psi_d).*sin(phi_d)+cos(theta_d).^2.*sin(psi_d).*cos(phi_d)-sin(theta_d).^2.*cos(phi_d);
-e3 = cos(theta_d).*sin(theta_d).*(sin(psi_d)+1);
-x = e1./(1+e3);y=e2./(1+e3);
-plot(x,y);
-set(gca,'fontsize',12);
-set(gca,'XTicklabels',[])
-set(gca,'YTicklabels',[])
-set(gca,'XTick',[])
-set(gca,'YTick',[])
-set(gca,'DataAspectRatio',[1 1 1])
-axis([-1.05 1.05 -1.05 1.05])
+% figure
+% 
+% % Scan Plot
+% e1 = cos(theta_d).*cos(psi_d).*cos(phi_d)-cos(theta_d).^2.*sin(psi_d).*sin(phi_d)+sin(theta_d).^2.*sin(phi_d);
+% e2 = cos(theta_d).*cos(psi_d).*sin(phi_d)+cos(theta_d).^2.*sin(psi_d).*cos(phi_d)-sin(theta_d).^2.*cos(phi_d);
+% e3 = cos(theta_d).*sin(theta_d).*(sin(psi_d)+1);
+% x = e1./(1+e3);y=e2./(1+e3);
+% plot(x,y);
+% set(gca,'fontsize',12);
+% set(gca,'XTicklabels',[])
+% set(gca,'YTicklabels',[])
+% set(gca,'XTick',[])
+% set(gca,'YTick',[])
+% set(gca,'DataAspectRatio',[1 1 1])
+% axis([-1.05 1.05 -1.05 1.05])
 %% SIMULATION
 % Figure Setting
 fig = figure;

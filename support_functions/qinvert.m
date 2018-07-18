@@ -20,7 +20,10 @@
 % -------------------------------------------------------------------------
 
 function qout = qinvert(qin,type)
-qout = zeros(4,1);
+if ~exist('type','var')
+type = 'xyzw';
+end
+
 switch type
     case 'wxyz' % input is wxyz
         qout(1,1) = qin(1,1);

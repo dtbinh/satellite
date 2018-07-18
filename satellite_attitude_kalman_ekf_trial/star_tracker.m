@@ -13,7 +13,7 @@ q_B_I_m_1 = q_B_I_m/norm(q_B_I_m)*sign(q_B_I_m(I,1)/q_B_I(I,1));
 %% NOISY EULER TO QUATERNION MEASUREMENTS (Model2)
 % q_B_I_m(:,i)  = qmult(q_B_I(:,i),[0.5*sig_st*[randn(1,1);randn(1,1);randn(1,1)];1]);
 %     q_B_I_m(:,i)  = qnorm(q_B_I_m(:,i));
-q_B_I_m_2 = qmult(q_B_I,[0.5*sig_m;1]); % (xyzw)
+q_B_I_m_2 = qmul(q_B_I,[0.5*sig_m;1],'qmult'); % (xyzw)
 q_B_I_m_2 = qnorm(q_B_I_m_2);
 
 

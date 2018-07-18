@@ -1,5 +1,13 @@
-function q = dcm2q(R,option,type)
-switch type 
+function q = dcm2q(R,option,qtype)
+if ~exist('qtype','var')
+    qtype = 'xyzw';       
+end
+
+if ~exist('option','var')
+    option = 'tsf';       
+end
+
+switch qtype 
     case 'wxyz' 
         switch option
             case 'tsf'
@@ -69,12 +77,60 @@ switch type
     case 'xyzw'  
         switch option
             case 'tsf'
-                q(4) = 0.5*sqrt(R(1,1)+R(2,2)+R(3,3)+1);
-                q(1) = (R(2,3)-R(3,2))/4/q(4);
-                q(2) = (R(3,1)-R(1,3))/4/q(4);
-                q(3) = (R(1,2)-R(2,1))/4/q(4);
+                % BST/ Sidi
+                if (1.0+R(1,1)-R(2,2)-R(3,3)) < 0.0  
+                    q(1,1) = 0.0;
+                else
+                    q(1,1) = 0.5*sqrt(1.0+R(1,1)-R(2,2)-R(3,3));
+                end
+                    
+                if (1.0-R(1,1)+R(2,2)-R(3,3)) < 0.0  
+                    q(2,1) = 0.0;
+                else
+                    q(2,1) = 0.5*sqrt(1.0-R(1,1)+R(2,2)-R(3,3));
+                end
+                    
+                if (1.0-R(1,1)-R(2,2)+R(3,3)) < 0.0
+                    q(3,1) = 0.0;
+                else
+                    q(3,1) = 0.5*sqrt(1.0-R(1,1)-R(2,2)+R(3,3));
+                end
                 
-                q = q';
+                if(1.0+R(1,1)+R(2,2)+R(3,3)) < 0.0  
+                    q(4,1) = 0.0;
+                else
+                    q(4,1) = 0.5*sqrt(1.0+R(1,1)+R(2,2)+R(3,3));
+                end
+                
+                [~,index] = max( q );
+                
+                if((q(1,1) == q(2,1)) && (q(1,1) == q(3,1)) && (q(1,1) == q(4,1)))
+
+                index = 4;
+                end
+
+              switch index  
+                  case 1
+                    q(2,1) = 0.25*(R(1,2)+R(2,1))/q(1,1);
+                    q(3,1) = 0.25*(R(1,3)+R(3,1))/q(1,1);
+                    q(4,1) = 0.25*(R(2,3)-R(3,2))/q(1,1);
+                  case 2
+                    q(1,1) = 0.25*(R(1,2)+R(2,1))/q(2,1);
+                    q(3,1) = 0.25*(R(2,3)+R(3,2))/q(2,1);
+                    q(4,1) = 0.25*(R(3,1)-R(1,3))/q(2,1);
+                  case 3
+                    q(1,1) = 0.25*(R(1,3)+R(3,1))/q(3,1);
+                    q(2,1) = 0.25*(R(2,3)+R(3,2))/q(3,1);
+                    q(4,1) = 0.25*(R(1,2)-R(2,1))/q(3,1);
+                  case 4
+                    q(1,1) = 0.25*(R(2,3)-R(3,2))/q(4,1);
+                    q(2,1) = 0.25*(R(3,1)-R(1,3))/q(4,1);
+                    q(3,1) = 0.25*(R(1,2)-R(2,1))/q(4,1);
+                  otherwise
+              end
+                
+     
+ 
             case 'rot'
                 R(4,4)   = trace(R);
                 [Rmax,i] = max( [R(1,1) R(2,2) R(3,3) R(4,4)] );
@@ -105,6 +161,7 @@ switch type
                 q = 0.5*[p4 p1 p2 p3]';
                 q = q/(q'*q);
             otherwise
+                
         end
         
         

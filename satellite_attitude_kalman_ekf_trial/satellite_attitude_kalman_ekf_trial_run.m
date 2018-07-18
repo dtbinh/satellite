@@ -242,7 +242,7 @@ ReferenceOmega = w_B_OI_0;
 
 %% SOLVER
 fprintf('\nsatellite_attitude_kalman_ekf_model running\n');
-tdur = 6*P;              
+tdur = 3*P;              
 sim('satellite_attitude_kalman_ekf_model',tdur);
 
 %% POST PROCESSING
@@ -343,7 +343,7 @@ set(earth,'facecolor','none','edgecolor',0.7*[1 1 1],'LineStyle',':');
 %  MagneticField();
 
 % UPDATE SIMULATION PLOT
-d=50;
+d = 50;
 for i=1:d:(length(tout)-1)
 
 % Update Satellite Position
