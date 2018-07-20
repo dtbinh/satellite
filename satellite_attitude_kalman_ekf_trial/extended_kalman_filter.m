@@ -100,8 +100,8 @@ for i = 1:length(mflag)
             
             % Update
             Pk  = (eye(12) - K*H)*Pk;                 
-            res = S_S_m(:,i-MaxST) - R_S_B*R_B_I*S_I; 
-            delX = delX + K*(res-H*delX);             
+            res = S_S_m(:,i-MaxST) - R_S_B*R_B_I*S_I;  % Sensor Frame
+            delX = delX + K*(res-H*delX);              
 
      elseif( (mflag(i) == 1) && (i <= MaxMag) ) 
             % Magnetometer

@@ -36,7 +36,7 @@ CONST.gamma      = 23.442/180*pi;           % [rad] Spin Axis of Ecliptic Plane
 CONST.dm         = 7.94e22;                 % [Am^2] Earth Dipole Magnetic Moment
 CONST.mui        = 4*pi*1e-7;               % [kgm/A^2/s^2] Earth Permeability of Free Space
 CONST.Bo         = CONST.mui*CONST.dm/4/pi; % [-] Magnetic Constant for magnetic field calculation
-CONST.u_0        = 6*pi/8;                  % [rad] Initial Sun Ascension (pi/2 - Summer, pi - Autumn, 3*pi/2 
+CONST.u_0        = 3*pi/4;                  % [rad] Initial Sun Ascension (pi/2 - Summer, pi - Autumn, 3*pi/2 
 
 %% SATELLITE MOMENTS OF INERTIA
 m  = 2.00;  % [kg] Satellite Mass
@@ -104,7 +104,7 @@ CONST.w_O = w_O;                 % [rad/s] Orbit Angular Velocity
 CONST.RAAN = RAAN;               % [rad] Initial Right Ascention - Angle on Equatorial Plane from Vernal Equinox to Ascending Node
 
 incl = acos((CONST.OmegaDot*(1-ecc^2)^2*a^(7/2))/(-3/2*sqrt(CONST.mu)*CONST.J2*CONST.Re^2)); % [rad] Orbit iination required for Sun-synchornous (eqn 4.47 from Curtis)                                                                          % [rad] Orbit iination 
-
+incl = 45/180*pi;
 [R_0,V_0] = coe2rv(a, ecc, incl,RAAN, w, TAo,'curtis');% initial orbital state vector in ECF Frame- computes the magnitude of state vector (r,v) from the classical orbital elements (coe) 
 
 CONST.incl = incl;
@@ -113,7 +113,7 @@ CONST.ecc = ecc;
 %% INITIAL CONDITIONS
 R_O_I   = dcm(1,-90*D2R)*dcm(3,(TAo+90)*D2R)*dcm(1,incl)*dcm(3,RAAN); % [3x3] Rotation Matrix from Inertial (X axis is vernal equinox) to Orbit Frame (x is orbit direction)
 
-Euler_I_B_0  = [ -pi/4 ; 0 ; 0 ]; % [rad] Euler Angle from Body Frame to Inertial Frame (Initial)
+Euler_I_B_0  = [ 0 ; 0 ; pi/4 ]; % [rad] Euler Angle from Body Frame to Inertial Frame (Initial)
 Euler_O_I_0 = dcm2eul(R_O_I,'zyx');   % [rad] Initial Euler Angle transforming from Inertial Frame to Orbit Frame (ZYX means rotate X, then Y, then Z)
 
 R_I_B_0 = eul2dcm(Euler_I_B_0,'zyx'); % Transformation Matrix from Body to Inertial (Initial)   
@@ -136,7 +136,7 @@ w_O_OI_0 = [0;-w_O;0];         % [rad] Orbital Frame Angular Rate relative to In
 w_B_OI_0 = R_O_B_0'*w_O_OI_0;  % [rad] Orbital Frame Angular Rates relative to Inertial Frame in Body Frame
 
 % Body Frame Angular Rate
-w_B_BO_0 = 0.1*[randn(1,1);randn(1,1);randn(1,1)]; % [rad/s] Body Frame Angular Rates relative to Orbital Frame in Body Frame 
+w_B_BO_0 = 0.01*[randn(1,1);randn(1,1);randn(1,1)]; % [rad/s] Body Frame Angular Rates relative to Orbital Frame in Body Frame 
 w_B_BI_0 = w_B_BO_0 + w_B_OI_0;   % [rad] Body Frame Angular Rate relative to Inertial Frame in Body Frame
 
 %% SENSORS FLAG
@@ -193,17 +193,17 @@ end
 
 %% SUN SENSOR
 SSaxis   = [1; 1; 1; 1];               % [axis] Sun Sensor rotation axis 1 = x, 2 = y, 3 = z
-SSangles = [-30;-150; 30; 150]*pi/180; % [rad] Sun Sensors fram angles              
-R_S1_B   = dcm(SSaxis(1),SSangles(1)); % [-] Rotation Matrix from Body Frame to Sun Sensor 1 Frame (Z-axis of sun sensor aligned with X-axis)
-R_S2_B   = dcm(SSaxis(2),SSangles(2)); % [-] Rotation Matrix from Body Frame to Sun Sensor 2 Frame (Z-axis of sun sensor aligned with -X-axis)
-R_S3_B   = dcm(SSaxis(3),SSangles(3)); % [-] Rotation Matrix from Body Frame to Sun Sensor 3 Frame (Z-axis of sun sensor aligned with -X-axis)
-R_S4_B   = dcm(SSaxis(4),SSangles(4)); % [-] Rotation Matrix from Body Frame to Sun Sensor 4 Frame (Z-axis of sun sensor aligned with -X-axis)
+SSangles = [30;-150; 30; 150]*pi/180; % [rad] Sun Sensors fram angles              
+R_S1_B   = dcm(SSaxis(1),SSangles(1)); % [-] Rotation Matrix from Body Frame to Sun Sensor 1 Frame 
+R_S2_B   = dcm(SSaxis(2),SSangles(2)); % [-] Rotation Matrix from Body Frame to Sun Sensor 2 Frame 
+R_S3_B   = dcm(SSaxis(3),SSangles(3)); % [-] Rotation Matrix from Body Frame to Sun Sensor 3 Frame 
+R_S4_B   = dcm(SSaxis(4),SSangles(4)); % [-] Rotation Matrix from Body Frame to Sun Sensor 4 Frame 
 
-sigSS = 0.1*pi/180; % [rad] Standard Deviation
-dt_ss = dt;        % [sec] Sampling Time of Sun Sensors
+sigSS = 0.01*pi/180; % [rad] Standard Deviation
+dt_ss = dt;          % [sec] Sampling Time of Sun Sensors
 
-FOV   = 70*pi/180;  % [rad] Field of View of Sun Sensors
-
+FOV      = 100*pi/180;  % [rad] Field of View of Sun Sensors
+CONST.R_S1_B   = R_S1_B;         % [-] Rotation Matrix from Body Frame to Sun Sensor 1 Frame (Z-axis of sun sensor aligned with X-axis)
 CONST.SSaxis   = SSaxis;        % [axis] Sun Sensor rotation axis 1 = x, 2 = y, 3 = z
 CONST.SSangles = SSangles;      % [deg]  Sun Sensors fram angles
 
@@ -242,7 +242,7 @@ ReferenceOmega = w_B_OI_0;
 
 %% SOLVER
 fprintf('\nsatellite_attitude_kalman_ekf_model running\n');
-tdur = 3*P;              
+tdur = P/4;              
 sim('satellite_attitude_kalman_ekf_model',tdur);
 
 %% POST PROCESSING
@@ -314,10 +314,8 @@ Z_emf = plotvector(R_I_E(:,:,1)*R_E_M*[0 ;0 ;1], [0 0 0], 'm');
 % Magnetic Field 
 [B_mag,B_mag_lab] = plotvector(B_I(:,1), R(:,1,1), 'm', 'B',0.25);
 
-% Earth Centered Sun Frame
-[S_sun, S_sun_lab] = plotvector(S_I(:,1), [0;0;0], 'y', 'Sun',2);
-
-% Earth Centered Sun Frame
+% Sun Vector
+[S_sun, S_sun_lab] = plotvector(S_I(:,1), [0;0;0], 'r', 'Sun',2);
 [S_hat, S_hat_lab] = plotvector(-S_I_hat(:,1), [0;0;0], color('orange'), 'S_h_a_t',2);
 
 % Eclipse Status
@@ -343,7 +341,7 @@ set(earth,'facecolor','none','edgecolor',0.7*[1 1 1],'LineStyle',':');
 %  MagneticField();
 
 % UPDATE SIMULATION PLOT
-d = 50;
+d = 5;
 for i=1:d:(length(tout)-1)
 
 % Update Satellite Position

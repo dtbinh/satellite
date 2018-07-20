@@ -13,7 +13,7 @@ wdot_B_BI_d = input(15:17,1); % [rad/s2] Angular Acceleration Desired
 
 %% SLIDING MODE CONTROL
 % Parameter
-k   = 0.005;
+k   = 0.05;             % Proportional gain
 eps = 0.001;
 g   = 0.005*eye(3);
 
@@ -38,6 +38,6 @@ usat = [saturation(ss(1),eps);
 dqdot_B_I = q2xi(q_B_I_d)'*q2xi(q_B_I)*w_B_BI - q2xi(q_B_I)'*q2xi(q_B_I_d)*w_B_BI_d;
 torq      = smtrx(w_B_BI)*(I*w_B_BI) - I*(0.5*k*sign(dq_B_I(4,1))*dqdot_B_I - wdot_B_BI_d + g*usat);
 
-output = torq;    % [Nm] 
+output = [torq, ss, g*usat];    % [Nm] 
 
 end
