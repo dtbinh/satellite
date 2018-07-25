@@ -1,46 +1,32 @@
 close all
 clear all
 clc
-
+format long
 % Parameters
-R   = 16;       % [Ohm] Terminal Resistance
-L   = 26e-6;    % [H] Terminal Inductance, phase to phase
-eff = 0.51;     % [-] Efficiency
-km  = 0.902e-3; % [Nm/A] Torque Constant
-ki  = 1.109e3;  % [A/Nm] Current constant
-ke  = 9.4e-1/(2*pi/60) ;  % [V/(rad/s)] Back-EMF Constant
-kn  = 10587;    % [rpm/V] Speed Constant
-J   = 0.125;    % [gcm^2] Rotor Inertia
+global CONST
 
-dt    = 0.01;   % [sec]
-tdur  = 600;    % [sec]
-tout  = 0:dt:tdur;
-w     = 1*2*pi/60; % [rad/s]
-theta = 0;
+CONST.R   = 16;       % [Ohm] Terminal Resistance
+CONST.L   = 26e-6;    % [H] Terminal Inductance, phase to phase
+CONST.eff = 0.51;     % [-] Efficiency
+CONST.kt  = 0.902e-3; % [Nm/A] Torque Constant
+CONST.ki  = 1.109e3;  % [A/Nm] Current constant
+CONST.ke  = 9.4e-5/(2*pi/60) ;  % [V/(rad/s)] Back-EMF Constant
+CONST.kn  = 10587*(2*pi/60);    % [(rad/s)/V] Speed Constant
+CONST.J   = 0.125e-7;    % [kgm^2] Rotor Inertia
 
-for i = 1:1:tdur/dt+1
-    theta  = theta + w*dt;
-    
-    if theta >= 2*pi
-        theta = 0;
+CONST.Co  = 3.00e-6;  % [Nm] Friction Torque Static
+CONST.Cv  = 0.52e-9/(2*pi/60);  % [Nm/(rad/s)] Friction Torque Dynamic
 
-    end
-    
-% Back-EMF of Phase
-Ea(i) = ke*bldc_trap(theta)*w;
-Eb(i) = ke*bldc_trap(theta-2*pi/3)*w;
-Ec(i) = ke*bldc_trap(theta+2*pi/3)*w;
+CONST.p   = 4;        % [-] Number of Poles
 
-end
+dt = 0.1;      % [sec] time step
+tf = 10;        % [sec] time at final
+t  = 0:dt:tf;   % [sec] time array
+tl = length(t); % [sec] length of time array
 
-figure
-plot(tout,Ea);
-grid on;
-return
+% Pre-Allocate Space
+xa    = zeros(7,tl);
+x_0 = zeros(7,1);
 
-
-Va = R*ia+L*ia_dot+Ea;
-Vb = R*ib+L*ib_dot+Eb;
-Vc = R*ic+L*ic_dot+Ec;
-
-
+options     = odeset('Maxstep',1.0,'OutputFcn',@outFcn);%,'RelTol',1e-12,'AbsTol',1e-12,'Refine',1);
+[tout,yout] = ode45(@(t,x)bldc_dynamics(t,x),t,x_0);
