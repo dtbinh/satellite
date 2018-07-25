@@ -1,6 +1,6 @@
-function out = bldc_trap(in,trap,phi_m)
+function out = bldc_trap(in)
 
 out = cos(in);
-out = phi_m/trap*sat(out,trap);
+out = 1/0.5*sat(out,0.5);
 
 end

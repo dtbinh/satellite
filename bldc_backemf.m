@@ -7,11 +7,10 @@ theta_e = in(2);
 
 ke  = 9.4e-5/(2*pi/60);
 phi_m = 0.2158;
-trap = 0.5;
 
-phi_a = bldc_trap(theta_e,trap,phi_m);
-phi_b = bldc_trap(theta_e-2*pi/3,trap,phi_m);
-phi_c = bldc_trap(theta_e-4*pi/3,trap,phi_m);
+phi_a = phi_m*bldc_trap(theta_e);
+phi_b = phi_m*bldc_trap(theta_e-2*pi/3);
+phi_c = phi_m*bldc_trap(theta_e-4*pi/3);
 
 E_a = phi_a*w_e;            % [V]
 E_b = phi_b*w_e;     % [V]
