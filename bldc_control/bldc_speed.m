@@ -1,8 +1,8 @@
 function out = bldc_speed(in)
 
-phi_a = in(1);
-phi_b = in(2); 
-phi_c = in(3);
+f_a = in(1);
+f_b = in(2); 
+f_c = in(3);
 
 i_a   = in(4);
 i_b   = in(5); 
@@ -18,13 +18,14 @@ J  = CONST.J;
 Cv = CONST.Cv;
 Co = CONST.Co;
 
-Ta = kt*i_a*phi_a;
-Tb = kt*i_b*phi_b;
-Tc = kt*i_c*phi_c;
+% Electrical Torque
+Ta = kt*i_a*f_a;
+Tb = kt*i_b*f_b;
+Tc = kt*i_c*f_c;
 
 Te = Ta+Tb+Tc;
 
-
+% Mechanical Dynamics
 wdot_m = 1/J*(Te-To-Cv*w_m-Co);
 
 out(1,1) = wdot_m;

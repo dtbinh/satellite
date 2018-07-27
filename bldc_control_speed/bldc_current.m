@@ -8,9 +8,9 @@ E_a = in(4);
 E_b = in(5); 
 E_c = in(6);
 
-i_a = in(7);
-i_b = in(8); 
-i_c = in(9);
+% i_a = in(7);
+% i_b = in(8); 
+% i_c = in(9);
 
 global CONST
 

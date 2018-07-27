@@ -1,4 +1,4 @@
-function out = bldc_pulse(in)
+function out = bldc_inverter(in)
 
 pulse1 = in(1);
 pulse2 = in(2);
