@@ -100,8 +100,8 @@ om   = [-wc w;
  
 qdot = 0.5*om*q;                      % Satellite Kinetics
 wdot = inv(jtrue)*(-wc*jtrue*w+torq); % Satellite Dynamics
-hdot = -wc*wh-torq;                   % Satellite Angular Momentum
+hdot = -wc*wh-torq;                   % RW Angular Momentum
 
 f(1:4,:)  = qdot; % Quaternion Rate
 f(5:7,:)  = wdot; % Angular Acceleration
-f(8:10,:) = hdot; % Angular Momentum Rate
+f(8:10,:) = hdot; % Wheel Angular Momentum Rate

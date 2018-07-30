@@ -21,13 +21,24 @@ Co = CONST.Co;
 % Electrical Torque
 Ta = kt*i_a*f_a;
 Tb = kt*i_b*f_b;
-Tc = kt*i_c*f_c;
+Tc = kt*i_c*f_c; 
 
 Te = Ta+Tb+Tc;
 
+% Static Friction
+if w_m < 0
+    Co = -Co;
+else if w_m == 0
+        Co = 0;
+     else
+     end
+end
+
+    
 % Mechanical Dynamics
-wdot_m = 1/J*(Te-To-Cv*w_m-Co);
+wdot_m = 1/J*(Te-To-Cv*w_m+Co);
 
 out(1,1) = wdot_m;
+out(2,1) = Te;
 
 end

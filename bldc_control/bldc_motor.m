@@ -12,8 +12,16 @@ Cv = CONST.Cv;	% [Nm/(rad/s)] Friction Torque Dynamic
 V   = in(1);
 w_m = in(2);
 
+% Static Friction
+if w_m < 0
+    Co = -Co;
+else if w_m == 0
+        Co = 0;
+     else
+     end
+end
 i      = 1/R*(V-1.17*ke*w_m);
-wdot_m = 1/J*(2*kt*i-Cv*w_m-Co);
+wdot_m = 1/J*(2*kt*i-Cv*w_m+Co);
 
 out = [wdot_m;i];
 end
