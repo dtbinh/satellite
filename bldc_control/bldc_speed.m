@@ -36,7 +36,7 @@ end
 
     
 % Mechanical Dynamics
-wdot_m = 1/J*(Te-To-Cv*w_m+Co);
+wdot_m = 1/J*(Te-Co-Cv*w_m+To);
 
 out(1,1) = wdot_m;
 out(2,1) = Te;

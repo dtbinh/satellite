@@ -1,4 +1,4 @@
-function out = bldc_motor(in)
+function out = bldc_discrete(Vin,theta_m,w_m)
 global CONST
 
 R  = CONST.R;   % [Ohm] Terminal Resistance               
@@ -8,10 +8,8 @@ ke = CONST.ke;  % [V/(rad/s)] Back-EMF Constant
 J  = CONST.J;   % [kgm^2] Rotor Inertia                
 Co = CONST.Co;  % [Nm] Friction Torque Static
 Cv = CONST.Cv;	% [Nm/(rad/s)] Friction Torque Dynamic 
+dt = CONST.dt;
 
-V   = in(1);
-w_m = in(2);
-To  = in(3);
 
 % Static Friction
 if w_m < 0
@@ -21,9 +19,13 @@ else if w_m == 0
      else
      end
 end
+K = -2*kt*1.17*ke/J/R - Cv/J;
+M = 2*kt/J/R;
+C = -Co/J;
 
-i      = 1/R*(V-1.17*ke*w_m);
-wdot_m = 1/J*(2*kt*i-Cv*w_m-Co+To);
+theta_m = theta_m + (dt+0.5*K*dt^2)*w_m + 0.5*dt^2*M*Vin; 
+w_m     =   w_m   + (K*dt+0.5*K^2*dt^2)*w_m + (M*dt + 0.5*dt^2*K*M)*Vin + C*dt; 
 
-out = [wdot_m;i];
-end
+out = [theta_m;w_m];
+
+end 
