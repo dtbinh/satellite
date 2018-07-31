@@ -24,7 +24,7 @@ Vmax = 4;
 
 %% CONTROL MODE
 
-CTRL_MODE = 3; % CURRENT/TORQUE/SPEED
+CTRL_MODE = 3; % CURRENT/TORQUE/SPEED/VOLTAGE
 
 % CURRENT CONTROLLER
 i_kp = 100;
@@ -59,8 +59,8 @@ theta_m_0 = 0;
 w_m_0     = 0;
 
 %% TIME 
-dt     = 0.01;        % [sec] time step
-tdur   = 5;          % [sec] time at final
+dt     = 0.05;        % [sec] time step
+tdur   = 30;          % [sec] time at final
 tspan  = 0:dt:tdur;   % [sec] time array
 tlgth  = length(tspan);
 CONST.dt = dt;
@@ -77,7 +77,9 @@ for i=1:1:length(tspan)-1
     if tspan(i)<0.6
         V_dm(i) = 0;
     else
+        
         V_dm(i) = bldc_speed_discrete(w_tgt,w_dm(i));
+%         V_dm(i) = Vin;
     end
    
     V_dm(i) = sat(V_dm(i),Vmax);
