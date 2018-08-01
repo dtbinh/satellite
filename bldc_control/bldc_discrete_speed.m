@@ -1,4 +1,4 @@
-function Vout = bldc_speed_discrete(w_tgt,w_dm)
+function Vout = bldc_discrete_speed(w_tgt,w_dm)
 global CONST
 
 dt = CONST.dt;
@@ -16,8 +16,9 @@ end
 w_err = w_tgt-w_dm;
 
 w_err_i = w_err_i_old + w_err*dt;
+w_err_d = (w_err-w_err_old)/dt;
 
-Vout = spd_kp*w_err + spd_ki*w_err_i;
+Vout = spd_kp*w_err + spd_ki*w_err_i + spd_kd*w_err_d;
 
 w_err_old = w_err;
 w_err_i_old = w_err_i;

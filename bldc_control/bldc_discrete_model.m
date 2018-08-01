@@ -1,4 +1,4 @@
-function out = bldc_discrete(Vin,theta_m,w_m)
+function out = bldc_discrete_model(Vin,theta_m,w_m)
 global CONST
 
 R  = CONST.R;   % [Ohm] Terminal Resistance               
@@ -19,8 +19,9 @@ else if w_m == 0
      else
      end
 end
+
 K = -2*kt*1.17*ke/J/R - Cv/J;
-M = 2*kt/J/R;
+M =  2*kt/J/R;
 C = -Co/J;
 
 theta_m = theta_m + (dt+0.5*K*dt^2)*w_m + 0.5*dt^2*M*Vin; 
