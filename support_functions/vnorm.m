@@ -1,8 +1,8 @@
-% function q = qnorm(q)
+% function v = vnorm(v)
 % --------------------------------------------------------------------------
 % This function inverse the rotation of the quaternion input
 % Example
-%              qout = qnorm(qin)
+%              vout = vnorm([2;3;1])
 % 
 % Input 
 %     qin     -   quaternion
@@ -18,17 +18,8 @@
 %     
 % -------------------------------------------------------------------------
 
-function q = qnorm(q)
+function v = vnorm(v)
 
-qnorm = q'*q;
-
-while (qnorm) > 1
-    if qnorm > 1 + 1e-16
-        q = ((3 + qnorm)/(1 + 3*qnorm))*q; % rescale quaternion to (err^3)/32     
-    else
-        q = q/sqrt(qnorm);                 % renormalize quaternion      
-    end
-        qnorm = q'*q;
-
-end
+    v = v/sqrt(v'*v);          
+ 
 return

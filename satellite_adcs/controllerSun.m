@@ -6,12 +6,15 @@ R_B_I  = input(1:3,3:5); %
 S_S_m  = -input(1:3,6:9); %
 
 %% CONSTANT PARAMETERS
-global CONST
+global CONST CTRL_SP
 SSaxis   = CONST.SSaxis;   % [axis] Sun Sensor rotation axis 1 = x, 2 = y, 3 = z
 SSangles = CONST.SSangles; % [rad] Sun Sensors fram angles
+I   = CONST.I;
 
-kp = 5e-06;
-kv = 5e-04;
+K_p = CTRL_SP.K_p;
+K_v = CTRL_SP.K_v;
+w_tgt = CTRL_SP.w_tgt;       % Desired Angular Velocity
+S_tgt = CTRL_SP.S_tgt;       % Desired Sun Vector in Body Frame (should be the optimal sun vector)
 
 %% SUN POINTING CONTROL
 R_S_B(:,:,1) = dcm(SSaxis(1),SSangles(1));
@@ -38,14 +41,12 @@ else if  (S_B_m(1:3,2) ~= 0)
 end
 
 
-S_B_d = [1;0;0];              % Desired Sun Vector in Body Frame (should be the optimal sun vector)
-
 S_B = R_B_I*S_I;
-angle  = acosd(dot(S_B_d,S_B)/(norm(S_B_d)*norm(S_B)));  % Angle between Desired Vector and Measured Vector
+angle  = acosd(dot(S_tgt,S_B)/(norm(S_tgt)*norm(S_B)));        % Angle between Desired Vector and Actual Sun Vector
 
-da  = acos(dot(S_B_d,S_B_m_f)/(norm(S_B_d)*norm(S_B_m_f)));
+angle  = acos(dot(S_tgt,S_B_m_f)/(norm(S_tgt)*norm(S_B_m_f))); % Angle between Desired Vector and Measured Vector
 
-torq   = kp * cross(S_B_d,S_B_m_f) - kv*w_B_BI; 
+torq   = K_p * cross(S_tgt,S_B_m_f) - K_v*(w_B_BI - w_tgt) + cross(w_tgt,I*w_B_BI);
 output = [torq ;angle];    % [Nm] 
 
 end

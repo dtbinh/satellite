@@ -36,7 +36,7 @@ CONST.gamma      = 23.442/180*pi;           % [rad] Spin Axis of Ecliptic Plane
 CONST.dm         = 7.94e22;                 % [Am^2] Earth Dipole Magnetic Moment
 CONST.mui        = 4*pi*1e-7;               % [kgm/A^2/s^2] Earth Permeability of Free Space
 CONST.Bo         = CONST.mui*CONST.dm/4/pi; % [-] Magnetic Constant for magnetic field calculation
-CONST.u_0        = 3*pi/4;                  % [rad] Initial Sun Ascension (pi/2 - Summer, pi - Autumn, 3*pi/2 
+CONST.u_0        = pi/2;                  % [rad] Initial Sun Ascension (pi/2 - Summer, pi - Autumn, 3*pi/2 
 
 %% SATELLITE MOMENTS OF INERTIA
 m  = 2.00;  % [kg] Satellite Mass
@@ -74,12 +74,6 @@ CONST.V_max = V_max;    % [V]   Voltage Maximum
 CONST.K     = K_coil;   % [3x3] K coil Matrix
 CONST.i_max = i_max;    % [A]   Ampere Maximum
 
-%% REGULATOR GAINS
-K_p = 5e-08; % [-] Proportional Gain 8*w_O^2*(I(2,2)-I(3,3))
-K_d = 4e-05; % [-] Differential Gain
-
-CONST.K_d   = K_d;      % [-] Controller Gain
-CONST.K_p   = K_p;      % [-] Controller Gain
 
 
 %% ORBITAL ELEMENTS
@@ -104,7 +98,7 @@ CONST.w_O = w_O;                 % [rad/s] Orbit Angular Velocity
 CONST.RAAN = RAAN;               % [rad] Initial Right Ascention - Angle on Equatorial Plane from Vernal Equinox to Ascending Node
 
 incl = acos((CONST.OmegaDot*(1-ecc^2)^2*a^(7/2))/(-3/2*sqrt(CONST.mu)*CONST.J2*CONST.Re^2)); % [rad] Orbit iination required for Sun-synchornous (eqn 4.47 from Curtis)                                                                          % [rad] Orbit iination 
-incl = 45/180*pi;
+incl = 85/180*pi;
 [R_0,V_0] = coe2rv(a, ecc, incl,RAAN, w, TAo,'curtis');% initial orbital state vector in ECF Frame- computes the magnitude of state vector (r,v) from the classical orbital elements (coe) 
 
 CONST.incl = incl;
@@ -113,7 +107,7 @@ CONST.ecc = ecc;
 %% INITIAL CONDITIONS
 R_O_I   = dcm(1,-90*D2R)*dcm(3,(TAo+90)*D2R)*dcm(1,incl)*dcm(3,RAAN); % [3x3] Rotation Matrix from Inertial (X axis is vernal equinox) to Orbit Frame (x is orbit direction)
 
-Euler_I_B_0  = [ 0 ; 0 ; pi/4 ]; % [rad] Euler Angle from Body Frame to Inertial Frame (Initial)
+Euler_I_B_0  = [ 0 ; deg2rad(-23.5) ; pi/2 ];         % [rad] Euler Angle from Body Frame to Inertial Frame (Initial)
 Euler_O_I_0 = dcm2eul(R_O_I,'zyx');   % [rad] Initial Euler Angle transforming from Inertial Frame to Orbit Frame (ZYX means rotate X, then Y, then Z)
 
 R_I_B_0 = eul2dcm(Euler_I_B_0,'zyx'); % Transformation Matrix from Body to Inertial (Initial)   
@@ -140,12 +134,12 @@ w_B_BO_0 = 0.01*[randn(1,1);randn(1,1);randn(1,1)]; % [rad/s] Body Frame Angular
 w_B_BI_0 = w_B_BO_0 + w_B_OI_0;   % [rad] Body Frame Angular Rate relative to Inertial Frame in Body Frame
 
 %% SENSORS FLAG
-mflag(1) = 1; % Star Tracker 1
-mflag(2) = 1; % Star Tracker 2
-mflag(3) = 0; % Sun Sensor 1
-mflag(4) = 0; % Sun Sensor 2
-mflag(5) = 0; % Sun Sensor 3
-mflag(6) = 0; % Sun Sensor 4
+mflag(1) = 0; % Star Tracker 1
+mflag(2) = 0; % Star Tracker 2
+mflag(3) = 1; % Sun Sensor 1
+mflag(4) = 1; % Sun Sensor 2
+mflag(5) = 1; % Sun Sensor 3
+mflag(6) = 1; % Sun Sensor 4
 mflag(7) = 1; % Magnetometer
 mflag(8) = 1; % Gyroscope
 
@@ -221,17 +215,18 @@ sigTemp = 0.002;       % [C] Sigma of Temperature Sensor
 varTemp = sigTemp^2;   % [C^2] Variance of Temperature Sensor
 dt_ts   = dt;           % [sec] Sampling Time of Temperature Sensor
 
-
 %% KALMAN FILTER
+global FLTR
 
-dt_ekf       = dt;               % [sec] (20 Hz) EKF speed
+FLTR.mode   = 1;
+dt_ekf      = dt;               % [sec] (20 Hz) EKF speed
 
 CONST.dt     = dt;               % [sec] (20 Hz) Model speed
 CONST.dt_ekf = dt_ekf;           % [sec] (20 Hz) EKF speed
 CONST.sig_v  = sqrt(Var_ARW);    % [rad/s^(1/2)] sigma of process noise - attitude state
 CONST.sig_u  = sqrt(Var_RRW);    % [rad/s^(3/2)] sigma of process noise - bias state
 CONST.sig_w  = sqrt(VarW);      % [rad/C/s^(1/2)] Standard Deviation Measured
-CONST.sig_st = sigST;        % [rad] Star Tracker 
+CONST.sig_st = sigST;          % [rad] Star Tracker 
 CONST.sig_ss = sigSS;        % [rad] Sun Sensor 
 CONST.sig_mg = sigMag;       % [tesla] magnetometer 
 CONST.varST_x = varST_x;
@@ -239,11 +234,27 @@ CONST.varST_y = varST_y;
 CONST.varST_z = varST_z;
 
 ReferenceOmega = w_B_OI_0;
+%% CONTROLLER
+global CTRL_SP
+global CTRL_RF
+
+% Sun Pointing Controller
+CTRL_SP.K_p = 5e-06;
+CTRL_SP.K_v = 5e-04;
+CTRL_SP.S_tgt = [1;0;0];    % [-] Desired sun vector in Body Frame
+CTRL_SP.w_tgt = [0;0;0];    % [-] Desired Angular Velocity
+
+% Reference Controller
+CTRL_RF.K_p   = 4e-05;      % [-] ProportionalController Gain
+CTRL_RF.K_d   = 5e-08;      % [-] Differential Controller Gain 8*w_O^2*(I(2,2)-I(3,3))
+
+
+CTRL_MODE = 3;
 
 %% SOLVER
-fprintf('\nsatellite_attitude_kalman_ekf_model running\n');
-tdur = P/4;              
-sim('satellite_attitude_kalman_ekf_model',tdur);
+
+tdur = P/2;              
+sim('satellite_adcs_model',tdur);
 
 %% POST PROCESSING
 close all
@@ -273,7 +284,7 @@ Pdiag(6,i)        = Pk_f(6,6,i);
 end
 
 %% PLOT
-satellite_attitude_kalman_ekf_plot
+% satellite_adcs_plot
 
 %% SIMULATION
 % Figure Setting
@@ -389,6 +400,5 @@ set(eclipse_lab,'String',strcat('Eclipse:',int2str(ECLIPSE(i))));
 updatevector(Vplot, V(:,1,i), R(:,1,i));
 
 drawnow;  
-    
 end
 

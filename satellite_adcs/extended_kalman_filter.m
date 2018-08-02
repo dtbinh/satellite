@@ -1,5 +1,4 @@
 function output = extended_kalman_filter(input)
-%% INPUT
 w_B_BI_m = input(1:3,1);   % Measured Angular Velocity (Gyro)
 e_B_I_m  = input(1:3,2:3); % Measured Quaternion Euler Vector Only (Star Tracker 1 & 2)
 S_S_m    = input(1:3,4:7); % Measured Sun vector in Sensor Frame
@@ -11,6 +10,7 @@ T_c      = input(1:3,12);  % Control Torque Desired
 s_flag   = input(1:3,13);  % Sensor Flag [Gyro;ST1;ST2]
 
 global CONST
+global FLTR
 dt      = CONST.dt;         % Sampling Time of Kalman Filter
 
 sig_v   = CONST.sig_v;      % Noise Standard Deviation Attitude State
@@ -65,7 +65,6 @@ MaxGg  = 8;  % Index of last Gyro
 SSaxis   = CONST.SSaxis;   % [axis] Sun Sensor rotation axis 1 = x, 2 = y, 3 = z
 SSangles = CONST.SSangles; % [rad] Sun Sensors fram angles
 
-type = 1;
 
 
 %% MEASUREMENT
@@ -118,9 +117,9 @@ for i = 1:length(mflag)
             
     elseif( (mflag(i) == 1) && (i <= MaxGg) ) 
             % Gyroscope Measurements
-            if (type == 1)
+            if (FLTR.mode == 1)
                 H = [zeros(3,3) zeros(3,3) zeros(3,3) eye(3)];
-            elseif (type ==2)
+            elseif (FLTR.mode ==2)
                 H = [zeros(3,3) eye(3) zeros(3,3) eye(3)];
             end
             R = sig_v^2*eye(3);
@@ -155,12 +154,12 @@ wk    = wk + dwk;
 wkm   = w_B_BI_m - biask ; %  Estimated Angular Velocity with Noise
 
 %% ERROR COVARIANCE PROPAGATION
-if (type == 1)
+if (FLTR.mode == 1)
     F  = [-smtrx(wkm)   -eye(3)   zeros(3)    zeros(3);
            zeros(3)    zeros(3)   zeros(3)    zeros(3);
            zeros(3)    zeros(3)   zeros(3)    zeros(3);
            zeros(3)    zeros(3)   zeros(3)    zeros(3)];
-elseif (type ==2)
+elseif (FLTR.mode ==2)
     F  = [-smtrx(wk)   zeros(3)   zeros(3)      eye(3);
            zeros(3)    zeros(3)   zeros(3)    zeros(3);
            zeros(3)    zeros(3)   zeros(3)    zeros(3);
@@ -169,13 +168,13 @@ end
 Phi = eye(12) + F*dt + 0.5*(F*dt)^2;
 
 % Discrete Process Noise Covariance
-if (type == 1)
+if (FLTR.mode == 1)
     Qk = [(sig_v^2*dt+1/3*(sig_u^2)*dt^3)*eye(3)  -(1/2*sig_u^2*dt^2)*eye(3)           zeros(3)            zeros(3);
                 -(1/2*sig_u^2*dt^2)*eye(3)             (sig_u^2*dt)*eye(3)             zeros(3)            zeros(3);
                        zeros(3)                             zeros(3)                   zeros(3)            zeros(3);
                        zeros(3)                             zeros(3)                   zeros(3)       (sig_w^2*dt)*eye(3)];
 
-elseif (type ==2)
+elseif (FLTR.mode ==2)
 
     Qk = [ (sig_v^2*dt+1/3*sig_w^2*dt^3)*eye(3)           zeros(3)                   zeros(3)       (1/2*sig_w^2*dt^2)*eye(3);
                      zeros(3)                        (sig_u^2*dt)*eye(3)             zeros(3)            zeros(3);
@@ -186,11 +185,11 @@ Pk = Phi*Pk*Phi'+ Qk;
 
 %% STATE PROPAGATION 
 % Quaternion State 
-if (type ==1)
+if (FLTR.mode ==1)
     psik  = sin(1/2*norm(wkm)*dt)/norm(wkm)*wkm;
     omega = [cos(1/2*norm(wkm)*dt)*eye(3)-smtrx(psik)       psik;
                     -psik'                       cos(1/2*norm(wkm)*dt) ]; 
-elseif (type ==2)
+elseif (FLTR.mode ==2)
     psik  = sin(1/2*norm(wk)*dt)/norm(wk)*wk;
     omega = [cos(1/2*norm(wk)*dt)*eye(3)-smtrx(psik)       psik;
                     -psik'                       cos(1/2*norm(wk)*dt) ];
