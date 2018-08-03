@@ -36,7 +36,7 @@ CONST.gamma      = 23.442/180*pi;           % [rad] Spin Axis of Ecliptic Plane
 CONST.dm         = 7.94e22;                 % [Am^2] Earth Dipole Magnetic Moment
 CONST.mui        = 4*pi*1e-7;               % [kgm/A^2/s^2] Earth Permeability of Free Space
 CONST.Bo         = CONST.mui*CONST.dm/4/pi; % [-] Magnetic Constant for magnetic field calculation
-CONST.u_0        = pi/2;                  % [rad] Initial Sun Ascension (pi/2 - Summer, pi - Autumn, 3*pi/2 
+CONST.u_0        = pi;                  % [rad] Initial Sun Ascension (pi/2 - Summer, pi - Autumn, 3*pi/2 
 
 %% SATELLITE MOMENTS OF INERTIA
 m  = 2.00;  % [kg] Satellite Mass
@@ -49,7 +49,11 @@ Iy = (m/12)*(dx^2+dz^2); % [kg.m^2] Y-axis Inertia
 Iz = (m/12)*(dx^2+dy^2); % [kg.m^2] Y-axis Inertia
   
 I  = diag([Ix Iy Iz]);   % [kg.m^2] Inertia 
-CONST.I          = I;     % [kgm^2] Spacecraft Moments of Inertia
+
+CONST.I  = I;     % [kgm^2] Spacecraft Moments of Inertia
+CONST.dx = dx;    % [m] Length X
+CONST.dy = dy;    % [m] Length Y
+CONST.dz = dz;    % [m] Length Z
 
 %% COIL PARAMETERS AND CONTROL ALLOCATION MATRIX
 V_max = 5;                % [V] Max voltage

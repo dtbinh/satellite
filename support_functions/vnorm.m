@@ -27,7 +27,7 @@ end
 if sqrt(vin'*vin) > eps_tol
     vout = vin/sqrt(vin'*vin);
 else
-    vout = 0;
+    vout = [0;0;0];
 end
  
 return

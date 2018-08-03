@@ -38,12 +38,16 @@ switch qorder
                  2*(q(2)*q(4)-q(1)*q(3))        2*(q(3)*q(4)+q(1)*q(2))     q(1)^2-q(2)^2-q(3)^2+q(4)^2]; 
  
             case 'tsf'
-            % Coordinate Transformation (Verified) - [James Diebel] Representing Attitude: Euler Angles, Unit Quaternions, and Rotation
+            % Coordinate Transformation (Verified) - [James Diebel] Representing Attitude: Euler Angles, Unit qernions, and Rotation
             % Output matrix describe vector rotation 
             R = [q(1)^2+q(2)^2-q(3)^2-q(4)^2    2*(q(2)*q(3)+q(1)*q(4))       2*(q(2)*q(4)-q(1)*q(3));
                  2*(q(2)*q(3)-q(1)*q(4))      q(1)^2-q(2)^2+q(3)^2-q(4)^2     2*(q(3)*q(4)+q(1)*q(2));
                  2*(q(2)*q(4)+q(1)*q(3))        2*(q(3)*q(4)-q(1)*q(2))     q(1)^2-q(2)^2-q(3)^2+q(4)^2]; 
-            
+            case 'rot_att'
+                eta = q(1);     % Euler Angle Component of Quaternion
+                eps = q(2:4);   % Euler Vector Component of Quaternion
+                R = eye(3) + 2*eta*smtrx(eps) + 2*(smtrx(eps))^2;
+                
          end
 
     case 'xyzw'
@@ -56,11 +60,16 @@ switch qorder
                      2*(q(1)*q(3)-q(2)*q(4))        2*(q(2)*q(3)+q(4)*q(1))     q(4)^2-q(1)^2-q(2)^2+q(3)^2];
                 
             case 'tsf'     
-                 % Coordinate Transformation(Verified) Cranfield  Equation 3-23
+                 % Coordinate Transformation(Verified) Cranfield  Eqion 3-23
                  % Output matrix describe vector rotation
                 R = [q(4)^2+q(1)^2-q(2)^2-q(3)^2    2*(q(1)*q(2)+q(3)*q(4))       2*(q(1)*q(3)-q(2)*q(4));
                      2*(q(1)*q(2)-q(3)*q(4))      q(4)^2-q(1)^2+q(2)^2-q(3)^2     2*(q(2)*q(3)+q(1)*q(4));
                      2*(q(1)*q(3)+q(2)*q(4))        2*(q(2)*q(3)-q(1)*q(4))     q(4)^2-q(1)^2-q(2)^2+q(3)^2];
+            case 'tsf_att'
+                xi  = [ q(4)*eye(3) + smtrx(q(1:3,1)) ; -q(1:3,1)' ]; % [John_Crassidis] Eqion (A.174a)
+                psi = [ q(4)*eye(3) - smtrx(q(1:3,1)) ; -q(1:3,1)' ]; % [John_Crassidis] Eqion (A.174b)
+
+                R = xi' * psi;
         end
 end
 

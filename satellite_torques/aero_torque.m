@@ -54,12 +54,14 @@ switch type
 
           N = A(:,i)/norm(A(:,i)); % unit vector normal to Surface Area
 
-          term1(:,i) = (dot(N,Vo)>0)*dot(N,Vo)*(cross(Vo,R(:,i)))*norm(A(:,i));
-          term2(:,i) = (dot(N,Vo)>0)*dot(N,cross(w,R(:,i)))*cross(Vo,R(:,i))*norm(A(:,i));
-          term3(:,i) = (dot(N,Vo)>0)*dot(N,Vo)*(cross(cross(w,R(:,i)),R(:,i)))*norm(A(:,i));
+          term1(:,i) = (dot(N,Vo)>0)*dot(N,Vo)             *(cross(Vo,R(:,i)))*norm(A(:,i));
+          term2(:,i) = (dot(N,Vo)>0)*dot(N,cross(w,R(:,i)))*(cross(Vo,R(:,i)))*norm(A(:,i));
+          term3(:,i) = (dot(N,Vo)>0)*dot(N,Vo)             *(cross(cross(w,R(:,i)),R(:,i)))*norm(A(:,i));
         end
 
-        tau = rho*Vm^2*(sum(term1,2))+ rho*Vm*(sum(term2,2))+ rho*Vm*(sum(term3,2));
+        tau = rho*Vm^2*(sum(term1,2))...
+            + rho*Vm*(sum(term2,2))...
+            + rho*Vm*(sum(term3,2));
 
 end
 

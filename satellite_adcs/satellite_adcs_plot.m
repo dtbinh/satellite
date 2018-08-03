@@ -140,8 +140,8 @@ axis([-Inf Inf ymin ymax])
 plot(tout,bias(3,:)*R2D,'r')
 
 %% QUATERNION ERROR %%
-ymin = -10*std(q_B_I_error(1,end/2:end));
-ymax = 10*std(q_B_I_error(1,end/2:end));
+ymin = -10*std(q_B_I_error(1,ceil(end/2):end));
+ymax = 10*std(q_B_I_error(1,ceil(end/2):end));
 textx = 5;
 texty = ymax*0.8;
 
@@ -154,7 +154,7 @@ hold on;grid on;
 ylabel('x [-]');
 xlabel('time [s]');
 axis([-Inf Inf ymin ymax])
-text(textx,texty,strcat('MEAN:',num2str(mean(q_B_I_error(1,end/2:end))),' STD:',num2str(std(q_B_I_error(1,ceil(end/4):end)))));
+text(textx,texty,strcat('MEAN:',num2str(mean(q_B_I_error(1,ceil(end/4):end))),' STD:',num2str(std(q_B_I_error(1,ceil(end/4):end)))));
 
 subplot(4,1,2)
 plot(tout,q_B_I_error(2,:),'b')
@@ -195,7 +195,7 @@ hold on;grid on;
 ylabel('x [\circ/s]');
 xlabel('time [s]');
 axis([-Inf Inf ymin ymax])
-text(textx,texty,strcat('MEAN:',num2str(mean(w_B_BI_error(1,end/2:end)*R2D)),' STD:',num2str(std(w_B_BI_error(1,ceil(end/4):end)*R2D))));
+text(textx,texty,strcat('MEAN:',num2str(mean(w_B_BI_error(1,ceil(end/2):end)*R2D)),' STD:',num2str(std(w_B_BI_error(1,ceil(end/4):end)*R2D))));
 
 subplot(3,1,2)
 plot(tout,w_B_BI_error(2,:)*R2D,'b')
@@ -203,7 +203,7 @@ hold on;grid on;
 ylabel('y [\circ/s]');
 xlabel('time [s]');
 axis([-Inf Inf ymin ymax])
-text(textx,texty,strcat('MEAN:',num2str(mean(w_B_BI_error(2,end/2:end)*R2D)),' STD:',num2str(std(w_B_BI_error(2,ceil(end/4):end)*R2D))));
+text(textx,texty,strcat('MEAN:',num2str(mean(w_B_BI_error(2,ceil(end/2):end)*R2D)),' STD:',num2str(std(w_B_BI_error(2,ceil(end/4):end)*R2D))));
 
 
 subplot(3,1,3)
@@ -212,7 +212,7 @@ hold on;grid on;
 ylabel('z [\circ/s]');
 xlabel('time [s]');
 axis([-Inf Inf ymin ymax])
-text(textx,texty,strcat('MEAN:',num2str(mean(w_B_BI_error(3,end/2:end)*R2D)),' STD:',num2str(std(w_B_BI_error(3,ceil(end/4):end)*R2D))));
+text(textx,texty,strcat('MEAN:',num2str(mean(w_B_BI_error(3,ceil(end/2):end)*R2D)),' STD:',num2str(std(w_B_BI_error(3,ceil(end/4):end)*R2D))));
 %% ANGULAR MEASUREMENT ERROR %%
 ymin = -0.1;
 ymax = 0.1;
@@ -228,7 +228,7 @@ hold on;grid on;
 ylabel('x [\circ/s]');
 xlabel('time [s]');
 axis([-Inf Inf ymin ymax])
-text(textx,texty,strcat('MEAN:',num2str(mean(w_B_BI_m_error(1,end/2:end)*R2D)),' STD:',num2str(std(w_B_BI_m_error(1,ceil(end/4):end)*R2D))));
+text(textx,texty,strcat('MEAN:',num2str(mean(w_B_BI_m_error(1,ceil(end/2):end)*R2D)),' STD:',num2str(std(w_B_BI_m_error(1,ceil(end/4):end)*R2D))));
 
 subplot(3,1,2)
 plot(tout,w_B_BI_m_error(2,:)*R2D,'b')
@@ -236,7 +236,7 @@ hold on;grid on;
 ylabel('y [\circ/s]');
 xlabel('time [s]');
 axis([-Inf Inf ymin ymax])
-text(textx,texty,strcat('MEAN:',num2str(mean(w_B_BI_m_error(2,end/2:end)*R2D)),' STD:',num2str(std(w_B_BI_m_error(2,ceil(end/4):end)*R2D))));
+text(textx,texty,strcat('MEAN:',num2str(mean(w_B_BI_m_error(2,ceil(end/2):end)*R2D)),' STD:',num2str(std(w_B_BI_m_error(2,ceil(end/4):end)*R2D))));
 
 
 subplot(3,1,3)
@@ -245,7 +245,7 @@ hold on;grid on;
 ylabel('z [\circ/s]');
 xlabel('time [s]');
 axis([-Inf Inf ymin ymax])
-text(textx,texty,strcat('MEAN:',num2str(mean(w_B_BI_m_error(3,end/2:end)*R2D)),' STD:',num2str(std(w_B_BI_m_error(3,ceil(end/4):end)*R2D))));
+text(textx,texty,strcat('MEAN:',num2str(mean(w_B_BI_m_error(3,ceil(end/2):end)*R2D)),' STD:',num2str(std(w_B_BI_m_error(3,ceil(end/4):end)*R2D))));
 
 
 %% BIAS ERROR %%

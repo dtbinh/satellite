@@ -25,7 +25,7 @@ B_sph(1,1) = -2*CONST.Bo/((R_emf_sph(1))^3)*cos(R_emf_sph(2)); % [T] Magnetic Fi
 B_sph(2,1) =   -CONST.Bo/((R_emf_sph(1))^3)*sin(R_emf_sph(2)); % [T] Magnetic Field theta component
 B_sph(3,1) = 0;                                                % [T] Magnetic Field phi component
 
-R_C_S = Rcart('sphere',R_emf_sph(3,1),R_emf_sph(2,1)); % [-] Rotation Matrix from Sphere to Cartesian (Magnetic Frame)
+R_C_S = dcm2cart('sphere',R_emf_sph(3,1),R_emf_sph(2,1)); % [-] Rotation Matrix from Sphere to Cartesian (Magnetic Frame)
 
 B_emf = R_C_S*B_sph;                                   % [T] Earth Magnetic Field Vector in Magnetic Dipole Frame 
 B_ecf = R_E_M*B_emf;                                   % [T] Earth Magnetic Field Vector in Earth Center Fixed Frame 

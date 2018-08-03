@@ -9,7 +9,6 @@ switch etype
         
         switch qtype
             case 'wxyz'
- 
                 qx = [cos(phi/2);sin(phi/2);0;0];
                 qy = [cos(theta/2);0;sin(theta/2);0];
                 qz = [cos(psi/2);0;0;sin(psi/2)];
