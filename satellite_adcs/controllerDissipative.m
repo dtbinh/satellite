@@ -1,10 +1,9 @@
 function output = controllerDissipative(input)
 %% GLOBAL PARAMETERS
 global CONST
-global CTRL_RF
+global CTRL_EDSP
 
-K_d = CTRL_RF.K_d;
-K_p = CTRL_RF.K_p;
+K_d = CTRL_EDSP.K_d;
 w_O = CONST.w_O;
 
 %% INPUT

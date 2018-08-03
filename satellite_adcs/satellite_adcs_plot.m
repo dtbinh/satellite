@@ -3,6 +3,34 @@ close all
 screensize   = get(0,'ScreenSize');
 screenwidth  = screensize(3);
 screenheight = screensize(4);
+%% Torque  TO INERTIAL FRAME%%
+ymin = -1e-5;
+ymax = 1e-5;
+
+figure
+subplot(3,1,1)
+plot(tout,tau_m(1,:),'r')
+title('Torque Input')
+hold on;grid on;
+
+ylabel('\tau_y [Nm]');
+xlabel('time [s]');
+axis([-Inf Inf ymin ymax])
+
+subplot(3,1,2)
+plot(tout,tau_m(2,:),'r')
+hold on;grid on;
+ylabel('\tau_y [Nm]');
+xlabel('time [s]');
+axis([-Inf Inf ymin ymax])
+
+subplot(3,1,3)
+plot(tout,tau_m(3,:),'r')
+hold on;grid on;
+ylabel('\tau_y [Nm]');
+xlabel('time [s]');
+axis([-Inf Inf ymin ymax])
+
 %% QUATERNION TO INERTIAL FRAME%%
 figure
 subplot(4,1,1)
@@ -43,8 +71,8 @@ plot(tout,q_B_I_m_2(4,:),'r')
 plot(tout,q_B_I_f(4,:),'g')
 
 %% ANGULAR VELOCITY  TO INERTIAL FRAME%%
-ymin = -5;
-ymax = 5;
+ymin = -10;
+ymax = 10;
 
 figure
 subplot(3,1,1)

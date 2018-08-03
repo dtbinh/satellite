@@ -1,9 +1,9 @@
 function output = controllerSun(input)
 %% INPUT
-S_I    = input(1:3,1);   % Measured Sun vector in Sensor Frame 
-w_B_BI = input(1:3,2);   % [rad/s2] Angular Velocity Desired
-R_B_I  = input(1:3,3:5); %  
-S_S_m  = -input(1:3,6:9); %
+S_I    = input(1:3,1);    % [-] Measured Sun vector in Sensor Frame 
+w_B_BI = input(1:3,2);    % [rad/s2] Angular Velocity Desired
+R_B_I  = input(1:3,3:5);  % [-]  
+S_S_m  = -input(1:3,6:9); % [-] Measured Sun Sensor in Sensor Frame 
 
 %% CONSTANT PARAMETERS
 global CONST CTRL_SP
@@ -42,11 +42,11 @@ end
 
 
 S_B = R_B_I*S_I;
-angle  = acosd(dot(S_tgt,S_B)/(norm(S_tgt)*norm(S_B)));        % Angle between Desired Vector and Actual Sun Vector
+angle  = vangle(S_tgt,S_B);     % Angle between Desired Vector and Actual Sun Vector
 
-angle  = acos(dot(S_tgt,S_B_m_f)/(norm(S_tgt)*norm(S_B_m_f))); % Angle between Desired Vector and Measured Vector
+angle  = vangle(S_tgt,S_B_m_f); % Angle between Desired Vector and Measured Vector
 
 torq   = K_p * cross(S_tgt,S_B_m_f) - K_v*(w_B_BI - w_tgt) + cross(w_tgt,I*w_B_BI);
-output = [torq ;angle];    % [Nm] 
+output = torq ;    % [Nm] 
 
 end

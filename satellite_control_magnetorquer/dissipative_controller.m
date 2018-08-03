@@ -1,5 +1,5 @@
 %% Dissipative non-linear detumbling controller
-function output = detumbling_controller(input)
+function output = dissipative_controller(input)
 
 global K_coil
 global K_d

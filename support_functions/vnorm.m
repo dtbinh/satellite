@@ -1,14 +1,14 @@
 % function v = vnorm(v)
 % --------------------------------------------------------------------------
-% This function inverse the rotation of the quaternion input
+% This function inverse the rotation of the vector input
 % Example
 %              vout = vnorm([2;3;1])
 % 
 % Input 
-%     qin     -   quaternion
+%     v    -   vector input
 % 
 % Output 
-%     qout    -   quaternion inverted
+%     v    -   vector normalised
 % 
 % Revision
 %     rusty   -   initial     05 jul 2018
@@ -18,8 +18,16 @@
 %     
 % -------------------------------------------------------------------------
 
-function v = vnorm(v)
+function vout = vnorm(vin,eps_tol)
+if ~exist('eps_tol','var')
+    eps_tol = 1e-16;
+end
 
-    v = v/sqrt(v'*v);          
+
+if sqrt(vin'*vin) > eps_tol
+    vout = vin/sqrt(vin'*vin);
+else
+    vout = 0;
+end
  
 return

@@ -1,12 +1,14 @@
 function output=controllerBdot(input)
 %% GLOBAL PARAMETERS
-global CONST
-K_d = CONST.K_d;
+global CONST CTRL_BDOT
+
+K_d = CTRL_BDOT.K_d;
+
 w_O = CONST.w_O;
 %% INPUT
 R_O_B  = input(1:3,1:3);
 R_B_I  = input(1:3,4:6);
-B_B_m    = input(1:3,7);
+B_B_m  = input(1:3,7);
 Bdot_I = input(1:3,8);
 w_B_BI = input(1:3,9);
 

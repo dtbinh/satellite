@@ -13,7 +13,7 @@ e      = CONST.ecc;
 %% INPUT
 R = input(1:3);% [m] Position Vector in Inertial Frame
 V = input(4:6);% [m/s] Velocity Vector in Inertial Frame
-t = get_param('satellite_attitude_kalman_ekf_model','SimulationTime');
+t = get_param('satellite_adcs_model','SimulationTime');
 
 r = norm(R); % [m]   Position Magnitude of satellite
 

@@ -130,12 +130,12 @@ w_O_OI_0 = [0;-w_O;0];         % [rad] Orbital Frame Angular Rate relative to In
 w_B_OI_0 = R_O_B_0'*w_O_OI_0;  % [rad] Orbital Frame Angular Rates relative to Inertial Frame in Body Frame
 
 % Body Frame Angular Rate
-w_B_BO_0 = 0.01*[randn(1,1);randn(1,1);randn(1,1)]; % [rad/s] Body Frame Angular Rates relative to Orbital Frame in Body Frame 
+w_B_BO_0 = 0.1*[randn(1,1);randn(1,1);randn(1,1)]; % [rad/s] Body Frame Angular Rates relative to Orbital Frame in Body Frame 
 w_B_BI_0 = w_B_BO_0 + w_B_OI_0;   % [rad] Body Frame Angular Rate relative to Inertial Frame in Body Frame
 
 %% SENSORS FLAG
-mflag(1) = 0; % Star Tracker 1
-mflag(2) = 0; % Star Tracker 2
+mflag(1) = 1; % Star Tracker 1
+mflag(2) = 1; % Star Tracker 2
 mflag(3) = 1; % Sun Sensor 1
 mflag(4) = 1; % Sun Sensor 2
 mflag(5) = 1; % Sun Sensor 3
@@ -180,14 +180,14 @@ varST_z(2) = (15/3/60/60*pi/180)^2;    % [rad^2] Covariance of StarTracker (yaw)
 ST2_Mis    = [0.0;0.0;0.0]*pi/180;     % [rad] Star Tracker Misalignment Euler Angles (3-2-1)
 Ust2       = eul2dcm(ST2_Mis,'zyx');   % [-] Misalignment Matrix
 
-dt_st   = 1;                      % [s] Sampling Time of Star Tracker
+dt_st   = 1;                           % [s] Sampling Time of Star Tracker
 if dt_st < dt
     dt_st = dt;
 end
 
 %% SUN SENSOR
 SSaxis   = [1; 1; 1; 1];               % [axis] Sun Sensor rotation axis 1 = x, 2 = y, 3 = z
-SSangles = [30;-150; 30; 150]*pi/180; % [rad] Sun Sensors fram angles              
+SSangles = [30;-150; 30; 150]*pi/180;  % [rad] Sun Sensors fram angles              
 R_S1_B   = dcm(SSaxis(1),SSangles(1)); % [-] Rotation Matrix from Body Frame to Sun Sensor 1 Frame 
 R_S2_B   = dcm(SSaxis(2),SSangles(2)); % [-] Rotation Matrix from Body Frame to Sun Sensor 2 Frame 
 R_S3_B   = dcm(SSaxis(3),SSangles(3)); % [-] Rotation Matrix from Body Frame to Sun Sensor 3 Frame 
@@ -225,18 +225,30 @@ CONST.dt     = dt;               % [sec] (20 Hz) Model speed
 CONST.dt_ekf = dt_ekf;           % [sec] (20 Hz) EKF speed
 CONST.sig_v  = sqrt(Var_ARW);    % [rad/s^(1/2)] sigma of process noise - attitude state
 CONST.sig_u  = sqrt(Var_RRW);    % [rad/s^(3/2)] sigma of process noise - bias state
-CONST.sig_w  = sqrt(VarW);      % [rad/C/s^(1/2)] Standard Deviation Measured
-CONST.sig_st = sigST;          % [rad] Star Tracker 
-CONST.sig_ss = sigSS;        % [rad] Sun Sensor 
-CONST.sig_mg = sigMag;       % [tesla] magnetometer 
+CONST.sig_w  = sqrt(VarW);       % [rad/C/s^(1/2)] Standard Deviation Measured
+CONST.sig_st = sigST;            % [rad] Star Tracker 
+CONST.sig_ss = sigSS;            % [rad] Sun Sensor 
+CONST.sig_mg = sigMag;           % [tesla] magnetometer 
 CONST.varST_x = varST_x;
 CONST.varST_y = varST_y;
 CONST.varST_z = varST_z;
 
 ReferenceOmega = w_B_OI_0;
 %% CONTROLLER
+global CTRL_BDOT
+global CTRL_EDSP
+global CTRL_VDOT
 global CTRL_SP
 global CTRL_RF
+
+% Bdot Controller
+CTRL_BDOT.K_d   = 4e-05;      % [-] Differential Controller Gain 8*w_O^2*(I(2,2)-I(3,3)) =  4.899878019542987e-08
+
+% Energy Dissipitative Controller
+CTRL_EDSP.K_d   = 4e-05;      % [-] Differential Controller Gain 8*w_O^2*(I(2,2)-I(3,3)) =  4.899878019542987e-08
+
+% Vdot Controller
+CTRL_VDOT.K_d   = 1e-03;
 
 % Sun Pointing Controller
 CTRL_SP.K_p = 5e-06;
@@ -245,14 +257,14 @@ CTRL_SP.S_tgt = [1;0;0];    % [-] Desired sun vector in Body Frame
 CTRL_SP.w_tgt = [0;0;0];    % [-] Desired Angular Velocity
 
 % Reference Controller
-CTRL_RF.K_p   = 4e-05;      % [-] ProportionalController Gain
-CTRL_RF.K_d   = 5e-08;      % [-] Differential Controller Gain 8*w_O^2*(I(2,2)-I(3,3))
+CTRL_RF.K_p   = 5e-08;      % [-] ProportionalController Gain
+CTRL_RF.K_d   = 4e-05;      % [-] Differential Controller Gain 8*w_O^2*(I(2,2)-I(3,3))
 
-
-CTRL_MODE = 3;
+CTRL_SWITCH  = P/4; % Time to change mode from Detumbling to Pointing
+CTRL_DT_MODE = 2;   % Detumbling mode: BDOT/EDSP/VDOT
+CTRL_PT_MODE = 3;   % Pointing mode  : REF/SLD/SUN
 
 %% SOLVER
-
 tdur = P/2;              
 sim('satellite_adcs_model',tdur);
 
@@ -284,7 +296,7 @@ Pdiag(6,i)        = Pk_f(6,6,i);
 end
 
 %% PLOT
-% satellite_adcs_plot
+satellite_adcs_plot
 
 %% SIMULATION
 % Figure Setting
@@ -294,7 +306,7 @@ set(fig,'Position',[0 0 screensize(4)*0.8 screensize(4)*0.8]);
 grid on; axis fill;
 cameratoolbar('SetMode','orbit')   
 set(gca,'Position',[0 0 1 1]); % Set Position of Graph
-set(gca,'CameraViewAngle',6); % Set Zoom of Graph
+set(gca,'CameraViewAngle',4); % Set Zoom of Graph
 axis(3.5*[-1 1 -1 1 -1 1]);    % Set Limit of Axis  
 
 % Earth Centered Inertial Frame
@@ -316,6 +328,9 @@ Z_emf = plotvector(R_I_E(:,:,1)*R_E_M*[0 ;0 ;1], [0 0 0], 'm');
 [X_sat,X_sat_lab] = plotvector(R_B_I(:,:,1)'*[1 ;0 ;0], R(:,1,1), 'b', 'x_b',0.5);
 [Y_sat,Y_sat_lab] = plotvector(R_B_I(:,:,1)'*[0 ;1 ;0], R(:,1,1), 'b', 'y_b',0.5);
 [Z_sat,Z_sat_lab] = plotvector(R_B_I(:,:,1)'*[0 ;0 ;1], R(:,1,1), 'b', 'z_b',0.5);
+[w_sat,w_sat_lab] = plotvector(R_B_I(:,:,1)'*w_B_BI(:,1), R(:,1,1),'r','\omega',0.5);
+[B_sat,B_sat_lab] = plotvector(R_B_I(:,:,1)'*B_B_m(:,1), R(:,1,1),'m','B_m',0.5);
+[S_sat,S_sat_lab] = plotvector(R_B_I(:,:,1)'*S_B_hat(:,1), R(:,1,1),color('orange'),'S_m',0.5);
 
 % Orbital Frame
 [X_orb,X_orb_lab] = plotvector(R_O_I(:,:,1)'*[1 ;0 ;0], R(:,1,1), 'g', 'x_o',0.5);
@@ -386,9 +401,16 @@ set(Z_orb_lab,'Position',R_O_I(:,:,i)'*[0 ;0 ;1]+R(:,1,i));
 updatevector(X_sat, R_B_I(:,:,i)'*[1 ;0 ;0],  R(:,1,i),0.5);
 updatevector(Y_sat, R_B_I(:,:,i)'*[0 ;1 ;0],  R(:,1,i),0.5);
 updatevector(Z_sat, R_B_I(:,:,i)'*[0 ;0 ;1],  R(:,1,i),0.5);
-set(X_sat_lab,'Position',R_B_I(:,:,i)'*[1 ;0 ;0]+R(:,1,i));
-set(Y_sat_lab,'Position',R_B_I(:,:,i)'*[0 ;1 ;0]+R(:,1,i));
-set(Z_sat_lab,'Position',R_B_I(:,:,i)'*[0 ;0 ;1]+R(:,1,i));
+updatevector(w_sat, R_B_I(:,:,i)'*w_B_BI(:,i),  R(:,1,i),0.5);
+updatevector(B_sat, R_B_I(:,:,i)'*B_B_m(:,i),  R(:,1,i),0.5);
+updatevector(S_sat, R_B_I(:,:,i)'*S_B_hat(:,i),  R(:,1,i),0.5);
+
+set(X_sat_lab,'Position',R_B_I(:,:,i)'*0.5*[1 ;0 ;0]+R(:,1,i));
+set(Y_sat_lab,'Position',R_B_I(:,:,i)'*0.5*[0 ;1 ;0]+R(:,1,i));
+set(Z_sat_lab,'Position',R_B_I(:,:,i)'*0.5*[0 ;0 ;1]+R(:,1,i));
+set(w_sat_lab,'Position',R_B_I(:,:,i)'*0.5*vnorm(w_B_BI(:,i))+R(:,1,i));
+set(B_sat_lab,'Position',R_B_I(:,:,i)'*0.5*vnorm(B_B_m(:,i))+R(:,1,i));
+set(S_sat_lab,'Position',R_B_I(:,:,i)'*0.5*vnorm(S_B_hat(:,i))+R(:,1,i));
 
 % Update Satellite Body Frame
 updatevector(B_mag, B_I(:,i),  R(:,1,i));
