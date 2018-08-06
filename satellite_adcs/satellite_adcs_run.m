@@ -36,7 +36,7 @@ CONST.gamma      = 23.442/180*pi;           % [rad] Spin Axis of Ecliptic Plane
 CONST.dm         = 7.94e22;                 % [Am^2] Earth Dipole Magnetic Moment
 CONST.mui        = 4*pi*1e-7;               % [kgm/A^2/s^2] Earth Permeability of Free Space
 CONST.Bo         = CONST.mui*CONST.dm/4/pi; % [-] Magnetic Constant for magnetic field calculation
-CONST.u_0        = pi;                  % [rad] Initial Sun Ascension (pi/2 - Summer, pi - Autumn, 3*pi/2 
+CONST.u_0        = rand(1,1)*pi;            % [rad] Initial Sun Ascension (pi/2 - Summer, pi - Autumn, 3*pi/2 
 
 %% SATELLITE MOMENTS OF INERTIA
 m  = 2.00;  % [kg] Satellite Mass
@@ -111,12 +111,12 @@ CONST.ecc = ecc;
 %% INITIAL CONDITIONS
 R_O_I   = dcm(1,-90*D2R)*dcm(3,(TAo+90)*D2R)*dcm(1,incl)*dcm(3,RAAN); % [3x3] Rotation Matrix from Inertial (X axis is vernal equinox) to Orbit Frame (x is orbit direction)
 
-Euler_I_B_0  = [ 0 ; deg2rad(-23.5) ; pi/2 ];         % [rad] Euler Angle from Body Frame to Inertial Frame (Initial)
-Euler_O_I_0 = dcm2eul(R_O_I,'zyx');   % [rad] Initial Euler Angle transforming from Inertial Frame to Orbit Frame (ZYX means rotate X, then Y, then Z)
+Euler_I_B_0  = [ 0 ; deg2rad(-23.5) ; pi/2 ];   % [rad] Euler Angle from Body Frame to Inertial Frame (Initial)
+Euler_O_I_0 = dcm2eul(R_O_I,'zyx');             % [rad] Initial Euler Angle transforming from Inertial Frame to Orbit Frame (ZYX means rotate X, then Y, then Z)
 
-R_I_B_0 = eul2dcm(Euler_I_B_0,'zyx'); % Transformation Matrix from Body to Inertial (Initial)   
-R_O_I_0 = eul2dcm(Euler_O_I_0,'zyx'); % Transformation Matrix from Inertial to Body (Initial)
-R_O_B_0 = R_O_I_0*R_I_B_0;            % Transformation Matrix from Body to Orbital (Initial)
+R_I_B_0 = eul2dcm(Euler_I_B_0,'zyx');  % Transformation Matrix from Body to Inertial (Initial)   
+R_O_I_0 = eul2dcm(Euler_O_I_0,'zyx');  % Transformation Matrix from Inertial to Body (Initial)
+R_O_B_0 = R_O_I_0*R_I_B_0;             % Transformation Matrix from Body to Orbital (Initial)
 
 q_I_B_0 = dcm2q(R_I_B_0,'tsf','xyzw'); % Quaternion Rotation of Body Frame from Inertial Frame
 q_O_I_0 = dcm2q(R_O_I_0,'tsf','xyzw'); % Quaternion Rotation of Inertial Frame From Body Frame
@@ -135,6 +135,7 @@ w_B_OI_0 = R_O_B_0'*w_O_OI_0;  % [rad] Orbital Frame Angular Rates relative to I
 
 % Body Frame Angular Rate
 w_B_BO_0 = 0.1*[randn(1,1);randn(1,1);randn(1,1)]; % [rad/s] Body Frame Angular Rates relative to Orbital Frame in Body Frame 
+w_B_BO_0 = 0.01*[1;1;1];
 w_B_BI_0 = w_B_BO_0 + w_B_OI_0;   % [rad] Body Frame Angular Rate relative to Inertial Frame in Body Frame
 
 %% SENSORS FLAG
@@ -242,6 +243,7 @@ ReferenceOmega = w_B_OI_0;
 global CTRL_BDOT
 global CTRL_EDSP
 global CTRL_VDOT
+global CTRL_SM
 global CTRL_SP
 global CTRL_RF
 
@@ -254,19 +256,28 @@ CTRL_EDSP.K_d   = 4e-05;      % [-] Differential Controller Gain 8*w_O^2*(I(2,2)
 % Vdot Controller
 CTRL_VDOT.K_d   = 1e-03;
 
+
+% Reference Controller
+CTRL_RF.K_p   = 5e-08;      % [-] ProportionalController Gain
+CTRL_RF.K_d   = 4e-05;      % [-] Differential Controller Gain 8*w_O^2*(I(2,2)-I(3,3))
+
+% Sliding Mode Controller
+CTRL_SM.k   = 1.00;         % derivative gain on dqd and part-propotional gain on dq
+CTRL_SM.eps = 1.00;         % eps if value is too small, it works like
+CTRL_SM.g   = 0.01*eye(3);  % derivative gain on dw and part-propotional gain on dq
+CTRL_SM.kg  = CTRL_SM.k*CTRL_SM.g;  % propotional gain on dq (not in used)
+CTRL_SM.type = 'bst_mod';
+
 % Sun Pointing Controller
 CTRL_SP.K_p = 5e-06;
 CTRL_SP.K_v = 5e-04;
 CTRL_SP.S_tgt = [1;0;0];    % [-] Desired sun vector in Body Frame
 CTRL_SP.w_tgt = [0;0;0];    % [-] Desired Angular Velocity
 
-% Reference Controller
-CTRL_RF.K_p   = 5e-08;      % [-] ProportionalController Gain
-CTRL_RF.K_d   = 4e-05;      % [-] Differential Controller Gain 8*w_O^2*(I(2,2)-I(3,3))
-
-CTRL_SWITCH  = P/4; % Time to change mode from Detumbling to Pointing
+% Controller Panel
+CTRL_SWITCH  = 1; % Time to change mode from Detumbling to Pointing
 CTRL_DT_MODE = 2;   % Detumbling mode: BDOT/EDSP/VDOT
-CTRL_PT_MODE = 3;   % Pointing mode  : REF/SLD/SUN
+CTRL_PT_MODE = 2;   % Pointing mode  : REF/SLD/SUN
 
 %% SOLVER
 tdur = P/2;              
@@ -297,6 +308,11 @@ Pdiag(3,i)        = Pk_f(3,3,i);
 Pdiag(4,i)        = Pk_f(4,4,i);
 Pdiag(5,i)        = Pk_f(5,5,i);
 Pdiag(6,i)        = Pk_f(6,6,i);
+
+vector1 = R_O_I(:,:,i)'*[0 ;0 ;1]; % vectir of desired 
+vector2 = R_B_I(:,:,i)'*[0 ;0 ;1];
+LOS(i)  = vangle(vector1, vector2);
+ 
 end
 
 %% PLOT
@@ -308,7 +324,8 @@ fig = figure;
 screensize = get(0,'ScreenSize');
 set(fig,'Position',[0 0 screensize(4)*0.8 screensize(4)*0.8]);
 grid on; axis fill;
-cameratoolbar('SetMode','orbit')   
+cameratoolbar('SetMode','orbit') 
+cameratoolbar
 set(gca,'Position',[0 0 1 1]); % Set Position of Graph
 set(gca,'CameraViewAngle',4); % Set Zoom of Graph
 axis(3.5*[-1 1 -1 1 -1 1]);    % Set Limit of Axis  

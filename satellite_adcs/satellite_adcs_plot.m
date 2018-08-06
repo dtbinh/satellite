@@ -1,11 +1,25 @@
+clc
 close all
 
 screensize   = get(0,'ScreenSize');
 screenwidth  = screensize(3);
 screenheight = screensize(4);
+
+%% LOS
+ymin = 0;
+ymax = 100;
+figure
+plot(tout,rad2arcsec(LOS))
+grid on; hold on;
+stem([P/8 2*P/8 3*P/8 4*P/8],[ymax ymax ymax ymax])
+title('LOS');
+xlabel('Period [cycle]');
+ylabel('LOS [arcsec]');
+axis([0 Inf ymin ymax])
+
 %% Torque  TO INERTIAL FRAME%%
-ymin = -1e-5;
-ymax = 1e-5;
+ymin = -1e-4;
+ymax = 1e-4;
 
 figure
 subplot(3,1,1)
@@ -15,7 +29,7 @@ hold on;grid on;
 
 ylabel('\tau_y [Nm]');
 xlabel('time [s]');
-axis([-Inf Inf ymin ymax])
+axis([-Inf Inf -Inf Inf])
 
 subplot(3,1,2)
 plot(tout,tau_m(2,:),'r')
@@ -149,7 +163,7 @@ fig = figure;
 set(fig,'Position',[0 0 screenwidth*0.25 screenheight]);
 subplot(4,1,1)
 plot(tout,q_B_I_error(1,:),'b')
-title('Quaternions Error')
+title('QUATERNION ERROR')
 hold on;grid on;
 ylabel('x [-]');
 xlabel('time [s]');
@@ -181,41 +195,8 @@ axis([-Inf Inf ymin ymax])
 text(textx,texty,strcat('MEAN:',num2str(mean(q_B_I_error(4,ceil(end/4):end))),' STD:',num2str(std(q_B_I_error(4,ceil(end/4):end)))));
 
 %% ANGULAR RATES ERROR %%
-ymin = -0.1;
-ymax = 0.1;
-textx = 5;
-texty = ymax*0.8;
-
-fig = figure;
-set(fig,'Position',[screenwidth*0.25 0 screenwidth*0.25 screenheight]);
-subplot(3,1,1)
-plot(tout,w_B_BI_error(1,:)*R2D,'b')
-title('Angular Rates Estimate Error')
-hold on;grid on;
-ylabel('x [\circ/s]');
-xlabel('time [s]');
-axis([-Inf Inf ymin ymax])
-text(textx,texty,strcat('MEAN:',num2str(mean(w_B_BI_error(1,ceil(end/2):end)*R2D)),' STD:',num2str(std(w_B_BI_error(1,ceil(end/4):end)*R2D))));
-
-subplot(3,1,2)
-plot(tout,w_B_BI_error(2,:)*R2D,'b')
-hold on;grid on;
-ylabel('y [\circ/s]');
-xlabel('time [s]');
-axis([-Inf Inf ymin ymax])
-text(textx,texty,strcat('MEAN:',num2str(mean(w_B_BI_error(2,ceil(end/2):end)*R2D)),' STD:',num2str(std(w_B_BI_error(2,ceil(end/4):end)*R2D))));
-
-
-subplot(3,1,3)
-plot(tout,w_B_BI_error(3,:)*R2D,'b')
-hold on;grid on;
-ylabel('z [\circ/s]');
-xlabel('time [s]');
-axis([-Inf Inf ymin ymax])
-text(textx,texty,strcat('MEAN:',num2str(mean(w_B_BI_error(3,ceil(end/2):end)*R2D)),' STD:',num2str(std(w_B_BI_error(3,ceil(end/4):end)*R2D))));
-%% ANGULAR MEASUREMENT ERROR %%
-ymin = -0.1;
-ymax = 0.1;
+ymin  = -0.1;
+ymax  = 0.1;
 textx = 5;
 texty = ymax*0.8;
 
@@ -223,30 +204,33 @@ fig = figure;
 set(fig,'Position',[screenwidth*0.25 0 screenwidth*0.25 screenheight]);
 subplot(3,1,1)
 plot(tout,w_B_BI_m_error(1,:)*R2D,'b')
-title('Angular Rates Measurement Error')
+title('Angular Rates Estimate Error')
+plot(tout,w_B_BI_error(1,:)*R2D,'b')
 hold on;grid on;
 ylabel('x [\circ/s]');
 xlabel('time [s]');
 axis([-Inf Inf ymin ymax])
-text(textx,texty,strcat('MEAN:',num2str(mean(w_B_BI_m_error(1,ceil(end/2):end)*R2D)),' STD:',num2str(std(w_B_BI_m_error(1,ceil(end/4):end)*R2D))));
+text(textx,texty,strcat('MEAN:',num2str(mean(w_B_BI_error(1,ceil(end/2):end)*R2D)),' STD:',num2str(std(w_B_BI_error(1,ceil(end/4):end)*R2D))));
+title('ANGULAR RATES ERROR');
 
 subplot(3,1,2)
 plot(tout,w_B_BI_m_error(2,:)*R2D,'b')
 hold on;grid on;
+plot(tout,w_B_BI_error(2,:)*R2D,'b')
 ylabel('y [\circ/s]');
 xlabel('time [s]');
 axis([-Inf Inf ymin ymax])
-text(textx,texty,strcat('MEAN:',num2str(mean(w_B_BI_m_error(2,ceil(end/2):end)*R2D)),' STD:',num2str(std(w_B_BI_m_error(2,ceil(end/4):end)*R2D))));
+text(textx,texty,strcat('MEAN:',num2str(mean(w_B_BI_error(2,ceil(end/2):end)*R2D)),' STD:',num2str(std(w_B_BI_error(2,ceil(end/4):end)*R2D))));
 
 
 subplot(3,1,3)
 plot(tout,w_B_BI_m_error(3,:)*R2D,'b')
 hold on;grid on;
+plot(tout,w_B_BI_error(3,:)*R2D,'b')
 ylabel('z [\circ/s]');
 xlabel('time [s]');
 axis([-Inf Inf ymin ymax])
-text(textx,texty,strcat('MEAN:',num2str(mean(w_B_BI_m_error(3,ceil(end/2):end)*R2D)),' STD:',num2str(std(w_B_BI_m_error(3,ceil(end/4):end)*R2D))));
-
+text(textx,texty,strcat('MEAN:',num2str(mean(w_B_BI_error(3,ceil(end/2):end)*R2D)),' STD:',num2str(std(w_B_BI_error(3,ceil(end/4):end)*R2D))));
 
 %% BIAS ERROR %%
 ymin = -0.01;
@@ -258,7 +242,7 @@ fig = figure;
 set(fig,'Position',[screenwidth*0.5 0 screenwidth*0.25 screenheight]);
 subplot(3,1,1)
 plot(tout,bias_error(1,:)*R2D,'b')
-title('Bias Error')
+title('BIAS ERROR')
 hold on;grid on;
 plot(tout,3*sqrt(Pdiag(4,:))*R2D,'r')
 plot(tout,-3*sqrt(Pdiag(4,:))*R2D,'r')

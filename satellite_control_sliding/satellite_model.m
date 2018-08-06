@@ -56,44 +56,60 @@ qc_d = [  0    -q_d(3) q_d(2);
        -q_d(2)  q_d(1)   0   ];
 
 % Xi Matrices
-xiq   = [q(4)*eye(3)+qc;-q(1:3)'];
-xiq_d = [q_d(4)*eye(3)+qc_d;-q_d(1:3)'];
-dq    = [xiq_d'*q;q_d'*q];         
+xiq   = [q(4)*eye(3)+qc;
+            -q(1:3)'];
+xiq_d = [q_d(4)*eye(3)+qc_d;
+            -q_d(1:3)'];
+        
+dq    = [xiq_d'*q;
+          q_d'*q];         
 
 % Sliding Surface
-ss = (w-w_d)+k*sign(dq(4,1))*dq(1:3,1);
+dw = w-w_d;
+ss = dw + k*sign(dq(4,1))*dq(1:3,1);
 
 % Sliding Mode Control
 usat = [saturation(ss(1),eps);
         saturation(ss(2),eps);
         saturation(ss(3),eps)];
     
-controller = 1;
+controller = 4;
+
+% fprintf('\ndpd1 = [%.10f %.10f %.10f]',xiq_d'*xiq*w - xiq'*xiq_d*w_d);
+% fprintf('\ndpd2 = [%.10f %.10f %.10f]',xiq_d'*2*(0.5*xiq*w) - xiq'*2*(0.5*xiq_d*w_d));
+% fprintf('\ndpd3 = [%.10f %.10f %.10f]',(cross(dq(1:3,1),(w + w_d))  -  dq(4,1)*(w_d-w)));
+% fprintf('\ndpd4 = [%.10f %.10f %.10f %.10f]',(qmul([w;0],dq) - qmul(dq,[w_d;0])));
+% fprintf('\n');
 switch controller
     case 1
     % [Crassidis] Optimal Variable Structure Control Tracking of Spacecraft Maneuvers
-    dqd  = xiq_d'*xiq*w-xiq'*xiq_d*w_d;
-    torq = wc*(j*w+wh)-j*(0.5*k*sign(dq(4,1))*dqd-w_dd + g*usat);
+    dqd_img  = xiq_d'*xiq*w - xiq'*xiq_d*w_d;
+    torq = j*w_dd  +  wc*j*w  +  wc*wh  - j*0.5*k*sign(dq(4,1))*dqd_img   -  j*g*usat;
     
     case 2
     % [Crassidis] Optimal Variable Structure Control Tracking of Spacecraft Maneuvers (modified)   
     qd   = 0.5*xiq*w;               % qdot
     qd_d = 0.5*xiq_d*w_d;           % qdot_desired
-    dqd  = xiq_d'*2*qd-xiq'*2*qd_d;
-    torq = wc*(j*w+wh) - j*(0.5*k*sign(dq(4,1))*dqd - w_dd + g*usat);
+    dqd_img  = xiq_d'*2*qd - xiq'*2*qd_d; % dqd(1:3,1)
+    torq = wc*(j*w+wh) - j*(0.5*k*sign(dq(4,1))*dqd_img - w_dd + g*usat);
+    torq = j*w_dd  +  wc*j*w  +  wc*wh  - j*0.5*k*sign(dq(4,1))*dqd_img  -  j*g*usat;
     
     case 3
     % [Crassidis] Fundamentals Spacecraft Attitude Determination Control System
-    torq = j*(0.5*k*(abs(dq(4,1))*(w_d-w)-sign(dq(4,1))*cross(dq(1:3,1),(w+w_d))) + w_dd - g*usat)+wc*(j*w+wh);
+    torq = j*(0.5*k*(abs(dq(4,1))*(w_d-w) - sign(dq(4,1))*cross(dq(1:3,1),(w + w_d))) + w_dd - g*usat)+wc*(j*w+wh);
+    dpd_img = cross(dq(1:3,1),(w + w_d))  -  dq(4,1)*(w_d-w);
+    torq = j*w_dd   +  wc*j*w  +  wc*wh  -  j*0.5*k*sign(dq(4,1))*dpd_img  - j*g*usat;
     
     case 4
-    % [BST] to be continue
+    % [BST] torque = moi*(w_dot_tgt -k*bst_mathx_sign(q_error_real)*q_error_dot_imag) - k1*sliding_manifold_vector
     dqd1 = qmul([w;0],dq);
     dqd2 = qmul(dq,[w_d;0]);
     dqd  = 0.5*(dqd1 - dqd2);
-    torq = j*(w_dd -k*sign(dq(4,1))*dqd(1:3,1) - g*ss);
-
+    dqd_img = dqd(1:3,1);
+    torq = j*(w_dd -k*sign(dq(4,1))*dqd(1:3,1) - g*ss);   % ss can be repalced by usat for better results
+    torq = j*w_dd  - j*k*sign(dq(4,1))*dqd_img - j*g*ss; 
 end
+
 % Integration Functions
 om   = [-wc w;
         -w' 0];

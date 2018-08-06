@@ -1,12 +1,8 @@
 % This program tracks an attitude trajectory using sliding mode control.
 % The WMAP spacecraft is the model used for the simulation.
-%
+
 % Fundamentals of Spacecraft Attitude Determination and Control by Markley and Crassidis
 % Example 7.3
-
-% Other Required Routines: satellite_model.m, saturation.m
-
-% Written by John L. Crassidis 8/13
 
 close all
 clear all
@@ -24,7 +20,7 @@ in = [  380,-2.90,  -1.30;
 
 % Time 
 dt = 0.1;        % [sec] Sample Time
-tf = 3600;       % [sec] Final Time
+tf = 2400;       % [sec] Final Time
 t  = [0:dt:tf]'; % [sec] Time Array
 m  = length(t);  % [sec] Time Array length
 
@@ -35,7 +31,7 @@ w_d   = zeros(m,3);
 w_dd  = zeros(m,3);
 w     = zeros(m,3);
 u     = zeros(m,3);
-wheel = zeros(m,3);
+wh    = zeros(m,3);
 slide = zeros(m,3);
 xa    = zeros(m,10);
 i1000 = 0;
@@ -82,18 +78,19 @@ qc_d =[   0    -q_d(1,3)  q_d(1,2);
 
 xiq_d  = [q_d(1,4)*eye(3)+qc_d;-q_d(1,1:3)];
 q(1,:) = ([xiq_d q_d(1,:)']*[0;0;sin(60/2*pi/180);cos(60/2*pi/180)])';
-q(1,:) = [0.7071;0;0;0.7071];
-w(1,:) = [0.001;0.003;0.0003];
-w(1,:) = [0;0;0];
-xa(1,:)= [q(1,:) w(1,:) 0 0 0];
+% q(1,:) = [0.7071;0;0;0.7071];
+w(1,:)   = [0;0;0];
+% w(1,:) = [0.001;0.003;0.0003];
+wh(1,:) =  [0;0;0]; 
+xa(1,:)= [q(1,:) w(1,:) wh(1,:)];
 
 fprintf('Initial Quaternion  : %.4f %.4f %.4f %.4f  [ ]\n',q(1,:))
 fprintf('Initial Ang Velocity: %.4f %.4f %.4f          [rad/s]     \n',w(1,:))
 
 % Gains
 k   = 0.015;
-g   = 0.01*eye(3);
-eps = 0.0005;
+g   = 0.15*eye(3);
+eps = 0.01;
   
 % Initial Torque, Sliding Manifold, Desired Quaternion and Angular Velocity
 [ff,torq,ss,qq,ww] = satellite_model(xa(1,:),t(1),theta_d,phir_d,psir_d,dist(1,:),in,intrue,k,g,eps);
@@ -124,7 +121,7 @@ w_d(i+1,:) = ww(:)';
 % Actual Quaterion, Angular Velocity and Wheel Speed
 q(i+1,:) = xa(i+1,1:4);
 w(i+1,:) = xa(i+1,5:7);
-wheel(i+1,:) = xa(i+1,8:10);
+wh(i+1,:) = xa(i+1,8:10);
 
 R_I_B(:,:,i+1) = q2dcm(q(i+1,:)','xyzw');
 track(i+1,:) = R_I_B(:,:,i+1)'*[0 ;0 ;1];
@@ -184,19 +181,19 @@ xlabel('Time (Min)');
 figure
 
 subplot(311)
-plot(t/60,wheel(:,1));
+plot(t/60,wh(:,1));
 axis([0 20 -0.4 0.4])
 set(gca,'ytick',[-0.4 -0.2 0 0.2 0.4])
 ylabel('h1 (Nms)');
 
 subplot(312)
-plot(t/60,wheel(:,2));
+plot(t/60,wh(:,2));
 axis([0 20 -0.4 0.2])
 set(gca,'ytick',[-0.4 -0.2 0 0.2])
 ylabel('h2 (Nms)');
 
 subplot(313)
-plot(t/60,wheel(:,3));
+plot(t/60,wh(:,3));
 axis([0 20 -20 -16])
 set(gca,'ytick',[-20 -19 -18 -17 -16])
 ylabel('h3 (Nms)');
@@ -209,7 +206,7 @@ d_norm_max = max(d_norm);
 bound = norm(eps*inv(in*g),'fro')*d_norm_max*ones(m,1);
 slide_norm = (slide(:,1).^2+slide(:,2).^2+slide(:,3).^2).^(0.5);
 plot(t/60,slide_norm,t/60,bound)
-
+axis([0 inf 0 3e-6])
 ylabel('Slide Norm and Bound');
 xlabel('Time (Min)');
 
@@ -252,7 +249,7 @@ asun = plotvector([0 ;0 ;1], [0 0 0], 'k', 'Anti-Sun Vector',2);
 % Track
 plot3(track(:,1),track(:,2),track(:,3))
 
-for i=1:10:m-1
+for i=1:50:m-1
 updatevector(X_sat, R_I_B(:,:,i)'*[1 ;0 ;0], [0 ;0 ;0],1);
 updatevector(Y_sat, R_I_B(:,:,i)'*[0 ;1 ;0], [0 ;0 ;0],1);
 updatevector(Z_sat, R_I_B(:,:,i)'*[0 ;0 ;1], [0 ;0 ;0],1);   

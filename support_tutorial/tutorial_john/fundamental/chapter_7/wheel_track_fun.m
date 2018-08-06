@@ -61,7 +61,7 @@ usat = [sat1(ss(1),eps);
         sat1(ss(2),eps);
         sat1(ss(3),eps)];
     
-dqd  = xiq_d'*xiq*w-xiq'*xiq_d*w_d;
+dqd  = xiq_d'*xiq*w - xiq'*xiq_d*w_d;
 torq = wc*(j*w+wh)-j*(0.5*k*sign(q_d'*q)*dqd-w_dd + g*usat);
 
 % Integration Functions
