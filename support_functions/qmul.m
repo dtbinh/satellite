@@ -17,13 +17,14 @@
 %   crassidis - Fundamentals Spacecraft Attitude Determination Control System
 % 
 % ------------------------------------------------------------------------
+
 function qout = qmul(q1,q2,type)
+
 if~exist('type','var')
    type = '*'; 
 end
 
 switch type
-
     case {'.'}
     qout(1,:) =   q1(4,:).*q2(1,:) - q1(3,:).*q2(2,:) + q1(2,:).*q2(3,:) + q1(1,:).*q2(4,:);    
     qout(2,:) =   q1(3,:).*q2(1,:) + q1(4,:).*q2(2,:) - q1(1,:).*q2(3,:) + q1(2,:).*q2(4,:);    

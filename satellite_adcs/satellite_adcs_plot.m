@@ -7,16 +7,34 @@ screenheight = screensize(4);
 
 %% LOS
 ymin = 0;
-ymax = 100;
+ymax = 500;
 figure
-plot(tout,rad2arcsec(LOS))
+subplot(3,1,1)
+plot(tout,rad2arcsec(LOS_SUN))
 grid on; hold on;
 stem([P/8 2*P/8 3*P/8 4*P/8],[ymax ymax ymax ymax])
 title('LOS');
 xlabel('Period [cycle]');
-ylabel('LOS [arcsec]');
+ylabel('LOS-Sun [arcsec]');
 axis([0 Inf ymin ymax])
 
+subplot(3,1,2)
+plot(tout,rad2arcsec(LOS_NADIR))
+grid on; hold on;
+stem([P/8 2*P/8 3*P/8 4*P/8],[ymax ymax ymax ymax])
+title('LOS');
+xlabel('Period [cycle]');
+ylabel('LOS-Nadir [arcsec]');
+axis([0 Inf ymin ymax])
+
+subplot(3,1,3)
+plot(tout,rad2arcsec(LOS_INERTIAL))
+grid on; hold on;
+stem([P/8 2*P/8 3*P/8 4*P/8],[ymax ymax ymax ymax])
+title('LOS');
+xlabel('Period [cycle]');
+ylabel('LOS-Tgt [arcsec]');
+axis([0 Inf ymin ymax])
 %% Torque  TO INERTIAL FRAME%%
 ymin = -1e-4;
 ymax = 1e-4;

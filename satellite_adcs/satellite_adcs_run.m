@@ -36,7 +36,7 @@ CONST.gamma      = 23.442/180*pi;           % [rad] Spin Axis of Ecliptic Plane
 CONST.dm         = 7.94e22;                 % [Am^2] Earth Dipole Magnetic Moment
 CONST.mui        = 4*pi*1e-7;               % [kgm/A^2/s^2] Earth Permeability of Free Space
 CONST.Bo         = CONST.mui*CONST.dm/4/pi; % [-] Magnetic Constant for magnetic field calculation
-CONST.u_0        = rand(1,1)*pi;            % [rad] Initial Sun Ascension (pi/2 - Summer, pi - Autumn, 3*pi/2 
+CONST.u_0        = pi/2;%rand(1,1)*pi;            % [rad] Initial Sun Ascension (pi/2 - Summer, pi - Autumn, 3*pi/2 
 
 %% SATELLITE MOMENTS OF INERTIA
 m  = 2.00;  % [kg] Satellite Mass
@@ -102,7 +102,7 @@ CONST.w_O = w_O;                 % [rad/s] Orbit Angular Velocity
 CONST.RAAN = RAAN;               % [rad] Initial Right Ascention - Angle on Equatorial Plane from Vernal Equinox to Ascending Node
 
 incl = acos((CONST.OmegaDot*(1-ecc^2)^2*a^(7/2))/(-3/2*sqrt(CONST.mu)*CONST.J2*CONST.Re^2)); % [rad] Orbit iination required for Sun-synchornous (eqn 4.47 from Curtis)                                                                          % [rad] Orbit iination 
-incl = 85/180*pi;
+incl = 115/180*pi;
 [R_0,V_0] = coe2rv(a, ecc, incl,RAAN, w, TAo,'curtis');% initial orbital state vector in ECF Frame- computes the magnitude of state vector (r,v) from the classical orbital elements (coe) 
 
 CONST.incl = incl;
@@ -135,7 +135,7 @@ w_B_OI_0 = R_O_B_0'*w_O_OI_0;  % [rad] Orbital Frame Angular Rates relative to I
 
 % Body Frame Angular Rate
 w_B_BO_0 = 0.1*[randn(1,1);randn(1,1);randn(1,1)]; % [rad/s] Body Frame Angular Rates relative to Orbital Frame in Body Frame 
-w_B_BO_0 = 0.01*[1;1;1];
+
 w_B_BI_0 = w_B_BO_0 + w_B_OI_0;   % [rad] Body Frame Angular Rate relative to Inertial Frame in Body Frame
 
 %% SENSORS FLAG
@@ -246,6 +246,7 @@ global CTRL_VDOT
 global CTRL_SM
 global CTRL_SP
 global CTRL_RF
+global CTRL_TA
 
 % Bdot Controller
 CTRL_BDOT.K_d   = 4e-05;      % [-] Differential Controller Gain 8*w_O^2*(I(2,2)-I(3,3)) =  4.899878019542987e-08
@@ -255,7 +256,6 @@ CTRL_EDSP.K_d   = 4e-05;      % [-] Differential Controller Gain 8*w_O^2*(I(2,2)
 
 % Vdot Controller
 CTRL_VDOT.K_d   = 1e-03;
-
 
 % Reference Controller
 CTRL_RF.K_p   = 5e-08;      % [-] ProportionalController Gain
@@ -267,6 +267,7 @@ CTRL_SM.eps = 1.00;         % eps if value is too small, it works like
 CTRL_SM.g   = 0.01*eye(3);  % derivative gain on dw and part-propotional gain on dq
 CTRL_SM.kg  = CTRL_SM.k*CTRL_SM.g;  % propotional gain on dq (not in used)
 CTRL_SM.type = 'bst_mod';
+wdot_B_BI_tgt = [0;0;0];
 
 % Sun Pointing Controller
 CTRL_SP.K_p = 5e-06;
@@ -274,13 +275,25 @@ CTRL_SP.K_v = 5e-04;
 CTRL_SP.S_tgt = [1;0;0];    % [-] Desired sun vector in Body Frame
 CTRL_SP.w_tgt = [0;0;0];    % [-] Desired Angular Velocity
 
+% Three Axis controller
+CTRL_TA.k1 = 5e-05;             
+CTRL_TA.k2 = 5e-05; 
+CTRL_TA.d1 = 1e-03; 
+CTRL_TA.d2 = 1e-03; 
+CTRL_TA.kp = 5e-05;             
+CTRL_TA.kd = 1e-03;
+CTRL_TA.type = 'q feedback';
+
 % Controller Panel
-CTRL_SWITCH  = 1; % Time to change mode from Detumbling to Pointing
-CTRL_DT_MODE = 2;   % Detumbling mode: BDOT/EDSP/VDOT
-CTRL_PT_MODE = 2;   % Pointing mode  : REF/SLD/SUN
+CTRL_SWITCH1  = P/8; % Time to change mode from Detumbling to Pointing.
+CTRL_SWITCH2  = P/4;
+
+CTRL_DT_MODE  = 1;   % Detumbling mode: BDOT/EDSP/VDOT
+CTRL_PT1_MODE = 3;   % Pointing mode  : REF/SLD/SUN/TA
+CTRL_PT2_MODE = 2;   % Pointing mode  : REF/SLD/SUN/TA
 
 %% SOLVER
-tdur = P/2;              
+tdur = P;              
 sim('satellite_adcs_model',tdur);
 
 %% POST PROCESSING
@@ -309,10 +322,9 @@ Pdiag(4,i)        = Pk_f(4,4,i);
 Pdiag(5,i)        = Pk_f(5,5,i);
 Pdiag(6,i)        = Pk_f(6,6,i);
 
-vector1 = R_O_I(:,:,i)'*[0 ;0 ;1]; % vectir of desired 
-vector2 = R_B_I(:,:,i)'*[0 ;0 ;1];
-LOS(i)  = vangle(vector1, vector2);
- 
+LOS_NADIR(i)    = vangle(R_O_I(:,:,i)'*[0 ;0 ;1], R_B_I(:,:,i)'*[0 ;0 ;1]);
+LOS_SUN(i)      = vangle(S_I(:,i), R_B_I(:,:,i)'*[1 ;0 ;0]);
+LOS_INERTIAL(i) = vangle([0;0;1],R_B_I(:,:,i)'*[0 ;0 ;1]);
 end
 
 %% PLOT
