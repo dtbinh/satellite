@@ -11,6 +11,7 @@ s_flag   = input(1:3,13);  % Sensor Flag [Gyro;ST1;ST2]
 
 global CONST
 global FLTR
+
 dt      = CONST.dt;         % Sampling Time of Kalman Filter
 
 sig_v   = CONST.sig_v;      % Noise Standard Deviation Attitude State
@@ -29,6 +30,7 @@ uk      = T_c;              % Torque Input/ Control Torque
 mflag(1) = s_flag(2)*mflag(1);  % ST1 Flag
 mflag(2) = s_flag(3)*mflag(2);  % ST2 Flag
 mflag(8) = s_flag(1)*mflag(8);  % Gyro Flag
+
 %% LOOP VALUES
 
 persistent qk biask wk Pk coefk wkm dwk;  % Variables that are retained in memory between calls to the function.
@@ -44,15 +46,15 @@ if isempty(qk)
     wkm   = [0;0;0];                            % Initial Value from measured gyro
     dwk   = [0;0;0];
     
-    sig_n = sqrt(sig_st(1)^2+sig_st(2)^2+sig_ss^2+sig_mg^2);                     % Initial Scalar sig_n
-    Pk    = dt^(1/4)*sig_n^(1/2)*(sig_v^2+2*sig_u*sig_v*dt^(1/2))^(1/4)*eye(12); % Initial Error Covariance - does not matter much
+    sig_n = sqrt(sig_st(1)^2  +  sig_st(2)^2  +  sig_ss^2  + sig_mg^2);                     % Initial Scalar sig_n
+    Pk    = dt^(1/4)*sig_n^(1/2)*(sig_v^2  +  2*sig_u*sig_v*dt^(1/2))^(1/4)*eye(12); % Initial Error Covariance - does not matter much
 
     % Initial Output
     output(1:3,1)     = wk;
     output(4:6,1)     = biask;
     output(7:9,1)     = coefk;
     output(1:12,2:13) = Pk;
-    output(1:4,14)    = [1;0;0;0]; % Initial Quaternion (wxyz) for external output
+    output(1:4,14)    = [0;0;0;1]; % Initial Quaternion (wxyz) for external output
     output(5:7,14)    = [0;0;0];   % Initial Euler Angles
     
     return;
@@ -115,13 +117,18 @@ for i = 1:length(mflag)
             res  = B_B_m - R_B_I*B_I;       
             delX = delX + K*(res-H*delX);
             
-    elseif( (mflag(i) == 1) && (i <= MaxGg) ) 
+    elseif( (mflag(i) == 1) && (i <= MaxGg)) 
+        
             % Gyroscope Measurements
-            if (FLTR.mode == 1)
-                H = [zeros(3,3) zeros(3,3) zeros(3,3) eye(3)];
-            elseif (FLTR.mode ==2)
-                H = [zeros(3,3) eye(3) zeros(3,3) eye(3)];
+            switch FLTR.mode
+                case 0
+                    H = [ zeros(3,3) zeros(3,3) zeros(3,3) zeros(3,3)];
+                case 1
+                    H = [ zeros(3,3) zeros(3,3) zeros(3,3)   eye(3)  ];
+                case 2
+                    H = [ zeros(3,3)  eye(3)    zeros(3,3)   eye(3)  ];
             end
+            
             R = sig_v^2*eye(3);
             
             % Gain
@@ -137,59 +144,78 @@ end
 
 %% UPDATE
 % Update of Quaternion(xyzw)
-qk    = qk+1/2*q2xi(qk)*delX(1:3,:);   
+qk    = qk  +  1/2*q2xi(qk)*delX(1:3,:);   
 qk    = qnorm(qk);               
 
 % Update of Bias  
-biask = biask + delX(4:6,:);          
+biask = biask  +  delX(4:6,:);          
 
 % Update of Temperature Coefficient
-coefk = coefk + delX(7:9,:);          
+coefk = coefk  +  delX(7:9,:);          
 
 % Update of Angular Velocity
 dwk   = delX(10:12,:);
-wk    = wk + dwk;
+wk    = wk  + dwk;
 
 % Update of Gyro Measurement
-wkm   = w_B_BI_m - biask ; %  Estimated Angular Velocity with Noise
+wkm   = w_B_BI_m  -  biask ; %  Estimated Angular Velocity with Noise
 
 %% ERROR COVARIANCE PROPAGATION
-if (FLTR.mode == 1)
+switch FLTR.mode
+    case 0
     F  = [-smtrx(wkm)   -eye(3)   zeros(3)    zeros(3);
            zeros(3)    zeros(3)   zeros(3)    zeros(3);
            zeros(3)    zeros(3)   zeros(3)    zeros(3);
            zeros(3)    zeros(3)   zeros(3)    zeros(3)];
-elseif (FLTR.mode ==2)
+    case 1
+    F  = [-smtrx(wkm)   -eye(3)   zeros(3)    zeros(3);
+           zeros(3)    zeros(3)   zeros(3)    zeros(3);
+           zeros(3)    zeros(3)   zeros(3)    zeros(3);
+           zeros(3)    zeros(3)   zeros(3)    zeros(3)];
+    case 2
     F  = [-smtrx(wk)   zeros(3)   zeros(3)      eye(3);
            zeros(3)    zeros(3)   zeros(3)    zeros(3);
            zeros(3)    zeros(3)   zeros(3)    zeros(3);
            zeros(3)    zeros(3)   zeros(3)    I^-1*(-smtrx(wk)*I+smtrx(I*wk)-smtrx(dwk)*I+smtrx(I*dwk))];
 end  
+
 Phi = eye(12) + F*dt + 0.5*(F*dt)^2;
 
 % Discrete Process Noise Covariance
-if (FLTR.mode == 1)
+switch FLTR.mode
+    case 0
+    Qk = [(sig_v^2*dt+1/3*(sig_u^2)*dt^3)*eye(3)  -(1/2*sig_u^2*dt^2)*eye(3)           zeros(3)            zeros(3);
+                -(1/2*sig_u^2*dt^2)*eye(3)             (sig_u^2*dt)*eye(3)             zeros(3)            zeros(3);
+                       zeros(3)                             zeros(3)                   zeros(3)            zeros(3);
+                       zeros(3)                             zeros(3)                   zeros(3)            zeros(3)];
+
+    case 1
     Qk = [(sig_v^2*dt+1/3*(sig_u^2)*dt^3)*eye(3)  -(1/2*sig_u^2*dt^2)*eye(3)           zeros(3)            zeros(3);
                 -(1/2*sig_u^2*dt^2)*eye(3)             (sig_u^2*dt)*eye(3)             zeros(3)            zeros(3);
                        zeros(3)                             zeros(3)                   zeros(3)            zeros(3);
                        zeros(3)                             zeros(3)                   zeros(3)       (sig_w^2*dt)*eye(3)];
 
-elseif (FLTR.mode ==2)
-
+    case 2
     Qk = [ (sig_v^2*dt+1/3*sig_w^2*dt^3)*eye(3)           zeros(3)                   zeros(3)       (1/2*sig_w^2*dt^2)*eye(3);
                      zeros(3)                        (sig_u^2*dt)*eye(3)             zeros(3)            zeros(3);
                      zeros(3)                             zeros(3)                   zeros(3)            zeros(3);
                 (1/2*sig_w^2*dt^2)*eye(3)                 zeros(3)                   zeros(3)          (sig_w^2*dt)*eye(3)];
 end
+
 Pk = Phi*Pk*Phi'+ Qk;       
 
 %% STATE PROPAGATION 
 % Quaternion State 
-if (FLTR.mode ==1)
+switch FLTR.mode
+    case 0
+    psik  = sin(1/2*norm(wkm)*dt)/norm(wkm)*wkm;
+    omega = [cos(1/2*norm(wkm)*dt)*eye(3)-smtrx(psik)       psik;
+                    -psik'                       cos(1/2*norm(wkm)*dt) ];
+    case 1
     psik  = sin(1/2*norm(wkm)*dt)/norm(wkm)*wkm;
     omega = [cos(1/2*norm(wkm)*dt)*eye(3)-smtrx(psik)       psik;
                     -psik'                       cos(1/2*norm(wkm)*dt) ]; 
-elseif (FLTR.mode ==2)
+    case 2
     psik  = sin(1/2*norm(wk)*dt)/norm(wk)*wk;
     omega = [cos(1/2*norm(wk)*dt)*eye(3)-smtrx(psik)       psik;
                     -psik'                       cos(1/2*norm(wk)*dt) ];
@@ -198,13 +224,20 @@ end
 qk   = omega*qk;      
 
 % Angular Velocity State
-dFdw   = I^-1*(-smtrx(wk)*I+smtrx(I*wk));
-phi_dw = eye(3) + dFdw*dt + 0.5*(dFdw*dt)^2;
+dFdw   = I^-1*(-smtrx(wk)*I  +  smtrx(I*wk));
+phi_dw = eye(3) + dFdw*dt  +  0.5*(dFdw*dt)^2;
 
 B      = I^-1*eye(3);
-Gmm    = B*dt+ 0.5*B*dFdw*dt^2;  
+Gmm    = B*dt  +  0.5*B*dFdw*dt^2;  
 
-wk    = phi_dw*wk + Gmm*uk;                                
+switch FLTR.mode
+    case 0
+        wk  = wkm; 
+    case 1
+        wk  = phi_dw*wk  +  Gmm*uk;
+    case 2
+        wk  = phi_dw*wk  +  Gmm*uk;  
+end
 
 %% OUTPUT
 w_B_BI_f = wk;                          % Angular Velocity of Body wrt to Inertial Frame 

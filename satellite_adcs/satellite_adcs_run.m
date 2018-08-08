@@ -88,8 +88,8 @@ RAAN = 0;  % [rad] Initial Right Ascention - Angle on Equatorial Plane from Vern
 w    = 0;  % [rad] Initial Argument of perigee - Angle on Orbital Plane from Ascending Node to Perigee
 TAo  = 0;  % [deg] Initial True Anomaly - Angle on Orbital Plane from Perigee to Satellite
 
-Rp  = CONST.Re+h_p;              % [m] radius of perigee
-Ra  = CONST.Re+h_a;              % [m] radius of apogee
+Rp  = CONST.Re + h_p;              % [m] radius of perigee
+Ra  = CONST.Re + h_a;              % [m] radius of apogee
 ecc = (Ra-Rp)/(Ra+Rp);           % [m/m] eccentricity
 a   = (Ra+Rp)/2;                 % [m] semi-major axis
 
@@ -135,7 +135,7 @@ w_B_OI_0 = R_O_B_0'*w_O_OI_0;  % [rad] Orbital Frame Angular Rates relative to I
 
 % Body Frame Angular Rate
 w_B_BO_0 = 0.1*[randn(1,1);randn(1,1);randn(1,1)]; % [rad/s] Body Frame Angular Rates relative to Orbital Frame in Body Frame 
-
+w_B_BO_0 = 0.1*[1;1;1];
 w_B_BI_0 = w_B_BO_0 + w_B_OI_0;   % [rad] Body Frame Angular Rate relative to Inertial Frame in Body Frame
 
 %% SENSORS FLAG
@@ -185,7 +185,10 @@ varST_z(2) = (15/3/60/60*pi/180)^2;    % [rad^2] Covariance of StarTracker (yaw)
 ST2_Mis    = [0.0;0.0;0.0]*pi/180;     % [rad] Star Tracker Misalignment Euler Angles (3-2-1)
 Ust2       = eul2dcm(ST2_Mis,'zyx');   % [-] Misalignment Matrix
 
-dt_st   = 1;                           % [s] Sampling Time of Star Tracker
+dt_st      = dt;                       % [s] Sampling Time of Star Tracker
+update_st1 = 2;                        % [s] Update Interval of Star Tracker 1
+update_st2 = 2;                        % [s] Update Interval of Star Tracker 2
+
 if dt_st < dt
     dt_st = dt;
 end
@@ -238,7 +241,7 @@ CONST.varST_x = varST_x;
 CONST.varST_y = varST_y;
 CONST.varST_z = varST_z;
 
-ReferenceOmega = w_B_OI_0;
+
 %% CONTROLLER
 global CTRL_BDOT
 global CTRL_EDSP
@@ -285,19 +288,18 @@ CTRL_TA.kd = 1e-03;
 CTRL_TA.type = 'q feedback';
 
 % Controller Panel
-CTRL_SWITCH1  = P/8; % Time to change mode from Detumbling to Pointing.
-CTRL_SWITCH2  = P/4;
+CTRL_SWITCH1  = P/8; % Time to change mode from Detumbling to Sun Pointing.
+CTRL_SWITCH2  = P/2; % Time to change mode from Sun Pointing to Operation Mode.
 
-CTRL_DT_MODE  = 1;   % Detumbling mode: BDOT/EDSP/VDOT
+CTRL_DT_MODE  = 3;   % Detumbling mode: BDOT/EDSP/VDOT
 CTRL_PT1_MODE = 3;   % Pointing mode  : REF/SLD/SUN/TA
 CTRL_PT2_MODE = 2;   % Pointing mode  : REF/SLD/SUN/TA
 
 %% SOLVER
-tdur = P;              
+tdur = P/2;              
 sim('satellite_adcs_model',tdur);
 
 %% POST PROCESSING
-close all
 R = R/CONST.Re;  % Position Vector of spacecraft
 
 for i=1:1:length(tout)
@@ -328,6 +330,7 @@ LOS_INERTIAL(i) = vangle([0;0;1],R_B_I(:,:,i)'*[0 ;0 ;1]);
 end
 
 %% PLOT
+clc
 satellite_adcs_plot
 
 %% SIMULATION

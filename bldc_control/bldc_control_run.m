@@ -85,6 +85,7 @@ tlgth  = length(tspan);
 thold  = 0.5;
 CONST.dt = dt;
 
+%% SIMULINK SOLVER
 sim('bldc_model',tdur)
 
 %% DISCRETE SIMULATION

@@ -17,7 +17,7 @@ trq_err   = trq_tgt-trq_dm;
 trq_err_i = trq_err_i_old + trq_err*dt;
 trq_err_d = (trq_err-trq_err_old)/dt;
 
-Vout = trq_kp*trq_err + trq_ki*trq_err_i+trq_kd*trq_err_d;
+Vout = trq_kp*trq_err + trq_ki*trq_err_i + trq_kd*trq_err_d;
 
 trq_err_old   = trq_err;
 trq_err_i_old = trq_err_i;
