@@ -216,6 +216,8 @@ bst_ret_t bst_rwa_sim_step_trq_mode(bst_rw_array_dev_param_t *dev,
       BST_DEBUG("cmd/ctrl current[%d]: %10.3f A | t=%lu t_next=%lu\n\r", i, mod_dat->rw[i].cur_cmd, (long unsigned)t, (long unsigned)mod_dat->rw[i].t_next);
     }
   }
+
+  
   else if(mod_dev->model_type == BST_RW_MODEL_TYPE_TORQUE_FIRST_ORDER)
   {
     for(int i=0; i<num; i++)
@@ -305,7 +307,7 @@ bst_ret_t bst_rwa_sim_step_cur_mode(bst_rw_array_dev_param_t *dev,
   FXX current_error[BST_RW_ARRAY_N_MAX];
   int num = dev->RW_Number;
 
-
+// setting current cmd for motor
   if(mod_dev->model_type == BST_RW_MODEL_TYPE_GENERAL_BLDC)
   {
     for(int i=0; i<num; i++)
@@ -384,6 +386,8 @@ static bst_ret_t _array_euler(bst_rw_array_dev_param_t *dev,
       dat->rw[i].valid = 1;
     }
   }
+
+  ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   else if(mod_dev->model_type == BST_RW_MODEL_TYPE_TORQUE_FIRST_ORDER) //BST_RW_MODEL_TYPE_TORQUE_FIRST_ORDER/////////////////////////////////////////////////////////////////
   {
     FXX torque_cmd[BST_RW_ARRAY_N_MAX];
@@ -538,7 +542,7 @@ bst_ret_t bst_rwa_dynamics_rwa05(FXX *h_dot,
       // --------------------------------------------------------------------------------
       // Adapt current due to Back-EMF: I_max_bemf = (U_sup - U_bemf)/R
       {
-        FXX cur_max_bemf = (mod_dev->rw[i].U_sup - (fabsx(spd_rpm[i])*mod_dev->rw[i].bldc_kE)) / mod_dev->rw[i].bldc_R;
+        FXX cur_max_bemf = (mod_dev->rw[i].U_sup - ( fabsx(spd_rpm[i]) * mod_dev->rw[i].bldc_kE) ) / mod_dev->rw[i].bldc_R;
 
         // Back-EMF limits the maximum current
         cur[i] = bst_mathx_saturate_lim(cur[i], cur_max_bemf);
