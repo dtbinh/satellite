@@ -51,7 +51,7 @@ fprintf(1, '\n ============== convert various coordinate systems from ecef =====
 
 % MOD2ECI - ECI = [precess]*MOD
         [recig, vecig, aecig] = mod2eci(rmod, vmod, amod, T_TT);
-        fprintf(1, 'MOD->ECI                   %14.7f %14.7f %14.7f', recig );
+        fprintf(1, 'MOD-> ECI                   %14.7f %14.7f %14.7f', recig );
         fprintf(1, ' v %14.9f %14.9f %14.9f', vecig );
         fprintf(1, ' a %14.9f %14.9f %14.9f\n', aecig );
         

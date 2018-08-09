@@ -15,6 +15,9 @@ Tgg_toggle    = 1; % Toggle Torque Gravity Gradient
 Taero_toggle  = 1; % Toggle Torque Aerodynamic
 Tsolar_toggle = 1; % Toggle Torque Solar
 
+%% TIME
+
+
 %% CONSTANT PARAMETERS
 global CONST;
 

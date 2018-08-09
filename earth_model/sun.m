@@ -1,5 +1,5 @@
 % function [r_sun,rtasc_sun,decl_sun] = sun ( JD_UTC )
-% 
+% ------------------------------------------------------------------------
 %  This function calculates the geocentric equatorial position vector
 %  the sun given the julian date.  this is the low precision formula and
 %  is valid for years from 1950 to 2050.  accuaracy of apparent coordinates
@@ -62,7 +62,7 @@ mean_anomaly_sun = mean_anomaly_sun *deg2rad;           % [rad]
 eclp_lon = mean_lon_sun + 1.914666471*sin(mean_anomaly_sun)...
             + 0.019994643*sin(2.0*mean_anomaly_sun);   % [deg]
 eclp_lon = rem(eclp_lon,360.0);                        % [deg]
-eclp_lon = eclp_lon*deg2rad;                           % [rad]                                                      % [deg]
+eclp_lon = eclp_lon*deg2rad;                           % [rad]                                                     
 
 % Ecliptic Latitude 
 eclp_lat = 0;                                          % [deg]

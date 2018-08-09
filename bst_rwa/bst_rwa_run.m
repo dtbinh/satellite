@@ -4,11 +4,11 @@ clc
 format long
 
 model_type = 'BST_RW_MODEL_TYPE_GENERAL_BLDC';
-ctrl_mode  = 'BST_RW_CTRL_MODE_TORQUE';
+ctrl_mode  = 'BST_RW_CTRL_MODE_CURRENT';
 
 
 % RWA PARAMETERS     
-rw_moi = 0.0009785480;
+rw_moi      = 0.0009785480;
 rw_bldc_ke  = 0.002115;        % [V/rpm]
 rw_bldc_R   = 8.6;             % [Ohm]
 rw_bldc_n   = 1.00;            % [-] Efficiency
@@ -30,31 +30,44 @@ kd = 0.0;
 rw_n_max = 5000*rpm2rps;      %[rps]
 
 % Torque Control
-rw_T_tgt = -0.0100;    %[Nm]
+rw_T_tgt = 0.0040;    %[Nm]
 
 % Current control
-rw_I_tgt   = 0.5; % [A]
+rw_I_tgt = 0.00; % [A]
 rw_I_max = 0.82; % [A]
 
 
-dt   = 0.05;
-tdur = 120;
+dt   = 0.01;        % [s]
+tdur = 600;
 t    = 0:dt:tdur;
 
- % PID Control
- pid_kp = 20.0; 
- pid_ki = 0.2; 
- pid_kd = 0.0;
 
 % Intial Condition
-rw_sp(1)  = -1*rpm2rps;      % [rps] Initial Angular Velocity
+rw_sp(1)  = -5000*rpm2rps;       % [rps] Initial Angular Velocity
 rw_h(1)   = rw_moi*rw_sp(1);
 rw_trq(1) = 0;   
 rw_cur(1) = 0;
+rw_cur_motor = 0;
 
-trq_err_i_old = 0;
-trq_err_old =0;
+trq_err_i     = 0;
+trq_err_old   = 0;
+
+% PID Control
+global pid
+
+pid.kp = 20.0; 
+pid.ki = 15.00; 
+pid.kd = 0.00;
+
+pid.init   = 1;
+pid.aw_thr = rw_I_max;
+pid.aw_flg = 0;
+pid.aw_fact = 0.7;
+pid.intvl  = 0.1;      % [s]
+is_int_cur = 1 ;
+
 for i = 1:1:tdur/dt+1
+
 
 if strcmp(model_type ,'BST_RW_MODEL_TYPE_GENERAL_BLDC')
   
@@ -64,28 +77,28 @@ switch ctrl_mode
             
     case 'BST_RW_CTRL_MODE_TORQUE'
         
-        trq_err   = rw_T_tgt - rw_trq(i);
-        trq_err_i = trq_err_i_old + trq_err*dt;
-            
+        if (pid.init ==1)
+                rw_cur_cmd = 1.0/rw_bldc_km * (rw_T_tgt - bst_rwa_friction_model(rw_sp(i)*rps2rpm));
+        end
         
-%             rw_cur_cmd = 1.0/rw_bldc_km * (rw_T_tgt - bst_rwa_friction_model(rw_sp(i)*rps2rpm));
-      
-            rw_cur_cmd = pid_kp*trq_err  +  pid_ki*trq_err_i  +  pid_kd*((trq_err - trq_err_old)/dt);
-       
         
-        trq_err_old   = trq_err;
-        trq_err_i_old = trq_err_i;
+        if (rem(t(i),pid.intvl) == 0)
+            rw_cur_cmd = bst_pid_update(rw_cur_cmd,rw_T_tgt - rw_trq(i), pid, pid.intvl);
+            pid.init = 0;
+        end
+        
         
     case 'BST_RW_CTRL_MODE_SPEED'
         
         
-        
 end
+
+     
+%% EULER PROPAGATION
     % update the angular momentum
     h = rw_h(i);
-     
-	%% bst_rwa_dynamics_rwa05()
-    spd_rpm = rw_sp(i)*rps2rpm;  % [rpm] 
+
+        spd_rpm = rw_sp(i)*rps2rpm;  % [rpm] 
     
     % Speed Saturation check
 	if abs(rw_sp(i)) > rw_n_max
@@ -97,9 +110,16 @@ end
         cur_max_bemf = (rw_U_sup - abs(spd_rpm)*rw_bldc_ke) / rw_bldc_R; % 
         cur          = sat(cur,cur_max_bemf);                 % Back-EMF limits the maximum current
         
+        % Internal Current Effect
+        if (is_int_cur) && (rw_sp(i)*rw_cur_motor < 0)
+            cur_bemf = spd_rpm*rw_bldc_ke / rw_bldc_R;
+            cur      = cur - cur_bemf; 
+        end
+        
     end
-    rw_cur_motor = cur;    
-    trq = cur*rw_bldc_n*rw_bldc_km;
+    
+    rw_cur_motor = cur;                % [A] current supplied to motor
+    trq = cur*rw_bldc_n*rw_bldc_km;    
     
     % Torque friction
     trq_friction = bst_rwa_friction_model(spd_rpm);
@@ -157,10 +177,10 @@ xlabel('Time [s]');
 ylabel('Wheel Angular Velocity [rpm]'); 
 
 subplot(2,2,2)
-plot(t,rw_trq(1:end-1),'-')
+plot(t,rw_trq(1:end-1)*1e3,'-')
 grid on
 xlabel('Time [s]');
-ylabel('Torque [Nm]'); 
+ylabel('Torque [mNm]'); 
 
 subplot(2,2,3)
 plot(t,rw_cur(1:end-1),'-')
