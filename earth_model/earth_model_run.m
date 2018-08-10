@@ -86,10 +86,9 @@ LST_int = deg2rad(gst + lon_int);
 R_L_I_int = dcm(2,-LAT_int)*dcm(3,LST_int);
 r_int     = R_L_I_int'*[1;0;0];
 
-
 fprintf('Int:   %6.4f | %6.4f | \n',lat_int,lon_int)
 
-% Intermidate Points
+%% Intermidiate Points by Greater Circle
 n = 10;
 
 for i=1:1:n
@@ -108,7 +107,7 @@ R_L_I_arry = dcm(2,-LAT_arry)*dcm(3,LST_arry);
 r_arry(:,i)     = R_L_I_arry'*[1;0;0];
 end
 
-
+%%
 dLAT = LAT_f-LAT_s;    % [rad]
 dLON = LST_f-LST_s;    % [rad]
  
@@ -116,7 +115,7 @@ dLON = LST_f-LST_s;    % [rad]
 alp = atan2(tan(dLAT),sin(dLON)); % [rad] dAzimuth
 Azm = latlon2azm([lat_s lon_s],[lat_f lon_f]);
 
-dpsi = log(tan(pi/4+LAT_f/2)/tan(pi/4+LAT_s/2));
+dpsi = log(tan(pi/4 + LAT_f/2)/tan(pi/4 + LAT_s/2));
 theta = atan2(dLON,dpsi);
 
 fprintf('\nAzm:  %8.8f | %8.8f | %8.8f |\n',alp,Azm, theta)
@@ -143,9 +142,6 @@ Rc  = Rc2;
 
 fprintf('Rc:    %8.8f | %8.8f | \n',Rc1,Rc2)
 
-
-
-
 %  Distance
 dist1 = Re * latlon2dist([lat_s lon_s],[lat_f lon_f]); % GREATER CIRCLE THEORY
 
@@ -165,6 +161,24 @@ fprintf('Dist:  %8.6f | %8.6f |\n',dist1,dist2)
 tangle = latlon2ang([lat_s lon_s],[lat_f lon_f]);  %[rad]
 fprintf('ang:  %6.6f |  \n',tangle)
 
+%% RUSTY
+nvector = cross(r_s,r_f); % [ ] 
+angle = vangle(r_s,r_f)   % [rad] total angle
+t_dwell = 100;            % [s]
+dt = 10;
+
+step = t_dwell/dt
+dangle = angle/step
+omega_dwell = angle/t_dwell*vnorm(cross(r_s,r_f))  %[rad/s] CONST
+rr(:,1) = r_s
+for i=1:1:t_dwell/dt
+ rr(:,i) = vnorm(rr(:,i));
+v_perp = cross(omega_dwell,rr(:,i));
+rr(:,i+1) = rr(:,i) + v_perp*dt;
+end
+
+
+%% BST
 t_dwell = 100;           % [s]
 dt      = 10;
 
@@ -172,7 +186,7 @@ v_dwell = dist/t_dwell; % [m/s] ground speed
 w_dwell = v_dwell/Rc;   % [rad/s] angular velocity
 dangle  = w_dwell*dt;   % [rad] angle step assuming small steps
 
-% Initiate
+
 lat_array = LAT_s;
 lon_array = LST_s;
 
@@ -224,7 +238,7 @@ fprintf('Sun Vector (ECI): %.12f %.12f %.12f\n',r_sun_eci);
 % Figure Setting
 fig = figure;
 screensize = get(0,'ScreenSize');
-set(fig,'Position',[screensize(3) 0 screensize(4)*0.8 screensize(4)*1]);
+set(fig,'Position',[screensize(3)*0 0 screensize(4)*0.8 screensize(4)*1]);
 grid on; axis fill;
 cameratoolbar('SetMode','orbit')   
 set(gca,'Position',[0 0 1 1]); % Set Position of Graph
@@ -263,6 +277,8 @@ plotvector(r_int,[0 0 0],'r','int',2);
 plotvector(R_n_i'*[0;0;1],[0 0 0],color('orange'),'n',2);
 plotvector(n_i,[0 0 0],'r','n_i',2);
 
+plotvector(nvector,[0 0 0],'k','n',1);
+plotvector(omega_dwell,[0 0 0],'k','\omega',1.2);
 
 % plot array
 for i=1:1:t_dwell/dt
@@ -270,5 +286,9 @@ plotvector(r_array(:,i),[0 0 0],'r','n',1);
 
 end
 for i=1:1:t_dwell/dt
-plotvector(r_arry(:,i),[0 0 0],'m','arr',1);
+plotvector(r_arry(:,i),[0 0 0],'m','arr',1.1);
+end
+
+for i=1:1:t_dwell/dt
+plotvector(rr(:,i),[0 0 0],'b','arr',1.1);
 end

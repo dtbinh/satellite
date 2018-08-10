@@ -6,7 +6,6 @@ format long
 model_type = 'BST_RW_MODEL_TYPE_GENERAL_BLDC';
 ctrl_mode  = 'BST_RW_CTRL_MODE_CURRENT';
 
-
 % RWA PARAMETERS     
 rw_moi      = 0.0009785480;
 rw_bldc_ke  = 0.002115;        % [V/rpm]
