@@ -19,9 +19,9 @@ lonSSP2 = SSP2(2);
 dlatSSP = (SSP2(1)-SSP1(1)); % [rad]
 dlonSSP = (SSP2(2)-SSP1(2)); % [rad]
 
-dA = atan2(tan(dlatSSP),sin(dlonSSP)); % [rad]
+dA = atan2(tan(dlatSSP),sin(dlonSSP)); % [rad] dAzimuth
 
-A = pi/2-abs(dA);
+A = pi/2-abs(dA);                      % [rad] Azimuth
 
 c = pi/2-SSP1(1);
 a = pi/2-SSP2(1);
@@ -40,12 +40,12 @@ lamda = pi/2 - e - n;
 
 D = Re*sin(lamda)/sin(n);
 
-fprintf("------------Satellite Target Latitude/Longitude-----------\n\n");
-fprintf("Orbit Height   : %.f[m]\n",h);
-fprintf("Sub Satellite 1: %.4f %.4f\n",latSSP1/pi*180,lonSSP1/pi*180);
-fprintf("Sub Satellite 2: %.4f %.4f\n",latSSP2/pi*180,lonSSP2/pi*180);
-fprintf("Delta Lat Lon  : %.4f %.4f\n",dlatSSP/pi*180,dlonSSP/pi*180);
-fprintf("Nadir Angle    : %.2f [deg]\n",n/pi*180);
+fprintf('------------Satellite Target Latitude/Longitude-----------\n\n');
+fprintf('Orbit Height   : %.f[m]\n',h);
+fprintf('Sub Satellite 1: %.4f %.4f\n',latSSP1/pi*180,lonSSP1/pi*180);
+fprintf('Sub Satellite 2: %.4f %.4f\n',latSSP2/pi*180,lonSSP2/pi*180);
+fprintf('Delta Lat Lon  : %.4f %.4f\n',dlatSSP/pi*180,dlonSSP/pi*180);
+fprintf('Nadir Angle    : %.2f [deg]\n',n/pi*180);
 %% WEST TARGET
 if dlatSSP>=0
 phi = C - pi/2; 
@@ -65,10 +65,10 @@ end
 latWTarget1 = latWTarget2 - dlatSSP;
 lonWTarget1 = lonWTarget2 - dlonSSP;
 
-fprintf("\n\n-----------West Target---------\n");
-fprintf("Azimuth   : %.2f[deg]\n",phi/pi*180);
-fprintf("Target 1: %.4f %.4f\n",latWTarget1/pi*180,lonWTarget1/pi*180);
-fprintf("Target 2: %.4f %.4f\n",latWTarget2/pi*180,lonWTarget2/pi*180);
+fprintf('\n\n-----------West Target---------\n');
+fprintf('Azimuth   : %.2f[deg]\n',phi/pi*180);
+fprintf('Target 1: %.4f %.4f\n',latWTarget1/pi*180,lonWTarget1/pi*180);
+fprintf('Target 2: %.4f %.4f\n',latWTarget2/pi*180,lonWTarget2/pi*180);
 %% EAST TARGET
 if dlatSSP>=0
 phi = C - pi/2 + pi; 
@@ -89,10 +89,10 @@ end
 latETarget1 = latETarget2 - dlatSSP;
 lonETarget1 = lonETarget2 - dlonSSP;
 
-fprintf("-----------East Target---------\n");
-fprintf("Azimuth   : %.2f[deg]\n",phi/pi*180);
-fprintf("Target 1: %.4f %.4f\n",latETarget1/pi*180,lonETarget1/pi*180);
-fprintf("Target 2: %.4f %.4f\n",latETarget2/pi*180,lonETarget2/pi*180);
+fprintf('-----------East Target---------\n');
+fprintf('Azimuth   : %.2f[deg]\n',phi/pi*180);
+fprintf('Target 1: %.4f %.4f\n',latETarget1/pi*180,lonETarget1/pi*180);
+fprintf('Target 2: %.4f %.4f\n',latETarget2/pi*180,lonETarget2/pi*180);
 
 %% WORLD MAP PLOT
 
