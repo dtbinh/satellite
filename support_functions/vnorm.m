@@ -1,6 +1,6 @@
 % function v = vnorm(v)
 % --------------------------------------------------------------------------
-% This function inverse the rotation of the vector input
+% This function outputs the unit value of the vector input
 % Example
 %              vout = vnorm([2;3;1])
 % 

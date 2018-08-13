@@ -34,7 +34,7 @@
 %                  rusty       - initiate               
 
 
-function [r_sun,rtasc_sun,decl_sun,eclp_lon,eclp_lat] = sun (JD_UT1)
+function [r_sun,rtasc_sun,decl_sun,eclp_lon,eclp_lat] = jdut2sun (JD_UT1)
 
 % UT1 Julian Centuries
 T_UT1   = (JD_UT1 -2451545.0 )/36525; % [day] from 2000, Jan,01,12,00,00

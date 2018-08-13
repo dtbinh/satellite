@@ -2,6 +2,7 @@
 clear all
 clc
 
+global CONST;
 %% GLOBAL
 R2D = 180/pi;
 D2R = pi/180;
@@ -16,10 +17,23 @@ Taero_toggle  = 1; % Toggle Torque Aerodynamic
 Tsolar_toggle = 1; % Toggle Torque Solar
 
 %% TIME
+% UTC Time - Universal Time
+UTC     = datetime(2000,3,21,6,0,0);                                       % [time] UTC Time
+JD_UTC  = jd(UTC.Year,UTC.Month,UTC.Day,UTC.Hour,UTC.Minute,UTC.Second);   % [day]
+T_UTC   = (JD_UTC -2451545.0 )/36525;                                      % [century]
+d_AT    = 33.0;                                                            % [sec] From Astronomical Almanac 2006:K9
+d_UT1   = 0.2653628;                                                       % [sec]
+[UT1, T_UT1, JD_UT1, UTC, TAI, TT, T_TT, JD_TT, T_TDB, JD_TDB] ...
+    = convtime (UTC.Year,UTC.Month,UTC.Day,UTC.Hour,UTC.Minute,UTC.Second,d_UT1, d_AT);
+
+CONST.JD_UTC = JD_UTC;
+CONST.T_TT   = T_TT;
+[r_sun_mod,rtasc_sun,decl_sun]  = jdut2sun(JD_UTC);
+[r_sun_eci,v_sun_eci,a_sun_eci] = mod2eci(r_sun_mod,[0; 0; 0],[0; 0; 0],T_TT );
 
 
 %% CONSTANT PARAMETERS
-global CONST;
+
 
 CONST.mu         = 398.6004118e12;          % [m^3/s^2] Earth's standard gravitational parameter
 CONST.mu_moon    = 4.902802953597e12;       % [m^3/s^2] Moon's standard gravitational parameter
@@ -105,7 +119,7 @@ CONST.w_O = w_O;                 % [rad/s] Orbit Angular Velocity
 CONST.RAAN = RAAN;               % [rad] Initial Right Ascention - Angle on Equatorial Plane from Vernal Equinox to Ascending Node
 
 incl = acos((CONST.OmegaDot*(1-ecc^2)^2*a^(7/2))/(-3/2*sqrt(CONST.mu)*CONST.J2*CONST.Re^2)); % [rad] Orbit iination required for Sun-synchornous (eqn 4.47 from Curtis)                                                                          % [rad] Orbit iination 
-incl = 115/180*pi;
+incl = 45/180*pi;
 [R_0,V_0] = coe2rv(a, ecc, incl,RAAN, w, TAo,'curtis');% initial orbital state vector in ECF Frame- computes the magnitude of state vector (r,v) from the classical orbital elements (coe) 
 
 CONST.incl = incl;
@@ -299,7 +313,7 @@ CTRL_PT1_MODE = 3;   % Pointing mode  : REF/SLD/SUN/TA
 CTRL_PT2_MODE = 2;   % Pointing mode  : REF/SLD/SUN/TA
 
 %% SOLVER
-tdur = P/2;              
+tdur = P/16;              
 sim('satellite_adcs_model',tdur);
 
 %% POST PROCESSING
@@ -333,8 +347,8 @@ LOS_INERTIAL(i) = vangle([0;0;1],R_B_I(:,:,i)'*[0 ;0 ;1]);
 end
 
 %% PLOT
-clc
-satellite_adcs_plot
+
+% satellite_adcs_plot
 
 %% SIMULATION
 % Figure Setting

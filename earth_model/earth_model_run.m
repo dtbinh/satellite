@@ -6,17 +6,15 @@ format long
 Re = 1; % [Re] Earth Radius Unit
 %% TIME
 % UTC Time - Universal Time
-UTC     = datetime(2000,3,21,6,0,0);                                      % [time] UTC Time
+UTC     = datetime(2000,3,21,6,0,0);                                       % [time] UTC Time
 JD_UTC  = jd(UTC.Year,UTC.Month,UTC.Day,UTC.Hour,UTC.Minute,UTC.Second);   % [day]
 T_UTC   = (JD_UTC -2451545.0 )/36525;                                      % [century]
-d_AT    = 33.0;        % [sec] From Astronomical Almanac 2006:K9
-d_UT1   = 0.2653628;   % [sec]
-
-
+d_AT    = 33.0;                                                            % [sec] From Astronomical Almanac 2006:K9
+d_UT1   = 0.2653628;                                                       % [sec]
 [UT1, T_UT1, JD_UT1, UTC, TAI, TT, T_TT, JD_TT, T_TDB, JD_TDB] ...
     = convtime (UTC.Year,UTC.Month,UTC.Day,UTC.Hour,UTC.Minute,UTC.Second,d_UT1, d_AT);
 
-% GST - Greenwich Sidereal Time 
+%% GST - Greenwich Sidereal Time 
 gst = -6.2e-6 * (T_UT1)^3 + 0.093104 * (T_UT1)^2  ...
               + (876600.0 * 3600.0 + 8640184.812866) * T_UT1 + 67310.54841;  % [arcsec]
 
@@ -29,7 +27,7 @@ R_E_I = dcm(3,GST);
 
 %% LATLON POINTS
 % Lat/Lon of a StartPoint
-lat_s  = 20;   % [deg]
+lat_s  = 10;   % [deg]
 lon_s  = 0;    % [deg]
 
 LAT_s = deg2rad(lat_s);      % [rad] 
@@ -43,8 +41,8 @@ r_s    = R_L_I_s'*[1 ;0 ;0];
 fprintf('Start: %6.4f | %6.4f | \n',lat_s,lon_s)
 
 % Lat/Lon of a End Point
-lat_f  = 40;     % [deg]
-lon_f  = 10;    % [deg]
+lat_f  = 55;     % [deg]
+lon_f  = 55;    % [deg]
 
 LAT_f = deg2rad(lat_f);      % [rad] 
 LON_f = deg2rad(lon_f);      % [rad] 
@@ -201,6 +199,7 @@ for i=1:1:t_dwell/dt
     
     R_L_I_array = dcm(2,-lat_array)*dcm(3,lon_array);
     r_array(:,i)    = R_L_I_array'*[1;0;0];
+    
 end
 
 %% SUN
@@ -223,7 +222,7 @@ ddPsi = -0.55418 * arcsec2rad;   % [rad]
 ddEps = -0.005137 * arcsec2rad;  % [rad]
 
 
-[r_sun_mod,rtasc_sun,decl_sun] = sun (JD_UTC);
+[r_sun_mod,rtasc_sun,decl_sun] = jdut2sun(JD_UTC);
 
 fprintf('Sun Vector (MOD): %.12f %.12f %.12f\n',r_sun_mod);
         
