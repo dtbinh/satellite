@@ -4,6 +4,11 @@ clc
 
 format long 
 Re = 1; % [Re] Earth Radius Unit
+global CONST
+
+CONST.sidereal = 23.934469583333332; % [hrs] Hours in a Sidereal Day
+CONST.solarday = 24.00000000;        % [hrs] Hours in a Solar Day 
+
 %% TIME
 % UTC Time - Universal Time
 UTC     = datetime(2000,3,21,6,0,0);                                       % [time] UTC Time
@@ -14,16 +19,12 @@ d_UT1   = 0.2653628;                                                       % [se
 [UT1, T_UT1, JD_UT1, UTC, TAI, TT, T_TT, JD_TT, T_TDB, JD_TDB] ...
     = convtime (UTC.Year,UTC.Month,UTC.Day,UTC.Hour,UTC.Minute,UTC.Second,d_UT1, d_AT);
 
+CONST.JD_UT1 = JD_UT1;
+CONST.JD_UTC = JD_UTC;
+CONST.T_TT   = T_TT;
+
 %% GST - Greenwich Sidereal Time 
-gst = -6.2e-6 * (T_UT1)^3 + 0.093104 * (T_UT1)^2  ...
-              + (876600.0 * 3600.0 + 8640184.812866) * T_UT1 + 67310.54841;  % [arcsec]
-
-gst = rem(gst,86400 );    % [arcsec] Remainder of secs 
-gst = arcsec2deg(gst) ;   % [deg] 
-gst = degwrap(gst);
-GST = deg2rad(gst);       % [rad] 
-
-R_E_I = dcm(3,GST);
+GST   = jdut2gst(JD_UT1);     % [rad] 
 
 %% LATLON POINTS
 % Lat/Lon of a StartPoint
@@ -33,7 +34,7 @@ lon_s  = 0;    % [deg]
 LAT_s = deg2rad(lat_s);      % [rad] 
 LON_s = deg2rad(lon_s);      % [rad] 
 
-LST_s = deg2rad(gst + lon_s);
+LST_s = GST+LON_s;
 
 R_L_I_s = dcm(2,-LAT_s)*dcm(3,LST_s);
 r_s    = R_L_I_s'*[1 ;0 ;0];
@@ -47,7 +48,7 @@ lon_f  = 55;    % [deg]
 LAT_f = deg2rad(lat_f);      % [rad] 
 LON_f = deg2rad(lon_f);      % [rad] 
 
-LST_f = deg2rad(gst + lon_f);
+LST_f = GST+LON_f;
 
 R_L_I_f = dcm(2,-LAT_f)*dcm(3,LST_f);
 r_f     = R_L_I_f'*[1 ;0 ;0];
@@ -63,7 +64,7 @@ lon_m = latlon_m(2);
 LAT_m = deg2rad(lat_m);
 LON_m = deg2rad(lon_m);
 
-LST_m = deg2rad(gst + lon_m);
+LST_m = GST + LON_m;
 
 R_L_I_m = dcm(2,-LAT_m)*dcm(3,LST_m);
 r_m     = R_L_I_m'*[1 ;0 ;0];
@@ -79,7 +80,7 @@ lon_int = latlon_int(2);
 LAT_int = deg2rad(lat_int);
 LON_int = deg2rad(lon_int);
 
-LST_int = deg2rad(gst + lon_int);
+LST_int = GST + LON_int;
 
 R_L_I_int = dcm(2,-LAT_int)*dcm(3,LST_int);
 r_int     = R_L_I_int'*[1;0;0];
@@ -99,7 +100,7 @@ lon_arry = latlon_arry(2);
 LAT_arry = deg2rad(lat_arry);
 LON_arry = deg2rad(lon_arry);
 
-LST_arry = deg2rad(gst + lon_arry);
+LST_arry = GST + LON_arry;
 
 R_L_I_arry = dcm(2,-LAT_arry)*dcm(3,LST_arry);
 r_arry(:,i)     = R_L_I_arry'*[1;0;0];
@@ -163,32 +164,32 @@ fprintf('ang:  %6.6f |  \n',tangle)
 nvector = cross(r_s,r_f); % [ ] 
 angle = vangle(r_s,r_f)   % [rad] total angle
 t_dwell = 100;            % [s]
-dt = 10;
+t_step = 10;
 
-step = t_dwell/dt
+step = t_dwell/t_step
 dangle = angle/step
 omega_dwell = angle/t_dwell*vnorm(cross(r_s,r_f))  %[rad/s] CONST
 rr(:,1) = r_s
-for i=1:1:t_dwell/dt
+for i=1:1:t_dwell/t_step
  rr(:,i) = vnorm(rr(:,i));
 v_perp = cross(omega_dwell,rr(:,i));
-rr(:,i+1) = rr(:,i) + v_perp*dt;
+rr(:,i+1) = rr(:,i) + v_perp*t_step;
 end
 
 
 %% BST
 t_dwell = 100;           % [s]
-dt      = 10;
+t_step      = 10;
 
 v_dwell = dist/t_dwell; % [m/s] ground speed
 w_dwell = v_dwell/Rc;   % [rad/s] angular velocity
-dangle  = w_dwell*dt;   % [rad] angle step assuming small steps
+dangle  = w_dwell*t_step;   % [rad] angle step assuming small steps
 
 
 lat_array = LAT_s;
 lon_array = LST_s;
 
-for i=1:1:t_dwell/dt
+for i=1:1:t_dwell/t_step
 
     tangle = i*dangle;
     
@@ -233,7 +234,13 @@ amod = [0; 0; 0];
 
 fprintf('Sun Vector (ECI): %.12f %.12f %.12f\n',r_sun_eci);
 
+%% SIMULINK
+dt   = 1;
+tdur = 60*60*CONST.solarday;
+sim('earth_model',tdur);
+
 %% SIMULATION
+close all 
 % Figure Setting
 fig = figure;
 screensize = get(0,'ScreenSize');
@@ -257,13 +264,15 @@ earth   = surf(radius*x,radius*y,radius*z);
 set(earth,'facecolor','none','edgecolor',0.7*[1 1 1],'LineStyle',':'); 
 
 % Sun Frame
-S_eci = plotvector(r_sun_eci, [0;0;0], [1 0.75 0], 'Sun_E_C_I',2);
-S_mod = plotvector(r_sun_mod, [0;0;0], [1 0 0], 'Sun_M_O_D',2);
+[S_sun, S_sun_lab] = plotvector(S_I(:,1), [0;0;0], [1 0.75 0], 'Sun_E_C_I',2);
+% S_mod = plotvector(r_sun_mod, [0;0;0], [1 0 0], 'Sun_M_O_D',2);
 
-% Earth Frame
-X_ecf = plotvector(R_E_I'*[1 ;0 ;0], [0 0 0], 'r', 'X_e_c_f');
-Y_ecf = plotvector(R_E_I'*[0 ;1 ;0], [0 0 0], 'r', 'Y_e_c_f');
-Z_ecf = plotvector(R_E_I'*[0 ;0 ;1], [0 0 0], 'r', 'Z_e_c_f');
+% Earth Frame 
+plotvector(R_E_I(:,:,1)'*[1 ;0 ;0], [0 0 0], [1 ;0.75 ;0.75], 'X_s',1.1);
+plotvector(R_E_I(:,:,end)'*[1 ;0 ;0], [0 0 0], [1 ;0 ;0], 'X_f',1.5);
+[X_ecf,X_ecf_lab] = plotvector(R_E_I(:,:,1)'*[1 ;0 ;0], [0 0 0], 'r', 'X_e_c_f');
+[Y_ecf,Y_ecf_lab] = plotvector(R_E_I(:,:,1)'*[0 ;1 ;0], [0 0 0], 'r', 'Y_e_c_f');
+[Z_ecf,Z_ecf_lab] = plotvector(R_E_I(:,:,1)'*[0 ;0 ;1], [0 0 0], 'r', 'Z_e_c_f');
 
 %local Points
 R_start = plotvector(r_s, [0 0 0], 'b', 'start');
@@ -280,14 +289,29 @@ plotvector(nvector,[0 0 0],'k','n',1);
 plotvector(omega_dwell,[0 0 0],'k','\omega',1.2);
 
 % plot array
-for i=1:1:t_dwell/dt
+for i=1:1:t_dwell/t_step
 plotvector(r_array(:,i),[0 0 0],'r','n',1);
 
 end
-for i=1:1:t_dwell/dt
+for i=1:1:t_dwell/t_step
 plotvector(r_arry(:,i),[0 0 0],'m','arr',1.1);
 end
 
-for i=1:1:t_dwell/dt
+for i=1:1:t_dwell/t_step
 plotvector(rr(:,i),[0 0 0],'b','arr',1.1);
+end
+
+for i=1:dt:(length(tout)-1)
+% Update ECF Frames
+updatevector(X_ecf, R_E_I(:,:,i)'*[1 ;0 ;0], [0 0 0]);
+updatevector(Y_ecf, R_E_I(:,:,i)'*[0 ;1 ;0], [0 0 0]);
+updatevector(Z_ecf, R_E_I(:,:,i)'*[0 ;0 ;1], [0 0 0]);
+set(X_ecf_lab,'Position',R_E_I(:,:,i)'*[1 ;0 ;0]);
+set(Y_ecf_lab,'Position',R_E_I(:,:,i)'*[0 ;1 ;0]);
+set(Z_ecf_lab,'Position',R_E_I(:,:,i)'*[0 ;0 ;1]);
+
+% Update Sun Frame
+updatevector(S_sun, S_I(:,i),  [0 0 0],2);
+set(S_sun_lab,'Position',S_I(:,i)*2);
+    drawnow;
 end

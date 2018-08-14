@@ -19,10 +19,10 @@
 function rad = arcsec2rad(asec)
 
 if ~exist('asec','var')
-    asec = pi / (180*3600);
+    rad = pi/(180*3600);
+else
+
+    rad = asec * pi/(180*3600);
 end
-
-rad = asec* pi / (180*3600);
-
 
 end

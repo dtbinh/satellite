@@ -8,13 +8,15 @@ R2D = 180/pi;
 D2R = pi/180;
 
 %% MODEL PARAMETER
-dt           = 0.5;              % [sec] Model speed
+dt  = 30;              % [sec] Model speed (0.5 for normal, 30 for orbit)
 
 %% TORQUE TOGGLE SWITCH
 
-Tgg_toggle    = 1; % Toggle Torque Gravity Gradient 
-Taero_toggle  = 1; % Toggle Torque Aerodynamic
-Tsolar_toggle = 1; % Toggle Torque Solar
+Tgg_toggle      = 0; % Toggle Torque Gravity Gradient 
+Taero_toggle    = 0; % Toggle Torque Aerodynamic
+Tsolar_toggle   = 0; % Toggle Torque Solar
+
+Tcontrol_toggle = 0; % Toggle Torque Control
 
 %% TIME
 % UTC Time - Universal Time
@@ -26,8 +28,13 @@ d_UT1   = 0.2653628;                                                       % [se
 [UT1, T_UT1, JD_UT1, UTC, TAI, TT, T_TT, JD_TT, T_TDB, JD_TDB] ...
     = convtime (UTC.Year,UTC.Month,UTC.Day,UTC.Hour,UTC.Minute,UTC.Second,d_UT1, d_AT);
 
+CONST.JD_UT1 = JD_UT1;
 CONST.JD_UTC = JD_UTC;
 CONST.T_TT   = T_TT;
+
+CONST.sidereal = 23.934469583333332; % [hrs] Hours in a Sidereal Day
+CONST.solarday = 24.00000000;        % [hrs] Hours in a Solar Day 
+
 [r_sun_mod,rtasc_sun,decl_sun]  = jdut2sun(JD_UTC);
 [r_sun_eci,v_sun_eci,a_sun_eci] = mod2eci(r_sun_mod,[0; 0; 0],[0; 0; 0],T_TT );
 
@@ -119,7 +126,7 @@ CONST.w_O = w_O;                 % [rad/s] Orbit Angular Velocity
 CONST.RAAN = RAAN;               % [rad] Initial Right Ascention - Angle on Equatorial Plane from Vernal Equinox to Ascending Node
 
 incl = acos((CONST.OmegaDot*(1-ecc^2)^2*a^(7/2))/(-3/2*sqrt(CONST.mu)*CONST.J2*CONST.Re^2)); % [rad] Orbit iination required for Sun-synchornous (eqn 4.47 from Curtis)                                                                          % [rad] Orbit iination 
-incl = 45/180*pi;
+% incl = 45/180*pi;
 [R_0,V_0] = coe2rv(a, ecc, incl,RAAN, w, TAo,'curtis');% initial orbital state vector in ECF Frame- computes the magnitude of state vector (r,v) from the classical orbital elements (coe) 
 
 CONST.incl = incl;
@@ -152,7 +159,7 @@ w_B_OI_0 = R_O_B_0'*w_O_OI_0;  % [rad] Orbital Frame Angular Rates relative to I
 
 % Body Frame Angular Rate
 w_B_BO_0 = 0.1*[randn(1,1);randn(1,1);randn(1,1)]; % [rad/s] Body Frame Angular Rates relative to Orbital Frame in Body Frame 
-w_B_BO_0 = 0.1*[1;1;1];
+w_B_BO_0 = 0.0*[1;1;1];
 w_B_BI_0 = w_B_BO_0 + w_B_OI_0;   % [rad] Body Frame Angular Rate relative to Inertial Frame in Body Frame
 
 %% SENSORS FLAG
@@ -313,7 +320,7 @@ CTRL_PT1_MODE = 3;   % Pointing mode  : REF/SLD/SUN/TA
 CTRL_PT2_MODE = 2;   % Pointing mode  : REF/SLD/SUN/TA
 
 %% SOLVER
-tdur = P/16;              
+tdur = 60*60*24;              
 sim('satellite_adcs_model',tdur);
 
 %% POST PROCESSING
@@ -359,7 +366,7 @@ grid on; axis fill;
 cameratoolbar('SetMode','orbit') 
 cameratoolbar
 set(gca,'Position',[0 0 1 1]); % Set Position of Graph
-set(gca,'CameraViewAngle',4); % Set Zoom of Graph
+set(gca,'CameraViewAngle',3); % Set Zoom of Graph
 axis(3.5*[-1 1 -1 1 -1 1]);    % Set Limit of Axis  
 
 % Earth Centered Inertial Frame
@@ -420,8 +427,8 @@ set(earth,'facecolor','none','edgecolor',0.7*[1 1 1],'LineStyle',':');
 %  MagneticField();
 
 % UPDATE SIMULATION PLOT
-d = 5;
-for i=1:d:(length(tout)-1)
+
+for i=1:0.1*dt:(length(tout)-1)
 
 % Update Satellite Position
 updateposition(R_sat, R(:,1,i));
