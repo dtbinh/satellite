@@ -38,6 +38,9 @@ CONST.solarday = 24.00000000;        % [hrs] Hours in a Solar Day
 [r_sun_mod,rtasc_sun,decl_sun]  = jdut2sun(JD_UTC);
 [r_sun_eci,v_sun_eci,a_sun_eci] = mod2eci(r_sun_mod,[0; 0; 0],[0; 0; 0],T_TT );
 
+%% TARGET
+CONST.lat = 45;                 % [deg]
+CONST.lon = -20;                 % [deg]
 
 %% CONSTANT PARAMETERS
 
@@ -358,31 +361,18 @@ end
 % satellite_adcs_plot
 
 %% SIMULATION
-% Figure Setting
-fig = figure;
-screensize = get(0,'ScreenSize');
-set(fig,'Position',[0 0 screensize(4)*0.8 screensize(4)*0.8]);
-grid on; axis fill;
-cameratoolbar('SetMode','orbit') 
-cameratoolbar
-set(gca,'Position',[0 0 1 1]); % Set Position of Graph
-set(gca,'CameraViewAngle',3); % Set Zoom of Graph
-axis(3.5*[-1 1 -1 1 -1 1]);    % Set Limit of Axis  
 
-% Earth Centered Inertial Frame
-X_eci = plotvector([1 ;0 ;0], [0 0 0], 'k', 'X_e_c_i');
-Y_eci = plotvector([0 ;1 ;0], [0 0 0], 'k', 'Y_e_c_i');
-Z_eci = plotvector([0 ;0 ;1], [0 0 0], 'k', 'Z_e_c_i');
+createSimulation([0 0 1 1],3)
 
 % Earth Centered Fixed Frame
-X_ecf = plotvector(R_I_E(:,:,1)*[1 ;0 ;0], [0 0 0], 'r');
-Y_ecf = plotvector(R_I_E(:,:,1)*[0 ;1 ;0], [0 0 0], 'r');
-Z_ecf = plotvector(R_I_E(:,:,1)*[0 ;0 ;1], [0 0 0], 'r');
+[X_ecf,X_ecf_lab]= plotvector(R_I_E(:,:,1)*[1 ;0 ;0], [0 0 0], 'r','X_ecf');
+[Y_ecf,Y_ecf_lab] = plotvector(R_I_E(:,:,1)*[0 ;1 ;0], [0 0 0], 'r','Y_ecf');
+[Z_ecf,Z_ecf_lab] = plotvector(R_I_E(:,:,1)*[0 ;0 ;1], [0 0 0], 'r','Z_ecf');
 
 % Earth Centered Magnetic Frame
-X_emf = plotvector(R_I_E(:,:,1)*R_E_M*[1 ;0 ;0], [0 0 0], 'm');
-Y_emf = plotvector(R_I_E(:,:,1)*R_E_M*[0 ;1 ;0], [0 0 0], 'm');
-Z_emf = plotvector(R_I_E(:,:,1)*R_E_M*[0 ;0 ;1], [0 0 0], 'm');
+% X_emf = plotvector(R_I_E(:,:,1)*R_E_M*[1 ;0 ;0], [0 0 0], 'm');
+% Y_emf = plotvector(R_I_E(:,:,1)*R_E_M*[0 ;1 ;0], [0 0 0], 'm');
+% Z_emf = plotvector(R_I_E(:,:,1)*R_E_M*[0 ;0 ;1], [0 0 0], 'm');
 
 % Satellite Body Frame
 [X_sat,X_sat_lab] = plotvector(R_B_I(:,:,1)'*[1 ;0 ;0], R(:,1,1), 'b', 'x_b',0.5);
@@ -417,11 +407,7 @@ hold on;
 % Plot Satellite Orbit Track
 plot3(Rx,Ry,Rz,'-.')
 
-% Create Earth Sphere
-radius  = 1;
-[x,y,z] = sphere(20); 
-earth   = surf(radius*x,radius*y,radius*z);
-set(earth,'facecolor','none','edgecolor',0.7*[1 1 1],'LineStyle',':');  
+[R_target,R_target_lab] = plotposition(R ,'r','s','tgt');
 
 % MAGNETIC FIELD PLOT
 %  MagneticField();
@@ -437,11 +423,14 @@ updateposition(R_sat, R(:,1,i));
 updatevector(X_ecf, R_I_E(:,:,i)*[1 ;0 ;0], [0 0 0]);
 updatevector(Y_ecf, R_I_E(:,:,i)*[0 ;1 ;0], [0 0 0]);
 updatevector(Z_ecf, R_I_E(:,:,i)*[0 ;0 ;1], [0 0 0]);
+set(X_ecf_lab,'Position',R_I_E(:,:,i)*[1 ;0 ;0]);
+set(Y_ecf_lab,'Position',R_I_E(:,:,i)*[0 ;1 ;0]);
+set(Z_ecf_lab,'Position',R_I_E(:,:,i)*[0 ;0 ;1]);
 
 % Update EMF Frames
-updatevector(X_emf, R_I_E(:,:,i)*R_E_M*[1 ;0 ;0], [0 0 0]);
-updatevector(Y_emf, R_I_E(:,:,i)*R_E_M*[0 ;1 ;0], [0 0 0]);
-updatevector(Z_emf, R_I_E(:,:,i)*R_E_M*[0 ;0 ;1], [0 0 0]);
+% updatevector(X_emf, R_I_E(:,:,i)*R_E_M*[1 ;0 ;0], [0 0 0]);
+% updatevector(Y_emf, R_I_E(:,:,i)*R_E_M*[0 ;1 ;0], [0 0 0]);
+% updatevector(Z_emf, R_I_E(:,:,i)*R_E_M*[0 ;0 ;1], [0 0 0]);
 
 % Update Earth Centered Sun Frame
 updatevector(S_sun, S_I(:,i),  [0 0 0],2);
@@ -471,6 +460,14 @@ set(Z_sat_lab,'Position',R_B_I(:,:,i)'*0.5*[0 ;0 ;1]+R(:,1,i));
 set(w_sat_lab,'Position',R_B_I(:,:,i)'*0.5*vnorm(w_B_BI(:,i))+R(:,1,i));
 set(B_sat_lab,'Position',R_B_I(:,:,i)'*0.5*vnorm(B_B_m(:,i))+R(:,1,i));
 set(S_sat_lab,'Position',R_B_I(:,:,i)'*0.5*vnorm(S_B_hat(:,i))+R(:,1,i));
+
+% Update Target
+updateposition(R_target, R_tgt(:,i));
+set(R_target_lab,'Position',R_tgt(:,i));
+
+
+
+
 
 % Update Satellite Body Frame
 updatevector(B_mag, B_I(:,i),  R(:,1,i));
