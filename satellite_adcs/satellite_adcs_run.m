@@ -8,7 +8,7 @@ R2D = 180/pi;
 D2R = pi/180;
 
 %% MODEL PARAMETER
-dt  = 30;              % [sec] Model speed (0.5 for normal, 30 for orbit)
+dt  = 1;              % [sec] Model speed (0.5 for normal, 30 for orbit)
 
 %% TORQUE TOGGLE SWITCH
 
@@ -16,7 +16,7 @@ Tgg_toggle      = 0; % Toggle Torque Gravity Gradient
 Taero_toggle    = 0; % Toggle Torque Aerodynamic
 Tsolar_toggle   = 0; % Toggle Torque Solar
 
-Tcontrol_toggle = 0; % Toggle Torque Control
+Tcontrol_toggle = 1; % Toggle Torque Control
 
 %% TIME
 % UTC Time - Universal Time
@@ -67,8 +67,8 @@ CONST.u_0        = pi/2;%rand(1,1)*pi;            % [rad] Initial Sun Ascension 
 
 %% SATELLITE MOMENTS OF INERTIA
 m  = 2.00;  % [kg] Satellite Mass
-dx = 0.10;  % [m] Length X
-dy = 0.10;  % [m] Length Y
+dx = 0.20;  % [m] Length X
+dy = 0.20;  % [m] Length Y
 dz = 0.20;  % [m] Length Z
 
 Ix = (m/12)*(dy^2+dz^2); % [kg.m^2] X-axis Inertia
@@ -161,8 +161,8 @@ w_O_OI_0 = [0;-w_O;0];         % [rad] Orbital Frame Angular Rate relative to In
 w_B_OI_0 = R_O_B_0'*w_O_OI_0;  % [rad] Orbital Frame Angular Rates relative to Inertial Frame in Body Frame
 
 % Body Frame Angular Rate
-w_B_BO_0 = 0.1*[randn(1,1);randn(1,1);randn(1,1)]; % [rad/s] Body Frame Angular Rates relative to Orbital Frame in Body Frame 
-w_B_BO_0 = 0.0*[1;1;1];
+w_B_BO_0 = 0.05*[randn(1,1);randn(1,1);randn(1,1)]; % [rad/s] Body Frame Angular Rates relative to Orbital Frame in Body Frame 
+% w_B_BO_0 = 0.0*[1;1;1];
 w_B_BI_0 = w_B_BO_0 + w_B_OI_0;   % [rad] Body Frame Angular Rate relative to Inertial Frame in Body Frame
 
 %% SENSORS FLAG
@@ -277,6 +277,7 @@ global CTRL_SM
 global CTRL_SP
 global CTRL_RF
 global CTRL_TA
+global CTRL_SC
 
 % Bdot Controller
 CTRL_BDOT.K_d   = 4e-05;      % [-] Differential Controller Gain 8*w_O^2*(I(2,2)-I(3,3)) =  4.899878019542987e-08
@@ -305,25 +306,34 @@ CTRL_SP.K_v = 5e-04;
 CTRL_SP.S_tgt = [1;0;0];    % [-] Desired sun vector in Body Frame
 CTRL_SP.w_tgt = [0;0;0];    % [-] Desired Angular Velocity
 
+% Spin Control Controller
+CTRL_SC.K   = 1e-02;         % [s^-2]
+CTRL_SC.K_1 = 5e-03;         % [ ] 
+CTRL_SC.K_2 = 5e-03;         % [kg.m^-2] 
+CTRL_SC.vec_tgt = vnorm([1;1;0]);   % [-] Desired spin vector in Body Frame
+CTRL_SC.w_tgt   = 0.01;      % [rad/s] Desired Angular Velocity
+CTRL_SC.type    = 'buhl';
+
 % Three Axis controller
 CTRL_TA.k1 = 5e-05;             
 CTRL_TA.k2 = 5e-05; 
 CTRL_TA.d1 = 1e-03; 
 CTRL_TA.d2 = 1e-03; 
+
 CTRL_TA.kp = 5e-05;             
 CTRL_TA.kd = 1e-03;
 CTRL_TA.type = 'q feedback';
 
 % Controller Panel
-CTRL_SWITCH1  = P/8; % Time to change mode from Detumbling to Sun Pointing.
+CTRL_SWITCH1  = 1; % Time to change mode from Detumbling to Sun Pointing.
 CTRL_SWITCH2  = P/2; % Time to change mode from Sun Pointing to Operation Mode.
 
 CTRL_DT_MODE  = 3;   % Detumbling mode: BDOT/EDSP/VDOT
-CTRL_PT1_MODE = 3;   % Pointing mode  : REF/SLD/SUN/TA
-CTRL_PT2_MODE = 2;   % Pointing mode  : REF/SLD/SUN/TA
+CTRL_PT1_MODE = 5;   % Pointing mode  : REF/SLD/SUN/TA
+CTRL_PT2_MODE = 5;   % Pointing mode  : REF/SLD/SUN/TA
 
 %% SOLVER
-tdur = 60*60*24;              
+tdur = 2*P;              
 sim('satellite_adcs_model',tdur);
 
 %% POST PROCESSING
@@ -357,8 +367,8 @@ LOS_INERTIAL(i) = vangle([0;0;1],R_B_I(:,:,i)'*[0 ;0 ;1]);
 end
 
 %% PLOT
-
-% satellite_adcs_plot
+close all
+satellite_adcs_plot
 
 %% SIMULATION
 
@@ -414,10 +424,10 @@ plot3(Rx,Ry,Rz,'-.')
 
 % UPDATE SIMULATION PLOT
 
-for i=1:0.1*dt:(length(tout)-1)
+for i=1:10:(length(tout)-1)
 
 % Update Satellite Position
-updateposition(R_sat, R(:,1,i));
+updateposition(R_sat, R(:,i));
 
 % Update ECF Frames
 updatevector(X_ecf, R_I_E(:,:,i)*[1 ;0 ;0], [0 0 0]);
@@ -464,9 +474,6 @@ set(S_sat_lab,'Position',R_B_I(:,:,i)'*0.5*vnorm(S_B_hat(:,i))+R(:,1,i));
 % Update Target
 updateposition(R_target, R_tgt(:,i));
 set(R_target_lab,'Position',R_tgt(:,i));
-
-
-
 
 
 % Update Satellite Body Frame

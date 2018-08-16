@@ -1,7 +1,7 @@
 function output = controllerSun(input)
 %% INPUT
 S_I    = input(1:3,1);    % [-] Measured Sun vector in Sensor Frame 
-w_B_BI = input(1:3,2);    % [rad/s2] Angular Velocity Desired
+w_B_BI = input(1:3,2);    % [rad/s2] Angular Velocity in Body Frame
 R_B_I  = input(1:3,3:5);  % [-]  
 S_S_m  = -input(1:3,6:9); % [-] Measured Sun Sensor in Sensor Frame 
 
