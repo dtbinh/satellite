@@ -33,18 +33,18 @@ switch type
         m_B = -(K/norm(B_B_m,2)^2)*cross(B_B_m,( dh  +  K_1*[0;e_ha(2);0]  +  K_2*P*w_B_BI ));
     case 'buhl'
     
-        m_B = -(K/norm(B_B_m,2)^2)*cross(B_B_m,( dh  +        K_1*e_ha  ));
+        m_B = -(K/norm(B_B_m,2)^2)*cross(B_B_m,( dh  +  e_ha  ));
         
     case 'hihb'
         d_w_B = w_B_BI - w_tgt*vec_tgt;
   
-        m_B = -(K/norm(B_B_m,2)^2)*cross(B_B_m,( dh  +        K_1*e_ha     +  K_2*d_w_B ));
+        m_B = -(K/norm(B_B_m,2)^2)*cross(B_B_m,( dh  +  K_1*e_ha     +  K_2*d_w_B ));
 
             
 end
 
 torq  = cross(m_B,B_B_m);
 
-output = torq ;    % [Nm] 
+output = -K*(d_w_B)  ;    % [Nm] 
 
 end

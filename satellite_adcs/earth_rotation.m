@@ -10,7 +10,7 @@ switch model
         % Simple Model
         R_I_E = dcm(3,-CONST.w_earth(3)*t);
         
-        r_tgt = [0;0;0]; % TODO
+        R_tgt = [0;0;0]; % TODO
         
     case 1
         % Greenwich sidereal Time Model
@@ -18,13 +18,15 @@ switch model
         R_E_I = dcm(3,GST);
         R_I_E = R_E_I';
         
-        r_tgt = latlon2vec(CONST.lat,CONST.lon,rad2deg(GST)); 
+        R_tgt = CONST.Re*latlon2vec(CONST.lat,CONST.lon,rad2deg(GST)); 
         
+        
+         
         
     otherwise
         fprintf('earth_rotation() error');
 end 
 
 
-output = [R_I_E r_tgt];
+output = [R_I_E R_tgt];
 end

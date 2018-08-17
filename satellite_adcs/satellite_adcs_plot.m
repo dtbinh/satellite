@@ -234,7 +234,7 @@ plot(tout,bias(3,:)*R2D,'r')
 %% LOS & TORQUE
 
 ymin = 0;
-ymax = 500;
+ymax = 50000;
 
 fig = figure;
 set(fig,'Position',[screenwidth*(screennumber+0.75) 0 screenwidth*0.25 screenheight]);

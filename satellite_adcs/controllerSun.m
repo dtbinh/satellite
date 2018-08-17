@@ -1,6 +1,6 @@
 function output = controllerSun(input)
 %% INPUT
-S_I    = input(1:3,1);    % [-] Measured Sun vector in Sensor Frame 
+S_I    = input(1:3,1);    % [-] Measured Sun vector in Inertial Frame 
 w_B_BI = input(1:3,2);    % [rad/s2] Angular Velocity in Body Frame
 R_B_I  = input(1:3,3:5);  % [-]  
 S_S_m  = -input(1:3,6:9); % [-] Measured Sun Sensor in Sensor Frame 
@@ -13,9 +13,9 @@ I   = CONST.I;
 
 K_p = CTRL_SP.K_p;
 K_v = CTRL_SP.K_v;
-w_tgt = CTRL_SP.w_tgt;       % Desired Angular Velocity
-S_tgt = CTRL_SP.S_tgt;       % Desired Sun Vector in Body Frame (should be the optimal sun vector)
-
+w_B_tgt = CTRL_SP.w_B_tgt;     % Desired Angular Velocity in Body Frame
+S_B_tgt = CTRL_SP.S_B_tgt;     % Desired Sun Vector in Body Frame (should be the optimal sun vector)
+type    =  CTRL_SP.type;
 %% SUN POINTING CONTROL
 R_S_B(:,:,1) = dcm(SSaxis(1),SSangles(1));
 R_S_B(:,:,2) = dcm(SSaxis(2),SSangles(2));
@@ -39,14 +39,28 @@ else if  (S_B_m(1:3,2) ~= 0)
         end
     end
 end
-
-
 S_B = R_B_I*S_I;
-angle  = vangle(S_tgt,S_B);     % Angle between Desired Vector and Actual Sun Vector
+S_B_m = S_B;
 
-angle  = vangle(S_tgt,S_B_m_f); % Angle between Desired Vector and Measured Vector
+switch type
+     case 0
+        % Angular Momentum control
+        torq   = K_p * cross(S_B_tgt,S_B_m) - K_v*(w_B_BI - w_B_tgt) + cross(w_B_tgt,I*w_B_BI);
+    case 1
+        % Angular Momentum control
+        torq   = K_p * cross(S_B_tgt,S_B_m) - K_v*(w_B_BI - w_B_tgt);
+    case 2
+        % Zero-momentum control
+        torq   = K_p * cross(S_B_tgt,S_B_m) - K_v*w_B_BI;
+    case 3
+        % Modified
+        
+        angle  = vangle(S_B_tgt,S_B);     % Angle between Desired Vector and Actual Sun Vector
+        
+        torq   = K_p * angle * cross(S_B_tgt,S_B_m) - K_v*(w_B_BI - w_B_tgt);
+end
+        
 
-torq   = K_p * cross(S_tgt,S_B_m_f) - K_v*(w_B_BI - w_tgt) + cross(w_tgt,I*w_B_BI);
 output = torq ;    % [Nm] 
 
 end

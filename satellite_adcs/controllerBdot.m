@@ -23,7 +23,7 @@ Bdot_O = R_B_I*Bdot_I-smtrx(w_O_OI)*B_I;     % [T/s] Magnetic Vector Rate in Bod
 
 %% MAGNETIC DIPOLE
 Bdot_B  = R_O_B'*Bdot_O-smtrx(w_B_BO)*B_B; % Bdot in Body Frame
-m_B     = (-K_d/norm(B_B,2)^2)*Bdot_B;     % Magnetic Dipole desired from Bdot Controller 
+m_B     = (-K_d/norm(B_B,2)^2) * Bdot_B;     % Magnetic Dipole desired from Bdot Controller 
 
 % Current Scaling 
 [m_B,j] = currentScaling(m_B);

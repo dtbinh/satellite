@@ -12,9 +12,9 @@ dt  = 1;              % [sec] Model speed (0.5 for normal, 30 for orbit)
 
 %% TORQUE TOGGLE SWITCH
 
-Tgg_toggle      = 0; % Toggle Torque Gravity Gradient 
-Taero_toggle    = 0; % Toggle Torque Aerodynamic
-Tsolar_toggle   = 0; % Toggle Torque Solar
+Tgg_toggle      = 1; % Toggle Torque Gravity Gradient 
+Taero_toggle    = 1; % Toggle Torque Aerodynamic
+Tsolar_toggle   = 1; % Toggle Torque Solar
 
 Tcontrol_toggle = 1; % Toggle Torque Control
 
@@ -38,9 +38,6 @@ CONST.solarday = 24.00000000;        % [hrs] Hours in a Solar Day
 [r_sun_mod,rtasc_sun,decl_sun]  = jdut2sun(JD_UTC);
 [r_sun_eci,v_sun_eci,a_sun_eci] = mod2eci(r_sun_mod,[0; 0; 0],[0; 0; 0],T_TT );
 
-%% TARGET
-CONST.lat = 45;                 % [deg]
-CONST.lon = -20;                 % [deg]
 
 %% CONSTANT PARAMETERS
 
@@ -161,8 +158,8 @@ w_O_OI_0 = [0;-w_O;0];         % [rad] Orbital Frame Angular Rate relative to In
 w_B_OI_0 = R_O_B_0'*w_O_OI_0;  % [rad] Orbital Frame Angular Rates relative to Inertial Frame in Body Frame
 
 % Body Frame Angular Rate
-w_B_BO_0 = 0.05*[randn(1,1);randn(1,1);randn(1,1)]; % [rad/s] Body Frame Angular Rates relative to Orbital Frame in Body Frame 
-% w_B_BO_0 = 0.0*[1;1;1];
+w_B_BO_0 = 0.005*[randn(1,1);randn(1,1);randn(1,1)]; % [rad/s] Body Frame Angular Rates relative to Orbital Frame in Body Frame 
+% w_B_BO_0 = 0.001*[1;1;1];
 w_B_BI_0 = w_B_BO_0 + w_B_OI_0;   % [rad] Body Frame Angular Rate relative to Inertial Frame in Body Frame
 
 %% SENSORS FLAG
@@ -213,8 +210,8 @@ ST2_Mis    = [0.0;0.0;0.0]*pi/180;     % [rad] Star Tracker Misalignment Euler A
 Ust2       = eul2dcm(ST2_Mis,'zyx');   % [-] Misalignment Matrix
 
 dt_st      = dt;                       % [s] Sampling Time of Star Tracker
-update_st1 = 2;                        % [s] Update Interval of Star Tracker 1
-update_st2 = 2;                        % [s] Update Interval of Star Tracker 2
+update_st1 = 120;                        % [s] Update Interval of Star Tracker 1
+update_st2 = 120;                        % [s] Update Interval of Star Tracker 2
 
 if dt_st < dt
     dt_st = dt;
@@ -253,7 +250,7 @@ dt_ts   = dt;           % [sec] Sampling Time of Temperature Sensor
 %% KALMAN FILTER
 global FLTR
 
-FLTR.mode   = 1;
+FLTR.mode   = 0;
 dt_ekf      = dt;               % [sec] (20 Hz) EKF speed
 
 CONST.dt     = dt;               % [sec] (20 Hz) Model speed
@@ -268,6 +265,28 @@ CONST.varST_x = varST_x;
 CONST.varST_y = varST_y;
 CONST.varST_z = varST_z;
 
+%% TARGET
+CONST.lat = 10;                 % [deg]
+CONST.lon = 80;                 % [deg]
+
+GST = jdut2gst(CONST.JD_UT1);    % [rad]    
+R_E_I = dcm(3,GST);
+R_I_E = R_E_I';
+r_tgt = latlon2vec(CONST.lat,CONST.lon,rad2deg(GST)); 
+
+[R_i_r,r1,r2,r3] = triad2dcm(r_tgt-R_0/CONST.Re, V_0);
+
+R_r_i = R_i_r';
+
+CONST.los_vec = [0;0;1];  % LOS of payload in body frame
+CONST.vel_vec = [1;0;0];  % velocity vector in orbital frame
+
+R_b_r = triad2dcm(CONST.los_vec,CONST.vel_vec);
+
+R_b_i = R_b_r*R_r_i;
+R_i_b = R_b_i';
+
+q_tgt = dcm2q(R_i_b);
 
 %% CONTROLLER
 global CTRL_BDOT
@@ -289,7 +308,7 @@ CTRL_EDSP.K_d   = 4e-05;      % [-] Differential Controller Gain 8*w_O^2*(I(2,2)
 CTRL_VDOT.K_d   = 1e-03;
 
 % Reference Controller
-CTRL_RF.K_p   = 5e-08;      % [-] ProportionalController Gain
+CTRL_RF.K_p   = 5e-08;      % [-] Proportional Controller Gain
 CTRL_RF.K_d   = 4e-05;      % [-] Differential Controller Gain 8*w_O^2*(I(2,2)-I(3,3))
 
 % Sliding Mode Controller
@@ -303,42 +322,46 @@ wdot_B_BI_tgt = [0;0;0];
 % Sun Pointing Controller
 CTRL_SP.K_p = 5e-06;
 CTRL_SP.K_v = 5e-04;
-CTRL_SP.S_tgt = [1;0;0];    % [-] Desired sun vector in Body Frame
-CTRL_SP.w_tgt = [0;0;0];    % [-] Desired Angular Velocity
+CTRL_SP.S_B_tgt = vnorm([1;0;0]);          % [-] Desired sun vector in Body Frame, should be optimal sun vector
+CTRL_SP.w_B_tgt = 0.01*CTRL_SP.S_B_tgt;    % [-] Desired Angular Velocity
+CTRL_SP.type    = 0;
+
+% Three Axis controller
+CTRL_TA.k1 = 5e-05;    % [ ] - eigen axis k1 gain              
+CTRL_TA.k2 = 5e-05;    % [ ] - eigen axis k2 gain  
+CTRL_TA.d1 = 1e-03;    % [ ] - eigen axis d1 gain  
+CTRL_TA.d2 = 1e-03;    % [ ] - eigen axis d2 gain 
+
+CTRL_TA.kp = 5e-05;    % [ ] - q feedback proportional gain             
+CTRL_TA.kd = 1e-03;    % [ ] - q feedback damping gain
+
+CTRL_TA.type = 'q feedback';
 
 % Spin Control Controller
 CTRL_SC.K   = 1e-02;         % [s^-2]
 CTRL_SC.K_1 = 5e-03;         % [ ] 
 CTRL_SC.K_2 = 5e-03;         % [kg.m^-2] 
-CTRL_SC.vec_tgt = vnorm([1;1;0]);   % [-] Desired spin vector in Body Frame
+CTRL_SC.vec_tgt = vnorm([1;0;0]);   % [-] Desired spin vector in Body Frame
 CTRL_SC.w_tgt   = 0.01;      % [rad/s] Desired Angular Velocity
-CTRL_SC.type    = 'buhl';
+CTRL_SC.type    = 'hihb';  % [ ] - 'ruiter','buhl','hihb'ya
 
-% Three Axis controller
-CTRL_TA.k1 = 5e-05;             
-CTRL_TA.k2 = 5e-05; 
-CTRL_TA.d1 = 1e-03; 
-CTRL_TA.d2 = 1e-03; 
-
-CTRL_TA.kp = 5e-05;             
-CTRL_TA.kd = 1e-03;
-CTRL_TA.type = 'q feedback';
 
 % Controller Panel
 CTRL_SWITCH1  = 1; % Time to change mode from Detumbling to Sun Pointing.
 CTRL_SWITCH2  = P/2; % Time to change mode from Sun Pointing to Operation Mode.
 
-CTRL_DT_MODE  = 3;   % Detumbling mode: BDOT/EDSP/VDOT
-CTRL_PT1_MODE = 5;   % Pointing mode  : REF/SLD/SUN/TA
-CTRL_PT2_MODE = 5;   % Pointing mode  : REF/SLD/SUN/TA
+CTRL_DT_MODE  = 3;   % Detumbling mode: BDOT/EDSP/VDOT/
+CTRL_PT1_MODE = 4;   % Pointing mode  : REF/SLD/SUN/TA/SC
+CTRL_PT2_MODE = 4;   % Pointing mode  : REF/SLD/SUN/TA/SC
 
 %% SOLVER
-tdur = 2*P;              
+tdur = P;              
 sim('satellite_adcs_model',tdur);
 
 %% POST PROCESSING
-R = R/CONST.Re;  % Position Vector of spacecraft
-
+R     = R/CONST.Re;     % Position Vector of satellite (Normalized)
+R_tgt = R_tgt/CONST.Re; % Target Vector of satellite (Normalized)
+ 
 for i=1:1:length(tout)
 Rx(i) = R(1,1,i); % Position Vector X of spacecraft
 Ry(i) = R(2,1,i); % Position Vector Y of spacecraft
@@ -361,9 +384,13 @@ Pdiag(4,i)        = Pk_f(4,4,i);
 Pdiag(5,i)        = Pk_f(5,5,i);
 Pdiag(6,i)        = Pk_f(6,6,i);
 
+R_I_B_tgt(:,:,i) = q2dcm(q_I_B_tgt(:,i));
+
 LOS_NADIR(i)    = vangle(R_O_I(:,:,i)'*[0 ;0 ;1], R_B_I(:,:,i)'*[0 ;0 ;1]);
 LOS_SUN(i)      = vangle(S_I(:,i), R_B_I(:,:,i)'*[1 ;0 ;0]);
-LOS_INERTIAL(i) = vangle([0;0;1],R_B_I(:,:,i)'*[0 ;0 ;1]);
+LOS_INERTIAL(i) = vangle(R_I_B_tgt(:,:,i)*[0 ;1 ;0],R_B_I(:,:,i)'*[0 ;1 ;0]);
+
+
 end
 
 %% PLOT
@@ -372,10 +399,10 @@ satellite_adcs_plot
 
 %% SIMULATION
 
-createSimulation([0 0 1 1],3)
+createSimulation([0 0 1 1],2)
 
 % Earth Centered Fixed Frame
-[X_ecf,X_ecf_lab]= plotvector(R_I_E(:,:,1)*[1 ;0 ;0], [0 0 0], 'r','X_ecf');
+[X_ecf,X_ecf_lab] = plotvector(R_I_E(:,:,1)*[1 ;0 ;0], [0 0 0], 'r','X_ecf');
 [Y_ecf,Y_ecf_lab] = plotvector(R_I_E(:,:,1)*[0 ;1 ;0], [0 0 0], 'r','Y_ecf');
 [Z_ecf,Z_ecf_lab] = plotvector(R_I_E(:,:,1)*[0 ;0 ;1], [0 0 0], 'r','Z_ecf');
 
@@ -418,6 +445,15 @@ hold on;
 plot3(Rx,Ry,Rz,'-.')
 
 [R_target,R_target_lab] = plotposition(R ,'r','s','tgt');
+
+
+% Target Frame
+plotvector(r_tgt, [0 0 0], 'r');  % Target location
+
+[X_tgt,X_tgt_lab] = plotvector(R_I_B_tgt(:,:,1)*[1;0;0],R,color('teal'),'x_t_g_t',0.75);
+[Y_tgt,Y_tgt_lab] = plotvector(R_I_B_tgt(:,:,1)*[0;1;0],R,color('teal'),'y_t_g_t',0.75);
+[Z_tgt,Z_tgt_lab] = plotvector(R_I_B_tgt(:,:,1)*[0;0;1],R,color('teal'),'z_t_g_t',0.75);
+
 
 % MAGNETIC FIELD PLOT
 %  MagneticField();
@@ -470,6 +506,13 @@ set(Z_sat_lab,'Position',R_B_I(:,:,i)'*0.5*[0 ;0 ;1]+R(:,1,i));
 set(w_sat_lab,'Position',R_B_I(:,:,i)'*0.5*vnorm(w_B_BI(:,i))+R(:,1,i));
 set(B_sat_lab,'Position',R_B_I(:,:,i)'*0.5*vnorm(B_B_m(:,i))+R(:,1,i));
 set(S_sat_lab,'Position',R_B_I(:,:,i)'*0.5*vnorm(S_B_hat(:,i))+R(:,1,i));
+
+updatevector(X_tgt, R_I_B_tgt(:,:,i)*[1 ;0 ;0],  R(:,1,i),0.75);
+updatevector(Y_tgt, R_I_B_tgt(:,:,i)*[0 ;1 ;0],  R(:,1,i),2.50);
+updatevector(Z_tgt, R_I_B_tgt(:,:,i)*[0 ;0 ;1],  R(:,1,i),0.75);
+set(X_tgt_lab,'Position',R_I_B_tgt(:,:,i)*0.75*[1 ;0 ;0]+R(:,1,i));
+set(Y_tgt_lab,'Position',R_I_B_tgt(:,:,i)*0.75*[0 ;1 ;0]+R(:,1,i));
+set(Z_tgt_lab,'Position',R_I_B_tgt(:,:,i)*0.75*[0 ;0 ;1]+R(:,1,i));
 
 % Update Target
 updateposition(R_target, R_tgt(:,i));

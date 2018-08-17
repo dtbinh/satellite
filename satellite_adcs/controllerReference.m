@@ -8,14 +8,18 @@ K_p = CTRL_RF.K_p;
 w_O = CONST.w_O;
 
 %% INPUT
-R_O_B  = input(1:3,1:3); % Rotation Matrix from Body to Orbit Frame
-R_B_I  = input(1:3,4:6); % Rotation Matrix from Inertia to Body Frame
-B_B_m  = input(1:3,7);   % Magnetic Field Vector (Measured) in Body Frame
-w_B_BI = input(1:3,8);   % Angular Velocity of Body Frame with respect to the Inertia Frame
-eps    = input(1:3,9);   % Quaternion xyz
-
+R_O_B     = input(1:3,1:3); % Rotation Matrix from Body to Orbit Frame
+R_B_I     = input(1:3,4:6); % Rotation Matrix from Inertia to Body Frame
+B_B_m     = input(1:3,7);   % Magnetic Field Vector (Measured) in Body Frame
+w_B_BI    = input(1:3,8);   % Angular Velocity of Body Frame with respect to the Inertia Frame
+e_I_B_tgt = input(1:3,9);   % Quaternion xyz
+e_B_I     = input(1:3,10);   % Quaternion xyz
 %% MAGNETIC FIELD VECOTR
 B_B    = B_B_m;          % Magnetic Field Vector in Body Frame
+
+e_B_I_tgt = -e_I_B_tgt;
+
+eps = e_B_I -  e_B_I_tgt;
 
 %% ANGULAR VELOCITY
 w_O_OI = [0;-w_O;0];          % [rad/s] Angular Velocity of Orbit to Inertia Frame expressed in Orbit Frame
