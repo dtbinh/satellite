@@ -60,7 +60,7 @@ CONST.gamma      = 23.442/180*pi;           % [rad] Spin Axis of Ecliptic Plane
 CONST.dm         = 7.94e22;                 % [Am^2] Earth Dipole Magnetic Moment
 CONST.mui        = 4*pi*1e-7;               % [kgm/A^2/s^2] Earth Permeability of Free Space
 CONST.Bo         = CONST.mui*CONST.dm/4/pi; % [-] Magnetic Constant for magnetic field calculation
-CONST.u_0        = pi/2;%rand(1,1)*pi;            % [rad] Initial Sun Ascension (pi/2 - Summer, pi - Autumn, 3*pi/2 
+CONST.u_0        = pi/2;%rand(1,1)*pi;      % [rad] Initial Sun Ascension (pi/2 - Summer, pi - Autumn, 3*pi/2 
 
 %% SATELLITE MOMENTS OF INERTIA
 m  = 2.00;  % [kg] Satellite Mass
@@ -112,8 +112,8 @@ RAAN = 0;  % [rad] Initial Right Ascention - Angle on Equatorial Plane from Vern
 w    = 0;  % [rad] Initial Argument of perigee - Angle on Orbital Plane from Ascending Node to Perigee
 TAo  = 0;  % [deg] Initial True Anomaly - Angle on Orbital Plane from Perigee to Satellite
 
-Rp  = CONST.Re + h_p;              % [m] radius of perigee
-Ra  = CONST.Re + h_a;              % [m] radius of apogee
+Rp  = CONST.Re + h_p;            % [m] radius of perigee
+Ra  = CONST.Re + h_a;            % [m] radius of apogee
 ecc = (Ra-Rp)/(Ra+Rp);           % [m/m] eccentricity
 a   = (Ra+Rp)/2;                 % [m] semi-major axis
 
@@ -125,12 +125,15 @@ CONST.a   = a;                   % [m] semi-major axis
 CONST.w_O = w_O;                 % [rad/s] Orbit Angular Velocity
 CONST.RAAN = RAAN;               % [rad] Initial Right Ascention - Angle on Equatorial Plane from Vernal Equinox to Ascending Node
 
+% Inclination
 incl = acos((CONST.OmegaDot*(1-ecc^2)^2*a^(7/2))/(-3/2*sqrt(CONST.mu)*CONST.J2*CONST.Re^2)); % [rad] Orbit iination required for Sun-synchornous (eqn 4.47 from Curtis)                                                                          % [rad] Orbit iination 
 % incl = 45/180*pi;
-[R_0,V_0] = coe2rv(a, ecc, incl,RAAN, w, TAo,'curtis');% initial orbital state vector in ECF Frame- computes the magnitude of state vector (r,v) from the classical orbital elements (coe) 
+
+% Initial orbital state vector in ECF Frame- computes the magnitude of state vector (r,v) from the classical orbital elements (coe)
+[R_0,V_0] = coe2rv(a, ecc, incl,RAAN, w, TAo,'curtis'); 
 
 CONST.incl = incl;
-CONST.ecc = ecc;
+CONST.ecc  = ecc;
 
 %% INITIAL CONDITIONS
 R_O_I   = dcm(1,-90*D2R)*dcm(3,(TAo+90)*D2R)*dcm(1,incl)*dcm(3,RAAN); % [3x3] Rotation Matrix from Inertial (X axis is vernal equinox) to Orbit Frame (x is orbit direction)
@@ -278,15 +281,9 @@ r_tgt = latlon2vec(CONST.lat,CONST.lon,rad2deg(GST));
 
 R_r_i = R_i_r';
 
-CONST.los_vec = [0;0;1];  % LOS of payload in body frame
+CONST.los_vec = [0;1;0];  % LOS of payload in body frame
 CONST.vel_vec = [1;0;0];  % velocity vector in orbital frame
 
-R_b_r = triad2dcm(CONST.los_vec,CONST.vel_vec);
-
-R_b_i = R_b_r*R_r_i;
-R_i_b = R_b_i';
-
-q_tgt = dcm2q(R_i_b);
 
 %% CONTROLLER
 global CTRL_BDOT
@@ -384,18 +381,18 @@ Pdiag(4,i)        = Pk_f(4,4,i);
 Pdiag(5,i)        = Pk_f(5,5,i);
 Pdiag(6,i)        = Pk_f(6,6,i);
 
-R_I_B_tgt(:,:,i) = q2dcm(q_I_B_tgt(:,i));
+R_B_I_tgt(:,:,i) = q2dcm(q_B_I_tgt(:,i));
 
 LOS_NADIR(i)    = vangle(R_O_I(:,:,i)'*[0 ;0 ;1], R_B_I(:,:,i)'*[0 ;0 ;1]);
 LOS_SUN(i)      = vangle(S_I(:,i), R_B_I(:,:,i)'*[1 ;0 ;0]);
-LOS_INERTIAL(i) = vangle(R_I_B_tgt(:,:,i)*[0 ;1 ;0],R_B_I(:,:,i)'*[0 ;1 ;0]);
+LOS_INERTIAL(i) = vangle(R_B_I_tgt(:,:,i)'*[0 ;1 ;0],R_B_I(:,:,i)'*[0 ;1 ;0]);
 
 
 end
 
 %% PLOT
 close all
-satellite_adcs_plot
+% satellite_adcs_plot
 
 %% SIMULATION
 
@@ -450,9 +447,9 @@ plot3(Rx,Ry,Rz,'-.')
 % Target Frame
 plotvector(r_tgt, [0 0 0], 'r');  % Target location
 
-[X_tgt,X_tgt_lab] = plotvector(R_I_B_tgt(:,:,1)*[1;0;0],R,color('teal'),'x_t_g_t',0.75);
-[Y_tgt,Y_tgt_lab] = plotvector(R_I_B_tgt(:,:,1)*[0;1;0],R,color('teal'),'y_t_g_t',0.75);
-[Z_tgt,Z_tgt_lab] = plotvector(R_I_B_tgt(:,:,1)*[0;0;1],R,color('teal'),'z_t_g_t',0.75);
+[X_tgt,X_tgt_lab] = plotvector(R_B_I_tgt(:,:,1)'*[1;0;0],R,color('teal'),'x_t_g_t',0.75);
+[Y_tgt,Y_tgt_lab] = plotvector(R_B_I_tgt(:,:,1)'*[0;1;0],R,color('teal'),'y_t_g_t',0.75);
+[Z_tgt,Z_tgt_lab] = plotvector(R_B_I_tgt(:,:,1)'*[0;0;1],R,color('teal'),'z_t_g_t',0.75);
 
 
 % MAGNETIC FIELD PLOT
@@ -507,12 +504,12 @@ set(w_sat_lab,'Position',R_B_I(:,:,i)'*0.5*vnorm(w_B_BI(:,i))+R(:,1,i));
 set(B_sat_lab,'Position',R_B_I(:,:,i)'*0.5*vnorm(B_B_m(:,i))+R(:,1,i));
 set(S_sat_lab,'Position',R_B_I(:,:,i)'*0.5*vnorm(S_B_hat(:,i))+R(:,1,i));
 
-updatevector(X_tgt, R_I_B_tgt(:,:,i)*[1 ;0 ;0],  R(:,1,i),0.75);
-updatevector(Y_tgt, R_I_B_tgt(:,:,i)*[0 ;1 ;0],  R(:,1,i),2.50);
-updatevector(Z_tgt, R_I_B_tgt(:,:,i)*[0 ;0 ;1],  R(:,1,i),0.75);
-set(X_tgt_lab,'Position',R_I_B_tgt(:,:,i)*0.75*[1 ;0 ;0]+R(:,1,i));
-set(Y_tgt_lab,'Position',R_I_B_tgt(:,:,i)*0.75*[0 ;1 ;0]+R(:,1,i));
-set(Z_tgt_lab,'Position',R_I_B_tgt(:,:,i)*0.75*[0 ;0 ;1]+R(:,1,i));
+updatevector(X_tgt, R_B_I_tgt(:,:,i)'*[1 ;0 ;0],  R(:,1,i),0.75);
+updatevector(Y_tgt, R_B_I_tgt(:,:,i)'*[0 ;1 ;0],  R(:,1,i),2.50);
+updatevector(Z_tgt, R_B_I_tgt(:,:,i)'*[0 ;0 ;1],  R(:,1,i),0.75);
+set(X_tgt_lab,'Position',R_B_I_tgt(:,:,i)'*0.75*[1 ;0 ;0]+R(:,1,i));
+set(Y_tgt_lab,'Position',R_B_I_tgt(:,:,i)'*0.75*[0 ;1 ;0]+R(:,1,i));
+set(Z_tgt_lab,'Position',R_B_I_tgt(:,:,i)'*0.75*[0 ;0 ;1]+R(:,1,i));
 
 % Update Target
 updateposition(R_target, R_tgt(:,i));
