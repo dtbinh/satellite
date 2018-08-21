@@ -55,7 +55,8 @@
 function [p,a,ecc,incl,omega,argp,nu,m,arglat,truelon,lonper] = rv2coe (r,v)
 
         mu = 398.6004118e12;      % km3/s2
-
+        halfpi = pi/2;
+        
         small = 1.0e-10;
         undefined = 0.0;
         muin = mu;   % this is the km version

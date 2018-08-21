@@ -18,7 +18,7 @@
 
 function asec = rad2arcsec(rad)
 
-if ~exist('asec','var')
+if ~exist('rad','var')
     asec = 1/pi*180*3600;
 else
     asec = rad/pi*180*3600;

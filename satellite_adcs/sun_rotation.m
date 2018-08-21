@@ -2,7 +2,7 @@ function output = sun_rotation(input)
 global CONST;
 
 u = input;                           % [rad] Right ascension of the sun in the ecliptic plane
-t = get_param('satellite_adcs_model','SimulationTime');
+t = get_param(CONST.model,'SimulationTime');
 
 model = 1;
 

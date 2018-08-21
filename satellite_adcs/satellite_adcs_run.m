@@ -1,32 +1,38 @@
 %% DESIGN SIMULATION NANO-SATELLITE ATTITUDE DETERMINATION SYSTEM
 clear all
 clc
-
+format long
 global CONST;
 %% GLOBAL
 R2D = 180/pi;
 D2R = pi/180;
 
 %% MODEL PARAMETER
-dt  = 1;              % [sec] Model speed (0.5 for normal, 30 for orbit)
+dt  = 0.5;              % [sec] Model speed (0.5 for normal, 30 for orbit)
 
 %% TORQUE TOGGLE SWITCH
 
-Tgg_toggle      = 1; % Toggle Torque Gravity Gradient 
-Taero_toggle    = 1; % Toggle Torque Aerodynamic
-Tsolar_toggle   = 1; % Toggle Torque Solar
+Tgg_toggle      = 10; % Toggle Torque Gravity Gradient 
+Taero_toggle    = 10; % Toggle Torque Aerodynamic
+Tsolar_toggle   = 10; % Toggle Torque Solar
+Tnoise_toggle   = 1; % Toggle Torque Noise
 
 Tcontrol_toggle = 1; % Toggle Torque Control
 
 %% TIME
 % UTC Time - Universal Time
-UTC     = datetime(2000,3,21,6,0,0);                                       % [time] UTC Time
-JD_UTC  = jd(UTC.Year,UTC.Month,UTC.Day,UTC.Hour,UTC.Minute,UTC.Second);   % [day]
+UTC_sim   = datetime(2000,3,21,6,0,0);                                       % [time] UTC Time
+UTC_start = datetime(2000,3,21,6,0,0);                                       % [time] UTC Time
+UTC_end   = datetime(2000,3,21,7,0,0);                                       % [time] UTC Time
+
+tgt_dur = datenum(UTC_end - UTC_start)*24*60*60;
+
+JD_UTC  = jd(UTC_sim.Year,UTC_sim.Month,UTC_sim.Day,UTC_sim.Hour,UTC_sim.Minute,UTC_sim.Second);   % [day]
 T_UTC   = (JD_UTC -2451545.0 )/36525;                                      % [century]
 d_AT    = 33.0;                                                            % [sec] From Astronomical Almanac 2006:K9
 d_UT1   = 0.2653628;                                                       % [sec]
-[UT1, T_UT1, JD_UT1, UTC, TAI, TT, T_TT, JD_TT, T_TDB, JD_TDB] ...
-    = convtime (UTC.Year,UTC.Month,UTC.Day,UTC.Hour,UTC.Minute,UTC.Second,d_UT1, d_AT);
+[UT1, T_UT1, JD_UT1, UTC_sim, TAI, TT, T_TT, JD_TT, T_TDB, JD_TDB] ...
+    = convtime (UTC_sim.Year,UTC_sim.Month,UTC_sim.Day,UTC_sim.Hour,UTC_sim.Minute,UTC_sim.Second,d_UT1, d_AT);
 
 CONST.JD_UT1 = JD_UT1;
 CONST.JD_UTC = JD_UTC;
@@ -65,8 +71,8 @@ CONST.u_0        = pi/2;%rand(1,1)*pi;      % [rad] Initial Sun Ascension (pi/2 
 %% SATELLITE MOMENTS OF INERTIA
 m  = 2.00;  % [kg] Satellite Mass
 dx = 0.20;  % [m] Length X
-dy = 0.20;  % [m] Length Y
-dz = 0.20;  % [m] Length Z
+dy = 0.40;  % [m] Length Y
+dz = 0.40;  % [m] Length Z
 
 Ix = (m/12)*(dy^2+dz^2); % [kg.m^2] X-axis Inertia
 Iy = (m/12)*(dx^2+dz^2); % [kg.m^2] Y-axis Inertia
@@ -127,7 +133,7 @@ CONST.RAAN = RAAN;               % [rad] Initial Right Ascention - Angle on Equa
 
 % Inclination
 incl = acos((CONST.OmegaDot*(1-ecc^2)^2*a^(7/2))/(-3/2*sqrt(CONST.mu)*CONST.J2*CONST.Re^2)); % [rad] Orbit iination required for Sun-synchornous (eqn 4.47 from Curtis)                                                                          % [rad] Orbit iination 
-% incl = 45/180*pi;
+% incl = 90/180*pi;
 
 % Initial orbital state vector in ECF Frame- computes the magnitude of state vector (r,v) from the classical orbital elements (coe)
 [R_0,V_0] = coe2rv(a, ecc, incl,RAAN, w, TAo,'curtis'); 
@@ -161,7 +167,7 @@ w_O_OI_0 = [0;-w_O;0];         % [rad] Orbital Frame Angular Rate relative to In
 w_B_OI_0 = R_O_B_0'*w_O_OI_0;  % [rad] Orbital Frame Angular Rates relative to Inertial Frame in Body Frame
 
 % Body Frame Angular Rate
-w_B_BO_0 = 0.005*[randn(1,1);randn(1,1);randn(1,1)]; % [rad/s] Body Frame Angular Rates relative to Orbital Frame in Body Frame 
+w_B_BO_0 = dps2rps(0.5)*[randn(1,1);randn(1,1);randn(1,1)]; % [rad/s] Body Frame Angular Rates relative to Orbital Frame in Body Frame 
 % w_B_BO_0 = 0.001*[1;1;1];
 w_B_BI_0 = w_B_BO_0 + w_B_OI_0;   % [rad] Body Frame Angular Rate relative to Inertial Frame in Body Frame
 
@@ -213,8 +219,8 @@ ST2_Mis    = [0.0;0.0;0.0]*pi/180;     % [rad] Star Tracker Misalignment Euler A
 Ust2       = eul2dcm(ST2_Mis,'zyx');   % [-] Misalignment Matrix
 
 dt_st      = dt;                       % [s] Sampling Time of Star Tracker
-update_st1 = 120;                        % [s] Update Interval of Star Tracker 1
-update_st2 = 120;                        % [s] Update Interval of Star Tracker 2
+update_st1 = 10;                        % [s] Update Interval of Star Tracker 1
+update_st2 = 10;                        % [s] Update Interval of Star Tracker 2
 
 if dt_st < dt
     dt_st = dt;
@@ -253,7 +259,7 @@ dt_ts   = dt;           % [sec] Sampling Time of Temperature Sensor
 %% KALMAN FILTER
 global FLTR
 
-FLTR.mode   = 0;
+FLTR.mode   = 2;
 dt_ekf      = dt;               % [sec] (20 Hz) EKF speed
 
 CONST.dt     = dt;               % [sec] (20 Hz) Model speed
@@ -269,8 +275,8 @@ CONST.varST_y = varST_y;
 CONST.varST_z = varST_z;
 
 %% TARGET
-CONST.lat = 10;                 % [deg]
-CONST.lon = 80;                 % [deg]
+CONST.lat = 25;                 % [deg]
+CONST.lon = 95;                 % [deg]
 
 GST = jdut2gst(CONST.JD_UT1);    % [rad]    
 R_E_I = dcm(3,GST);
@@ -281,7 +287,7 @@ r_tgt = latlon2vec(CONST.lat,CONST.lon,rad2deg(GST));
 
 R_r_i = R_i_r';
 
-CONST.los_vec = [0;1;0];  % LOS of payload in body frame
+CONST.los_vec = [0;0;1];  % LOS of payload in body frame
 CONST.vel_vec = [1;0;0];  % velocity vector in orbital frame
 
 
@@ -310,18 +316,18 @@ CTRL_RF.K_d   = 4e-05;      % [-] Differential Controller Gain 8*w_O^2*(I(2,2)-I
 
 % Sliding Mode Controller
 CTRL_SM.k   = 1.00;         % derivative gain on dqd and part-propotional gain on dq
-CTRL_SM.eps = 1.00;         % eps if value is too small, it works like
-CTRL_SM.g   = 0.01*eye(3);  % derivative gain on dw and part-propotional gain on dq
-CTRL_SM.kg  = CTRL_SM.k*CTRL_SM.g;  % propotional gain on dq (not in used)
+CTRL_SM.eps = 0.10;         % eps if value is too small, it works like
+CTRL_SM.G   = 0.1*eye(3);   % bst_model derivative gain on dw and part-propotional gain on dq
+CTRL_SM.g   = 1.0*eye(3);   % bst derivative gain on dw and part-propotional gain on dq
 CTRL_SM.type = 'bst_mod';
-wdot_B_BI_tgt = [0;0;0];
+
 
 % Sun Pointing Controller
-CTRL_SP.K_p = 5e-06;
-CTRL_SP.K_v = 5e-04;
+CTRL_SP.K_p = 1e-03;                       % [ ] Proportional Gain
+CTRL_SP.K_v = 1e-02;                       % [ ] Damping Gain
 CTRL_SP.S_B_tgt = vnorm([1;0;0]);          % [-] Desired sun vector in Body Frame, should be optimal sun vector
-CTRL_SP.w_B_tgt = 0.01*CTRL_SP.S_B_tgt;    % [-] Desired Angular Velocity
-CTRL_SP.type    = 0;
+CTRL_SP.w_B_tgt = 0.05*CTRL_SP.S_B_tgt;    % [-] Desired Angular Velocity
+CTRL_SP.type    = 'noangmom';
 
 % Three Axis controller
 CTRL_TA.k1 = 5e-05;    % [ ] - eigen axis k1 gain              
@@ -329,10 +335,10 @@ CTRL_TA.k2 = 5e-05;    % [ ] - eigen axis k2 gain
 CTRL_TA.d1 = 1e-03;    % [ ] - eigen axis d1 gain  
 CTRL_TA.d2 = 1e-03;    % [ ] - eigen axis d2 gain 
 
-CTRL_TA.kp = 5e-05;    % [ ] - q feedback proportional gain             
-CTRL_TA.kd = 1e-03;    % [ ] - q feedback damping gain
+CTRL_TA.kp = 4e-02;    % [ ] - q feedback proportional gain             
+CTRL_TA.kd = 4e-02;    % [ ] - q feedback damping gain
 
-CTRL_TA.type = 'q feedback';
+CTRL_TA.type = 'qfeedback';
 
 % Spin Control Controller
 CTRL_SC.K   = 1e-02;         % [s^-2]
@@ -340,19 +346,20 @@ CTRL_SC.K_1 = 5e-03;         % [ ]
 CTRL_SC.K_2 = 5e-03;         % [kg.m^-2] 
 CTRL_SC.vec_tgt = vnorm([1;0;0]);   % [-] Desired spin vector in Body Frame
 CTRL_SC.w_tgt   = 0.01;      % [rad/s] Desired Angular Velocity
-CTRL_SC.type    = 'hihb';  % [ ] - 'ruiter','buhl','hihb'ya
+CTRL_SC.type    = 'hihb';  % [ ] - 'ruiter','buhl','hihb'
 
 
 % Controller Panel
 CTRL_SWITCH1  = 1; % Time to change mode from Detumbling to Sun Pointing.
-CTRL_SWITCH2  = P/2; % Time to change mode from Sun Pointing to Operation Mode.
+CTRL_SWITCH2  = P/8; % Time to change mode from Sun Pointing to Operation Mode.
 
 CTRL_DT_MODE  = 3;   % Detumbling mode: BDOT/EDSP/VDOT/
-CTRL_PT1_MODE = 4;   % Pointing mode  : REF/SLD/SUN/TA/SC
-CTRL_PT2_MODE = 4;   % Pointing mode  : REF/SLD/SUN/TA/SC
+CTRL_PT1_MODE = 3;   % Pointing mode  : REF/SLD/SUN/TA/SC/IDLE
+CTRL_PT2_MODE = 6;   % Pointing mode  : REF/SLD/SUN/TA/SC/IDLE
 
 %% SOLVER
-tdur = P;              
+CONST.model = 'satellite_adcs_model';
+tdur = P/4;            
 sim('satellite_adcs_model',tdur);
 
 %% POST PROCESSING
@@ -381,18 +388,19 @@ Pdiag(4,i)        = Pk_f(4,4,i);
 Pdiag(5,i)        = Pk_f(5,5,i);
 Pdiag(6,i)        = Pk_f(6,6,i);
 
-R_B_I_tgt(:,:,i) = q2dcm(q_B_I_tgt(:,i));
+R_B_I_tgt(:,:,i) = q2dcm(q_B_I_tgt(:,:,i));
 
-LOS_NADIR(i)    = vangle(R_O_I(:,:,i)'*[0 ;0 ;1], R_B_I(:,:,i)'*[0 ;0 ;1]);
-LOS_SUN(i)      = vangle(S_I(:,i), R_B_I(:,:,i)'*[1 ;0 ;0]);
-LOS_INERTIAL(i) = vangle(R_B_I_tgt(:,:,i)'*[0 ;1 ;0],R_B_I(:,:,i)'*[0 ;1 ;0]);
+LOS_SUN(i)     = rad2arcsec(vangle(S_I(:,i), R_B_I(:,:,i)'*[1 ;0 ;0]));
+LOS_NADIR(i)   = rad2arcsec(vangle(R_O_I(:,:,i)'*[0 ;0 ;1], R_B_I(:,:,i)'*[0 ;0 ;1]));
 
-
+LOS_TGT(i)     = rad2arcsec(vangle(R_B_I_tgt(:,:,i)'*CONST.los_vec,R_B_I(:,:,i)'*CONST.los_vec));
+LOS_TGT_A(i)   = vangle(R_B_I_tgt(:,:,i)'*CONST.los_vec,R_B_I(:,:,i)'*CONST.los_vec);
+LOS_ANGLE(i)   = norm(cross(R_B_I_tgt(:,:,i)'*CONST.los_vec,R_B_I(:,:,i)'*CONST.los_vec));
 end
 
 %% PLOT
 close all
-% satellite_adcs_plot
+satellite_adcs_plot
 
 %% SIMULATION
 
@@ -445,8 +453,6 @@ plot3(Rx,Ry,Rz,'-.')
 
 
 % Target Frame
-plotvector(r_tgt, [0 0 0], 'r');  % Target location
-
 [X_tgt,X_tgt_lab] = plotvector(R_B_I_tgt(:,:,1)'*[1;0;0],R,color('teal'),'x_t_g_t',0.75);
 [Y_tgt,Y_tgt_lab] = plotvector(R_B_I_tgt(:,:,1)'*[0;1;0],R,color('teal'),'y_t_g_t',0.75);
 [Z_tgt,Z_tgt_lab] = plotvector(R_B_I_tgt(:,:,1)'*[0;0;1],R,color('teal'),'z_t_g_t',0.75);
@@ -457,7 +463,7 @@ plotvector(r_tgt, [0 0 0], 'r');  % Target location
 
 % UPDATE SIMULATION PLOT
 
-for i=1:10:(length(tout)-1)
+for i=1:5:(length(tout)-1)
 
 % Update Satellite Position
 updateposition(R_sat, R(:,i));

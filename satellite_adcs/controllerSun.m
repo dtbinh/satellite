@@ -43,21 +43,28 @@ S_B = R_B_I*S_I;
 S_B_m = S_B;
 
 switch type
-     case 0
+     case 'full'
         % Angular Momentum control
         torq   = K_p * cross(S_B_tgt,S_B_m) - K_v*(w_B_BI - w_B_tgt) + cross(w_B_tgt,I*w_B_BI);
-    case 1
+    case 'angmom'
         % Angular Momentum control
         torq   = K_p * cross(S_B_tgt,S_B_m) - K_v*(w_B_BI - w_B_tgt);
-    case 2
+    case 'noangmom'
         % Zero-momentum control
         torq   = K_p * cross(S_B_tgt,S_B_m) - K_v*w_B_BI;
-    case 3
+    case 'modified'
         % Modified
         
         angle  = vangle(S_B_tgt,S_B);     % Angle between Desired Vector and Actual Sun Vector
         
         torq   = K_p * angle * cross(S_B_tgt,S_B_m) - K_v*(w_B_BI - w_B_tgt);
+        
+    case 'rusty'
+       if norm(w_B_BI)>dps2rps(0.3)
+            torq   = K_p * cross(S_B_tgt,S_B_m)- K_v*(w_B_BI - w_B_tgt);
+       else
+           torq   = K_p * cross(S_B_tgt,S_B_m);
+       end
 end
         
 

@@ -14,6 +14,7 @@ B_B_m     = input(1:3,7);   % Magnetic Field Vector (Measured) in Body Frame
 w_B_BI    = input(1:3,8);   % Angular Velocity of Body Frame with respect to the Inertia Frame
 e_I_B_tgt = input(1:3,9);   % Quaternion xyz
 e_B_I     = input(1:3,10);   % Quaternion xyz
+
 %% MAGNETIC FIELD VECOTR
 B_B    = B_B_m;          % Magnetic Field Vector in Body Frame
 

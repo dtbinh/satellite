@@ -1,4 +1,4 @@
-
+close all
 screensize   = get(0,'ScreenSize');
 screenwidth  = screensize(3);
 screenheight = screensize(4);
@@ -123,8 +123,8 @@ axis([-Inf Inf ymin ymax])
 text(textx,texty,strcat('MEAN:',num2str(mean(w_B_BI_error(3,ceil(end/2):end)*R2D)),' STD:',num2str(std(w_B_BI_error(3,ceil(end/4):end)*R2D))));
 
 % ANGULAR VELOCITY  TO INERTIAL FRAME
-ymin = -10;
-ymax = 10;
+ymin = -5;
+ymax = 5;
 
 subplot(6,1,4)
 plot(tout,w_B_BI_m(1,:)*R2D,'r')
@@ -200,6 +200,8 @@ axis([-Inf Inf ymin ymax])
 text(textx,texty,strcat('MEAN:',num2str(mean(bias_error(3,ceil(end/4):end)*R2D)),' STD:',num2str(std(bias_error(3,ceil(end/4):end)*R2D))));
 
 % BIAS ESTIMATE
+xmin = 0;
+xmax = tdur;
 ymin = -1;
 ymax = 1;
 textx = 5;
@@ -212,7 +214,7 @@ title('Bias Estimate')
 hold on;grid on;
 ylabel('x [\circ/s]');
 xlabel('time [s]');
-axis([-Inf Inf ymin ymax])
+axis([xmin xmax ymin ymax])
 plot(tout,bias(1,:)*R2D,'r')
 
 subplot(6,1,5)
@@ -220,7 +222,7 @@ plot(tout,bias_f(2,:)*R2D,'b')
 hold on;grid on;
 ylabel('y [\circ/s]');
 xlabel('time [s]');
-axis([-Inf Inf ymin ymax])
+axis([xmin xmax ymin ymax])
 plot(tout,bias(2,:)*R2D,'r')
 
 subplot(6,1,6)
@@ -228,47 +230,45 @@ plot(tout,bias_f(3,:)*R2D,'b')
 hold on;grid on;
 ylabel('z [\circ/s]');
 xlabel('time [s]');
-axis([-Inf Inf ymin ymax])
+axis([xmin xmax ymin ymax])
 plot(tout,bias(3,:)*R2D,'r')
 
 %% LOS & TORQUE
-
+xmin = 0;
+xmax = tdur;
 ymin = 0;
-ymax = 50000;
+ymax = 10000;
 
 fig = figure;
 set(fig,'Position',[screenwidth*(screennumber+0.75) 0 screenwidth*0.25 screenheight]);
 
 subplot(6,1,1)
-plot(tout,rad2arcsec(LOS_SUN))
+plot(tout,LOS_SUN)
+axis([xmin xmax ymin ymax])
 grid on; hold on;
-stem([P/8 2*P/8 3*P/8 4*P/8],[ymax ymax ymax ymax])
 title('LOS');
 xlabel('Period [cycle]');
 ylabel('LOS-Sun [arcsec]');
-axis([0 Inf ymin ymax])
+
 
 subplot(6,1,2)
-plot(tout,rad2arcsec(LOS_NADIR))
+plot(tout,LOS_NADIR)
 grid on; hold on;
-stem([P/8 2*P/8 3*P/8 4*P/8],[ymax ymax ymax ymax])
-title('LOS');
 xlabel('Period [cycle]');
 ylabel('LOS-Nadir [arcsec]');
-axis([0 Inf ymin ymax])
+axis([xmin xmax ymin ymax])
+
 
 subplot(6,1,3)
-plot(tout,rad2arcsec(LOS_INERTIAL))
+plot(tout,LOS_TGT)
 grid on; hold on;
-stem([P/8 2*P/8 3*P/8 4*P/8],[ymax ymax ymax ymax])
-title('LOS');
 xlabel('Period [cycle]');
 ylabel('LOS-Tgt [arcsec]');
-axis([0 Inf ymin ymax])
+axis([xmin xmax ymin ymax])
 
 % TORQUE %%
-ymin = -1e-4;
-ymax = 1e-4;
+ymin = -5e-7;
+ymax = 5e-7;
 
 subplot(6,1,4)
 plot(tout,tau_m(1,:),'r')
@@ -277,7 +277,7 @@ hold on;grid on;
 
 ylabel('\tau_y [Nm]');
 xlabel('time [s]');
-axis([-Inf Inf -Inf Inf])
+axis([-Inf Inf ymin ymax])
 
 subplot(6,1,5)
 plot(tout,tau_m(2,:),'r')
