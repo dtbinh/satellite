@@ -12,10 +12,11 @@ dt  = 0.5;              % [sec] Model speed (0.5 for normal, 30 for orbit)
 
 %% TORQUE TOGGLE SWITCH
 
-Tgg_toggle      = 10; % Toggle Torque Gravity Gradient 
-Taero_toggle    = 10; % Toggle Torque Aerodynamic
-Tsolar_toggle   = 10; % Toggle Torque Solar
-Tnoise_toggle   = 1; % Toggle Torque Noise
+Tgg_toggle      = 0; % Toggle Torque Gravity Gradient 
+Taero_toggle    = 0; % Toggle Torque Aerodynamic
+Tsolar_toggle   = 0; % Toggle Torque Solar
+Tnoise_toggle   = 0; % Toggle Torque Noise
+sigTorq         = 5e-8;
 
 Tcontrol_toggle = 1; % Toggle Torque Control
 
@@ -173,12 +174,12 @@ w_B_BI_0 = w_B_BO_0 + w_B_OI_0;   % [rad] Body Frame Angular Rate relative to In
 
 %% SENSORS FLAG
 mflag(1) = 1; % Star Tracker 1
-mflag(2) = 1; % Star Tracker 2
-mflag(3) = 1; % Sun Sensor 1
-mflag(4) = 1; % Sun Sensor 2
-mflag(5) = 1; % Sun Sensor 3
-mflag(6) = 1; % Sun Sensor 4
-mflag(7) = 1; % Magnetometer
+mflag(2) = 0; % Star Tracker 2
+mflag(3) = 0; % Sun Sensor 1
+mflag(4) = 0; % Sun Sensor 2
+mflag(5) = 0; % Sun Sensor 3
+mflag(6) = 0; % Sun Sensor 4
+mflag(7) = 0; % Magnetometer
 mflag(8) = 1; % Gyroscope
 
 CONST.mflag = mflag; % Set as CONST global variable
@@ -219,8 +220,10 @@ ST2_Mis    = [0.0;0.0;0.0]*pi/180;     % [rad] Star Tracker Misalignment Euler A
 Ust2       = eul2dcm(ST2_Mis,'zyx');   % [-] Misalignment Matrix
 
 dt_st      = dt;                       % [s] Sampling Time of Star Tracker
-update_st1 = 10;                        % [s] Update Interval of Star Tracker 1
-update_st2 = 10;                        % [s] Update Interval of Star Tracker 2
+update_st1 = 2;                        % [s] Update Interval of Star Tracker 1
+update_st2 = 2;                        % [s] Update Interval of Star Tracker 2
+width_st1  = 50;
+width_st2  = 50;
 
 if dt_st < dt
     dt_st = dt;
@@ -260,7 +263,7 @@ dt_ts   = dt;           % [sec] Sampling Time of Temperature Sensor
 global FLTR
 
 FLTR.mode   = 2;
-dt_ekf      = dt;               % [sec] (20 Hz) EKF speed
+dt_ekf      = dt;               % [sec] (20 Hz) EKF speed8
 
 CONST.dt     = dt;               % [sec] (20 Hz) Model speed
 CONST.dt_ekf = dt_ekf;           % [sec] (20 Hz) EKF speed
@@ -353,13 +356,13 @@ CTRL_SC.type    = 'hihb';  % [ ] - 'ruiter','buhl','hihb'
 CTRL_SWITCH1  = 1; % Time to change mode from Detumbling to Sun Pointing.
 CTRL_SWITCH2  = P/8; % Time to change mode from Sun Pointing to Operation Mode.
 
-CTRL_DT_MODE  = 3;   % Detumbling mode: BDOT/EDSP/VDOT/
-CTRL_PT1_MODE = 3;   % Pointing mode  : REF/SLD/SUN/TA/SC/IDLE
-CTRL_PT2_MODE = 6;   % Pointing mode  : REF/SLD/SUN/TA/SC/IDLE
+CTRL_DT_MODE  = 1;   % Detumbling mode: BDOT/EDSP/VDOT/
+CTRL_PT1_MODE = 2;   % Pointing mode  : REF/SLD/SUN/TA/SC/IDLE
+CTRL_PT2_MODE = 2;   % Pointing mode  : REF/SLD/SUN/TA/SC/IDLE
 
 %% SOLVER
 CONST.model = 'satellite_adcs_model';
-tdur = P/4;            
+tdur = 800;            
 sim('satellite_adcs_model',tdur);
 
 %% POST PROCESSING
@@ -389,6 +392,11 @@ Pdiag(5,i)        = Pk_f(5,5,i);
 Pdiag(6,i)        = Pk_f(6,6,i);
 
 R_B_I_tgt(:,:,i) = q2dcm(q_B_I_tgt(:,:,i));
+R_B_I_f(:,:,i)   = q2dcm(q_B_I_f(:,:,i));
+
+LOS_error(1,i)  = rad2arcsec(vangle(R_B_I_f(:,:,i)'*[1;0;0],R_B_I(:,:,i)'*[1;0;0]));
+LOS_error(2,i)  = rad2arcsec(vangle(R_B_I_f(:,:,i)'*[0;1;0],R_B_I(:,:,i)'*[0;1;0]));
+LOS_error(3,i)  = rad2arcsec(vangle(R_B_I_f(:,:,i)'*[0;0;1],R_B_I(:,:,i)'*[0;0;1]));
 
 LOS_SUN(i)     = rad2arcsec(vangle(S_I(:,i), R_B_I(:,:,i)'*[1 ;0 ;0]));
 LOS_NADIR(i)   = rad2arcsec(vangle(R_O_I(:,:,i)'*[0 ;0 ;1], R_B_I(:,:,i)'*[0 ;0 ;1]));
@@ -401,6 +409,38 @@ end
 %% PLOT
 close all
 satellite_adcs_plot
+
+
+%% LOS & TORQUE
+xmin = 0;
+xmax = tdur;
+ymin = 0;
+ymax = 1000;
+
+fig = figure;
+set(fig,'Position',[screenwidth*(screennumber+0.75) 0 screenwidth*0.25 screenheight]);
+
+subplot(6,1,1)
+plot(tout,LOS_error(1,:))
+axis([xmin xmax ymin ymax])
+grid on; hold on;
+title('LOS');
+xlabel('Period [cycle]');
+ylabel('LOS-Sun [arcsec]');
+
+subplot(6,1,2)
+plot(tout,LOS_error(2,:))
+grid on; hold on;
+xlabel('Period [cycle]');
+ylabel('LOS-Nadir [arcsec]');
+axis([xmin xmax ymin ymax])
+
+subplot(6,1,3)
+plot(tout,LOS_error(3,:))
+grid on; hold on;
+xlabel('Period [cycle]');
+ylabel('LOS-Tgt [arcsec]');
+axis([xmin xmax ymin ymax])
 
 %% SIMULATION
 

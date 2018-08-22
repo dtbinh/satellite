@@ -237,7 +237,7 @@ plot(tout,bias(3,:)*R2D,'r')
 xmin = 0;
 xmax = tdur;
 ymin = 0;
-ymax = 10000;
+ymax = 100;
 
 fig = figure;
 set(fig,'Position',[screenwidth*(screennumber+0.75) 0 screenwidth*0.25 screenheight]);
@@ -267,11 +267,11 @@ ylabel('LOS-Tgt [arcsec]');
 axis([xmin xmax ymin ymax])
 
 % TORQUE %%
-ymin = -5e-7;
-ymax = 5e-7;
+ymin = -5e-6;
+ymax = 5e-6;
 
 subplot(6,1,4)
-plot(tout,tau_m(1,:),'r')
+plot(tout,tau_m(:,1),'r')
 title('Torque Input')
 hold on;grid on;
 
@@ -280,14 +280,14 @@ xlabel('time [s]');
 axis([-Inf Inf ymin ymax])
 
 subplot(6,1,5)
-plot(tout,tau_m(2,:),'r')
+plot(tout,tau_m(:,2),'r')
 hold on;grid on;
 ylabel('\tau_y [Nm]');
 xlabel('time [s]');
 axis([-Inf Inf ymin ymax])
 
 subplot(6,1,6)
-plot(tout,tau_m(3,:),'r')
+plot(tout,tau_m(:,3),'r')
 hold on;grid on;
 ylabel('\tau_y [Nm]');
 xlabel('time [s]');

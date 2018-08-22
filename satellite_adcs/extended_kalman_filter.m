@@ -9,9 +9,15 @@ T_m      = input(1:3,11);  % Measured Temperature, Referenced Temperaure, N/A
 T_c      = input(1:3,12);  % Control Torque Desired
 s_flag   = input(1:3,13);  % Sensor Flag [Gyro;ST1;ST2]
 
+q_B_I_m(:,1)  = [input(1:3,2);input(1,14)];
+q_B_I_m(:,2)  = [input(1:3,3);input(2,14)];
+
+
+
 global CONST
 global FLTR
 
+t = get_param(CONST.model,'SimulationTime');
 dt      = CONST.dt;         % Sampling Time of Kalman Filter
 
 sig_v   = CONST.sig_v;      % Noise Standard Deviation Attitude State
@@ -48,7 +54,7 @@ if isempty(qk)
     
     sig_n = sqrt(sig_st(1)^2  +  sig_st(2)^2  +  sig_ss^2  + sig_mg^2);                     % Initial Scalar sig_n
     Pk    = dt^(1/4)*sig_n^(1/2)*(sig_v^2  +  2*sig_u*sig_v*dt^(1/2))^(1/4)*eye(12); % Initial Error Covariance - does not matter much
-
+    PK = eye(12);
     % Initial Output
     output(1:3,1)     = wk;
     output(4:6,1)     = biask;
@@ -75,7 +81,7 @@ R_B_I  = q2xi(qk)'*q2psi(qk);    % Attitude Transformation Matrix of  Quaternion
 delX   = zeros(12,1); % Matrix Initiation for delX
 
 for i = 1:length(mflag)
-     if( (mflag(i) == 1) && (i <= MaxST) )
+     if( (1)&&(mflag(i) == 1) && (i <= MaxST) )
             % Star Tracker Measurement 
             Xi = q2xi(qk);                     
             H  = [1/2*Xi(1:3,:) zeros(3,3) zeros(3,3) zeros(3,3) ]; 
@@ -88,7 +94,22 @@ for i = 1:length(mflag)
             Pk   = (eye(12) - K*H)*Pk;          
             res  = e_B_I_m(1:3,i) - qk(1:3,1); % quaternion
             delX = delX + K*(res-H*delX);       % delta angle 
-         
+            
+     elseif ( (0)&&(mflag(i) == 1) && (i <= MaxST) )
+         % BST
+
+            % Star Tracker Measurement 
+            Xi = q2xi(qk);                     
+            H  = [eye(3,3) zeros(3,3) zeros(3,3) zeros(3,3) ]; 
+            R  = sig_st(i)^2*eye(3);             
+            
+            % Gain
+            K = Pk*H'/(H*Pk*H' + R);        
+            
+            % Update
+            Pk   = (eye(12) - K*H)*Pk;           
+            res  = 2*Xi'*q_B_I_m(:,i);        % [3x1]
+            delX = delX + K*(res-H*delX);       % delta angle 
 
      elseif( (mflag(i) == 1) && (i <= MaxSS) ) 
             % Sun Sensor Measurement
@@ -141,6 +162,8 @@ for i = 1:length(mflag)
             
     end
 end
+
+
 
 %% UPDATE
 % Update of Quaternion(xyzw)
@@ -202,7 +225,7 @@ switch FLTR.mode
                 (1/2*sig_w^2*dt^2)*eye(3)                 zeros(3)                   zeros(3)          (sig_w^2*dt)*eye(3)];
 end
 
-Pk = Phi*Pk*Phi'+ Qk;       
+Pk = Phi*Pk*Phi'+ Qk;           
 
 %% STATE PROPAGATION 
 % Quaternion State 
@@ -224,7 +247,7 @@ end
 qk   = omega*qk;      
 
 % Angular Velocity State
-dFdw   = I^-1*(-smtrx(wk)*I  +  smtrx(I*wk));
+dFdw   = I^-1*(-smtrx(wk)*I  +  smtrx(I*wk)); 
 phi_dw = eye(3) + dFdw*dt  +  0.5*(dFdw*dt)^2;
 
 B      = I^-1*eye(3);
