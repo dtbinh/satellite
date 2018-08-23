@@ -1,4 +1,7 @@
 function eul = dcm2eul(R,etype)
+if ~exist('etype','var')
+    etype = 'zyx'; 
+end
 
 switch etype
     case 'xyz'

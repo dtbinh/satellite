@@ -1,16 +1,23 @@
 function output = extended_kalman_filter(input)
 w_B_BI_m = input(1:3,1);   % Measured Angular Velocity (Gyro)
-e_B_I_m  = input(1:3,2:3); % Measured Quaternion Euler Vector Only (Star Tracker 1 & 2)
-S_S_m    = input(1:3,4:7); % Measured Sun vector in Sensor Frame
-B_B_m    = input(1:3,8);   % Measured Magnetic Field in Body Frame
-S_I      = input(1:3,9);   % S Sun Vector in Inertial Frame since we have data of the Sun
-B_I      = input(1:3,10);  % B Magnetic Vector in Inertial Frame since we have data of the Magnetic Field
-T_m      = input(1:3,11);  % Measured Temperature, Referenced Temperaure, N/A
-T_c      = input(1:3,12);  % Control Torque Desired
-s_flag   = input(1:3,13);  % Sensor Flag [Gyro;ST1;ST2]
 
-q_B_I_m(:,1)  = [input(1:3,2);input(1,14)];
-q_B_I_m(:,2)  = [input(1:3,3);input(2,14)];
+q_B_I_m(:,1)  = input(4:7,1);
+q_B_I_m(:,2)  = input(8:11,1);
+
+
+S_S_m(:,1)    = input(12:14,1); % Measured Sun vector in Sensor Frame
+S_S_m(:,2)    = input(15:17,1); % Measured Sun vector in Sensor Frame
+S_S_m(:,3)    = input(18:20,1); % Measured Sun vector in Sensor Frame
+S_S_m(:,4)    = input(21:23,1); % Measured Sun vector in Sensor Frame
+
+B_B_m    = input(24:26,1);   % Measured Magnetic Field in Body Frame
+S_I      = input(27:29,1);   % S Sun Vector in Inertial Frame since we have data of the Sun
+B_I      = input(30:32,1);  % B Magnetic Vector in Inertial Frame since we have data of the Magnetic Field
+T_m      = input(33:35,1);  % Measured Temperature, Referenced Temperaure, N/A
+T_c      = input(36:38,1);  % Control Torque Desired
+s_flag   = input(39:41,1);  % Sensor Flag [Gyro;ST1;ST2]
+
+e_B_I_m  = q_B_I_m(1:3,:);% Measured Quaternion Euler Vector Only (Star Tracker 1 & 2)
 
 
 
@@ -29,6 +36,7 @@ sig_ss  = CONST.sig_ss;	    % Sun Sensor Standard Deviation
 sig_mg  = CONST.sig_mg;     % Magnetometer Standard Deviation
 mflag   = CONST.mflag;      % Sensors Flag (Star Tracker, SS1, SS2, Mag)
 I       = CONST.I;          % Spacecraft Moments of Inertia
+
 
 dTk     = T_m(1)-T_m(2);    % Temperature Difference
 uk      = T_c;              % Torque Input/ Control Torque
@@ -54,7 +62,7 @@ if isempty(qk)
     
     sig_n = sqrt(sig_st(1)^2  +  sig_st(2)^2  +  sig_ss^2  + sig_mg^2);                     % Initial Scalar sig_n
     Pk    = dt^(1/4)*sig_n^(1/2)*(sig_v^2  +  2*sig_u*sig_v*dt^(1/2))^(1/4)*eye(12); % Initial Error Covariance - does not matter much
-    PK = eye(12);
+   
     % Initial Output
     output(1:3,1)     = wk;
     output(4:6,1)     = biask;
@@ -84,7 +92,7 @@ for i = 1:length(mflag)
      if( (1)&&(mflag(i) == 1) && (i <= MaxST) )
             % Star Tracker Measurement 
             Xi = q2xi(qk);                     
-            H  = [1/2*Xi(1:3,:) zeros(3,3) zeros(3,3) zeros(3,3) ]; 
+            H  = [1/2*Xi(1:3,:) zeros(3,3) zeros(3,3) zeros(3,3)]; 
             R  = sig_st(i)^2*eye(3);             
             
             % Gain
@@ -131,7 +139,7 @@ for i = 1:length(mflag)
             R = sig_mg^2*eye(3);
             
             % Gain
-            K = Pk*H'/(H*Pk*H' + R);    
+            K = km*Pk*H'/(H*Pk*H' + R);    
             
             % Update
             Pk   = (eye(12) - K*H)*Pk;      
@@ -147,7 +155,7 @@ for i = 1:length(mflag)
                 case 1
                     H = [ zeros(3,3) zeros(3,3) zeros(3,3)   eye(3)  ];
                 case 2
-                    H = [ zeros(3,3)  eye(3)    zeros(3,3)   eye(3)  ];
+                    H = [ zeros(3,3)   eye(3)    zeros(3,3)   eye(3)  ];
             end
             
             R = sig_v^2*eye(3);
@@ -157,8 +165,8 @@ for i = 1:length(mflag)
             
             % Update
             Pk  = (eye(12) - K*H)*Pk;      
-            res  =  w_B_BI_m  - wk - biask;       
-            delX = delX + K*(res-H*delX); 
+            res  =  (w_B_BI_m - biask)  - wk ;       
+            delX = delX + K*(res - H*delX); 
             
     end
 end
@@ -167,7 +175,7 @@ end
 
 %% UPDATE
 % Update of Quaternion(xyzw)
-qk    = qk  +  1/2*q2xi(qk)*delX(1:3,:);   
+qk    = qk  +  1/2*q2xi(qk)*delX(1:3,:);  
 qk    = qnorm(qk);               
 
 % Update of Bias  
@@ -181,7 +189,10 @@ dwk   = delX(10:12,:);
 wk    = wk  + dwk;
 
 % Update of Gyro Measurement
-wkm   = w_B_BI_m  -  biask ; %  Estimated Angular Velocity with Noise
+
+if (mflag(8)) 
+    wkm   = w_B_BI_m  -  biask ; %  Estimated Angular Velocity with Noise
+end
 
 %% ERROR COVARIANCE PROPAGATION
 switch FLTR.mode
@@ -196,7 +207,7 @@ switch FLTR.mode
            zeros(3)    zeros(3)   zeros(3)    zeros(3);
            zeros(3)    zeros(3)   zeros(3)    zeros(3)];
     case 2
-    F  = [-smtrx(wk)   zeros(3)   zeros(3)      eye(3);
+    F  = [-smtrx(wk)   zeros(3)   zeros(3)     eye(3) ;
            zeros(3)    zeros(3)   zeros(3)    zeros(3);
            zeros(3)    zeros(3)   zeros(3)    zeros(3);
            zeros(3)    zeros(3)   zeros(3)    I^-1*(-smtrx(wk)*I+smtrx(I*wk)-smtrx(dwk)*I+smtrx(I*dwk))];

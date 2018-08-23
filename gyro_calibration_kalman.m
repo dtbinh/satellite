@@ -62,7 +62,7 @@ for i=1:length(tout)
     bias_m(:,i)   = 0.5*(bias(:,i+1)+bias(:,i));
     w_B_BI_m(:,i) = (eye(3)+S)*w_B_BI(:,i)+sqrt(sig_v^2/dt+1/12*sig_u^2*dt)*[randn(1,1);randn(1,1);randn(1,1)]+bias_m(:,i);
 
-    q_B_I_m(:,i)  = qmult(q_B_I(:,i),[0.5*sig_st*[randn(1,1);randn(1,1);randn(1,1)];1]);
+    q_B_I_m(:,i)  = qmul(q_B_I(:,i),[0.5*sig_st*[randn(1,1);randn(1,1);randn(1,1)];1]);
     q_B_I_m(:,i)  = qnorm(q_B_I_m(:,i));
 end
 
@@ -94,7 +94,7 @@ end
 for i=2:length(tout)-1
   
     % Measurement 
-        qmm = qmult(qk1,[q_B_I_m(1,i);q_B_I_m(2,i);q_B_I_m(3,i);-q_B_I_m(4,i)]);
+        qmm = qmul(qk1,[q_B_I_m(1,i);q_B_I_m(2,i);q_B_I_m(3,i);-q_B_I_m(4,i)]);
         inn = 2*[qmm(1);qmm(2);qmm(3)];
   
         H    = [eye(3) zeros(3,12)];     % Sensitivity Matrix
@@ -107,7 +107,7 @@ for i=2:length(tout)-1
       
     % Update 
         dqe  = [0.5*xest(1:3);1];     % Error Estimate of Quaternion      
-        qk1  = qmult(dqe,qk1);        % Update Quaternion by Error Quaternion
+        qk1  = qmul(dqe,qk1);        % Update Quaternion by Error Quaternion
         qk1  = qk1./norm(qk1);        % Normalisation of Quaternion      
        
         bk1  = bk1 + xest(4:6,1);

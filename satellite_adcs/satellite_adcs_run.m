@@ -168,8 +168,8 @@ w_O_OI_0 = [0;-w_O;0];         % [rad] Orbital Frame Angular Rate relative to In
 w_B_OI_0 = R_O_B_0'*w_O_OI_0;  % [rad] Orbital Frame Angular Rates relative to Inertial Frame in Body Frame
 
 % Body Frame Angular Rate
-w_B_BO_0 = dps2rps(0.5)*[randn(1,1);randn(1,1);randn(1,1)]; % [rad/s] Body Frame Angular Rates relative to Orbital Frame in Body Frame 
-% w_B_BO_0 = 0.001*[1;1;1];
+w_B_BO_0 = dps2rps(0.05)*[randn(1,1);randn(1,1);randn(1,1)]; % [rad/s] Body Frame Angular Rates relative to Orbital Frame in Body Frame 
+% w_B_BO_0 = dps2rps(5)*[1;1;1];
 w_B_BI_0 = w_B_BO_0 + w_B_OI_0;   % [rad] Body Frame Angular Rate relative to Inertial Frame in Body Frame
 
 %% SENSORS FLAG
@@ -202,6 +202,10 @@ R_G_B   = dcm(2,pi/2);                     % [-] Rotation Matrix from Body Frame
 GYRO_Mis = [0.0;0.0;0.0]*pi/180;           % [rad] Gyro Misalignment Euler Angles (3-2-1)
 Ug  = dcm(3,GYRO_Mis(3))*dcm(2,GYRO_Mis(2))*dcm(1,GYRO_Mis(1));
 
+update_gyro = 2;
+width_gyro  = 2*dt/update_gyro*100;
+
+
 %% STAR TRACKER
 % Star Tracker 1
 sigST(1)   = 30/3/60/60*pi/180;        % [rad]  arcsec to rad (3 sigma)
@@ -220,10 +224,10 @@ ST2_Mis    = [0.0;0.0;0.0]*pi/180;     % [rad] Star Tracker Misalignment Euler A
 Ust2       = eul2dcm(ST2_Mis,'zyx');   % [-] Misalignment Matrix
 
 dt_st      = dt;                       % [s] Sampling Time of Star Tracker
-update_st1 = 2;                        % [s] Update Interval of Star Tracker 1
-update_st2 = 2;                        % [s] Update Interval of Star Tracker 2
-width_st1  = 50;
-width_st2  = 50;
+update_st1 = 30;                        % [s] Update Interval of Star Tracker 1
+update_st2 = 30;                        % [s] Update Interval of Star Tracker 2
+width_st1  = 5/update_st1*100;
+width_st2  = 5/update_st2*100;
 
 if dt_st < dt
     dt_st = dt;
@@ -356,13 +360,13 @@ CTRL_SC.type    = 'hihb';  % [ ] - 'ruiter','buhl','hihb'
 CTRL_SWITCH1  = 1; % Time to change mode from Detumbling to Sun Pointing.
 CTRL_SWITCH2  = P/8; % Time to change mode from Sun Pointing to Operation Mode.
 
-CTRL_DT_MODE  = 1;   % Detumbling mode: BDOT/EDSP/VDOT/
+CTRL_DT_MODE  = 2;   % Detumbling mode: BDOT/EDSP/VDOT/
 CTRL_PT1_MODE = 2;   % Pointing mode  : REF/SLD/SUN/TA/SC/IDLE
 CTRL_PT2_MODE = 2;   % Pointing mode  : REF/SLD/SUN/TA/SC/IDLE
 
 %% SOLVER
 CONST.model = 'satellite_adcs_model';
-tdur = 800;            
+tdur = P/8;            
 sim('satellite_adcs_model',tdur);
 
 %% POST PROCESSING
@@ -411,36 +415,7 @@ close all
 satellite_adcs_plot
 
 
-%% LOS & TORQUE
-xmin = 0;
-xmax = tdur;
-ymin = 0;
-ymax = 1000;
 
-fig = figure;
-set(fig,'Position',[screenwidth*(screennumber+0.75) 0 screenwidth*0.25 screenheight]);
-
-subplot(6,1,1)
-plot(tout,LOS_error(1,:))
-axis([xmin xmax ymin ymax])
-grid on; hold on;
-title('LOS');
-xlabel('Period [cycle]');
-ylabel('LOS-Sun [arcsec]');
-
-subplot(6,1,2)
-plot(tout,LOS_error(2,:))
-grid on; hold on;
-xlabel('Period [cycle]');
-ylabel('LOS-Nadir [arcsec]');
-axis([xmin xmax ymin ymax])
-
-subplot(6,1,3)
-plot(tout,LOS_error(3,:))
-grid on; hold on;
-xlabel('Period [cycle]');
-ylabel('LOS-Tgt [arcsec]');
-axis([xmin xmax ymin ymax])
 
 %% SIMULATION
 

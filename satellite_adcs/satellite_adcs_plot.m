@@ -86,8 +86,8 @@ plot(tout,q_B_I_f(4,:),'g')
 
 
 %% ANGULAR RATES MEASUREMENT & ESTIMATE ERROR %%
-ymin  = -0.1;
-ymax  = 0.1;
+ymin  = -0.5;
+ymax  = 0.5;
 textx = 5;
 texty = ymax*0.8;
 
@@ -161,8 +161,8 @@ axis([-Inf Inf ymin ymax])
 %% BIAS PLOT %%
 
 % Bias
-ymin = -0.01;
-ymax = 0.01;
+ymin = -0.05;
+ymax = 0.05;
 textx = 5;
 texty = ymax*0.8;
 
@@ -237,41 +237,41 @@ plot(tout,bias(3,:)*R2D,'r')
 xmin = 0;
 xmax = tdur;
 ymin = 0;
-ymax = 100;
+ymax = 500;
 
 fig = figure;
 set(fig,'Position',[screenwidth*(screennumber+0.75) 0 screenwidth*0.25 screenheight]);
-
 subplot(6,1,1)
-plot(tout,LOS_SUN)
+plot(tout,LOS_error(1,:))
 axis([xmin xmax ymin ymax])
 grid on; hold on;
 title('LOS');
 xlabel('Period [cycle]');
 ylabel('LOS-Sun [arcsec]');
 
-
 subplot(6,1,2)
-plot(tout,LOS_NADIR)
+plot(tout,LOS_error(2,:))
 grid on; hold on;
 xlabel('Period [cycle]');
 ylabel('LOS-Nadir [arcsec]');
 axis([xmin xmax ymin ymax])
 
-
 subplot(6,1,3)
-plot(tout,LOS_TGT)
+plot(tout,LOS_error(3,:))
 grid on; hold on;
 xlabel('Period [cycle]');
 ylabel('LOS-Tgt [arcsec]');
 axis([xmin xmax ymin ymax])
+
+
+
 
 % TORQUE %%
 ymin = -5e-6;
 ymax = 5e-6;
 
 subplot(6,1,4)
-plot(tout,tau_m(:,1),'r')
+plot(tout,tau_m(1,:),'r')
 title('Torque Input')
 hold on;grid on;
 
@@ -280,18 +280,52 @@ xlabel('time [s]');
 axis([-Inf Inf ymin ymax])
 
 subplot(6,1,5)
-plot(tout,tau_m(:,2),'r')
+plot(tout,tau_m(2,:),'r')
 hold on;grid on;
 ylabel('\tau_y [Nm]');
 xlabel('time [s]');
 axis([-Inf Inf ymin ymax])
 
 subplot(6,1,6)
-plot(tout,tau_m(:,3),'r')
+plot(tout,tau_m(3,:),'r')
 hold on;grid on;
 ylabel('\tau_y [Nm]');
 xlabel('time [s]');
 axis([-Inf Inf ymin ymax])
+
+
+%% LOS & TORQUE
+xmin = 0;
+xmax = tdur;
+ymin = 0;
+ymax = 100;
+
+fig = figure;
+set(fig,'Position',[screenwidth*(screennumber+0.75) 0 screenwidth*0.25 screenheight]);
+
+subplot(3,1,1)
+plot(tout,LOS_SUN)
+axis([xmin xmax ymin ymax])
+grid on; hold on;
+title('LOS');
+xlabel('Period [cycle]');
+ylabel('LOS-Sun [arcsec]');
+
+
+subplot(3,1,2)
+plot(tout,LOS_NADIR)
+grid on; hold on;
+xlabel('Period [cycle]');
+ylabel('LOS-Nadir [arcsec]');
+axis([xmin xmax ymin ymax])
+
+
+subplot(3,1,3)
+plot(tout,LOS_TGT)
+grid on; hold on;
+xlabel('Period [cycle]');
+ylabel('LOS-Tgt [arcsec]');
+axis([xmin xmax ymin ymax])
 
 
 
