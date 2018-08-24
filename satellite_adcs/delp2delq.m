@@ -1,8 +1,8 @@
-function del_q = delp2delq(chi_sig,a,f)
+function dq = delp2delq(dp,a,f)
 
-del_q4 = (-a*norm(chi_sig)^2 + f*sqrt( f^2 + (1-a^2)*norm(chi_sig)^2 ))/(f^2+norm(chi_sig)^2);
-del_s  = 1/f*(a + del_q4)*chi_sig;
+dq4 = (-a*norm(dp)^2 + f*sqrt( f^2 + (1-a^2)*norm(dp)^2 ))/(f^2+norm(dp)^2);
+dq13  = (f^-1)*(a + dq4)*dp;
 
-del_q = [del_s;del_q4];
+dq = [dq13;dq4];
 
 end

@@ -139,7 +139,7 @@ for i = 1:length(mflag)
             R = sig_mg^2*eye(3);
             
             % Gain
-            K = km*Pk*H'/(H*Pk*H' + R);    
+            K = Pk*H'/(H*Pk*H' + R);    
             
             % Update
             Pk   = (eye(12) - K*H)*Pk;      

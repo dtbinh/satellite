@@ -174,12 +174,12 @@ w_B_BI_0 = w_B_BO_0 + w_B_OI_0;   % [rad] Body Frame Angular Rate relative to In
 
 %% SENSORS FLAG
 mflag(1) = 1; % Star Tracker 1
-mflag(2) = 0; % Star Tracker 2
-mflag(3) = 0; % Sun Sensor 1
-mflag(4) = 0; % Sun Sensor 2
-mflag(5) = 0; % Sun Sensor 3
-mflag(6) = 0; % Sun Sensor 4
-mflag(7) = 0; % Magnetometer
+mflag(2) = 1; % Star Tracker 2
+mflag(3) = 1; % Sun Sensor 1
+mflag(4) = 1; % Sun Sensor 2
+mflag(5) = 1; % Sun Sensor 3
+mflag(6) = 1; % Sun Sensor 4
+mflag(7) = 1; % Magnetometer
 mflag(8) = 1; % Gyroscope
 
 CONST.mflag = mflag; % Set as CONST global variable
@@ -259,8 +259,8 @@ Umg      = eye(3) + Gmg;
 dt_mg    = dt;   % [sec] Sampling Time of Magnetometer                                       
 
 %% TEMPERATURE SENSOR
-sigTemp = 0.002;       % [C] Sigma of Temperature Sensor
-varTemp = sigTemp^2;   % [C^2] Variance of Temperature Sensor
+sigTemp = 0.002;        % [C] Sigma of Temperature Sensor
+varTemp = sigTemp^2;    % [C^2] Variance of Temperature Sensor
 dt_ts   = dt;           % [sec] Sampling Time of Temperature Sensor
 
 %% KALMAN FILTER
@@ -361,8 +361,8 @@ CTRL_SWITCH1  = 1; % Time to change mode from Detumbling to Sun Pointing.
 CTRL_SWITCH2  = P/8; % Time to change mode from Sun Pointing to Operation Mode.
 
 CTRL_DT_MODE  = 2;   % Detumbling mode: BDOT/EDSP/VDOT/
-CTRL_PT1_MODE = 2;   % Pointing mode  : REF/SLD/SUN/TA/SC/IDLE
-CTRL_PT2_MODE = 2;   % Pointing mode  : REF/SLD/SUN/TA/SC/IDLE
+CTRL_PT1_MODE = 5;   % Pointing mode  : REF/SLD/SUN/TA/SC/IDLE
+CTRL_PT2_MODE = 5;   % Pointing mode  : REF/SLD/SUN/TA/SC/IDLE
 
 %% SOLVER
 CONST.model = 'satellite_adcs_model';
@@ -401,6 +401,7 @@ R_B_I_f(:,:,i)   = q2dcm(q_B_I_f(:,:,i));
 LOS_error(1,i)  = rad2arcsec(vangle(R_B_I_f(:,:,i)'*[1;0;0],R_B_I(:,:,i)'*[1;0;0]));
 LOS_error(2,i)  = rad2arcsec(vangle(R_B_I_f(:,:,i)'*[0;1;0],R_B_I(:,:,i)'*[0;1;0]));
 LOS_error(3,i)  = rad2arcsec(vangle(R_B_I_f(:,:,i)'*[0;0;1],R_B_I(:,:,i)'*[0;0;1]));
+
 
 LOS_SUN(i)     = rad2arcsec(vangle(S_I(:,i), R_B_I(:,:,i)'*[1 ;0 ;0]));
 LOS_NADIR(i)   = rad2arcsec(vangle(R_O_I(:,:,i)'*[0 ;0 ;1], R_B_I(:,:,i)'*[0 ;0 ;1]));

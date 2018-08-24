@@ -202,8 +202,8 @@ text(textx,texty,strcat('MEAN:',num2str(mean(bias_error(3,ceil(end/4):end)*R2D))
 % BIAS ESTIMATE
 xmin = 0;
 xmax = tdur;
-ymin = -1;
-ymax = 1;
+ymin = -inf;
+ymax = inf;
 textx = 5;
 texty = ymax*0.8;
 
