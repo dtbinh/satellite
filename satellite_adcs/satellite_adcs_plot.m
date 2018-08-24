@@ -2,7 +2,7 @@ close all
 screensize   = get(0,'ScreenSize');
 screenwidth  = screensize(3);
 screenheight = screensize(4);
-screennumber = 1;
+screennumber = 0;
 
 %% QUATERNION ERROR %%
 ymin = -10*std(q_B_I_error(1,ceil(end/2):end));
