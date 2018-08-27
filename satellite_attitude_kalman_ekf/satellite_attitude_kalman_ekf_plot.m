@@ -63,7 +63,7 @@ plot(tout,e_B_I(3,:)*R2D,'b');
 figure
 subplot(3,1,1)
 
-plot(tout,w_B_BI_m(1,:)*R2D,'r')
+plot(tout,w_B_BI_m(1,:)*R2D,'r+')
 title('Angular Rates of Body to Inertial Frame')
 hold on;grid on;
 plot(tout,w_B_BI_f(1,:)*R2D,'g')
@@ -72,7 +72,7 @@ ylabel('w_x [\circ/s]');
 xlabel('time [s]');
 
 subplot(3,1,2)
-plot(tout,w_B_BI_m(2,:)*R2D,'r')
+plot(tout,w_B_BI_m(2,:)*R2D,'r+')
 hold on;grid on;
 plot(tout,w_B_BI_f(2,:)*R2D,'g')
 plot(tout,w_B_BI(2,:)*R2D,'b')
@@ -81,7 +81,7 @@ ylabel('w_y [\circ/s]');
 xlabel('time [s]');
 
 subplot(3,1,3)
-plot(tout,w_B_BI_m(3,:)*R2D,'r')
+plot(tout,w_B_BI_m(3,:)*R2D,'r+')
 hold on;grid on;
 plot(tout,w_B_BI_f(3,:)*R2D,'g')
 plot(tout,w_B_BI(3,:)*R2D,'b')
@@ -123,7 +123,7 @@ hold on;grid on;
 ylabel('w [-]');
 xlabel('time [s]');
 axis([-Inf Inf ymin ymax])
-text(textx,texty,strcat('RMS:',num2str(rms(q_B_I_error(1,:)))))
+text(textx,texty,strcat('std:',num2str(std(q_B_I_error(1,:)))))
 
 subplot(4,1,2)
 plot(tout,q_B_I_error(2,:),'b')
@@ -131,7 +131,7 @@ hold on;grid on;
 ylabel('x [-]');
 xlabel('time [s]');
 axis([-Inf Inf ymin ymax])
-text(textx,texty,strcat('RMS:',num2str(rms(q_B_I_error(2,:)))))
+text(textx,texty,strcat('std:',num2str(std(q_B_I_error(2,:)))))
 
 subplot(4,1,3)
 plot(tout,q_B_I_error(3,:),'b')
@@ -139,7 +139,7 @@ hold on;grid on;
 ylabel('y [-]');
 xlabel('time [s]');
 axis([-Inf Inf ymin ymax])
-text(textx,texty,strcat('RMS:',num2str(rms(q_B_I_error(3,:)))))
+text(textx,texty,strcat('std:',num2str(std(q_B_I_error(3,:)))))
 
 subplot(4,1,4)
 plot(tout,q_B_I_error(4,:),'b')
@@ -147,7 +147,7 @@ hold on;grid on;
 ylabel('z [-]');
 xlabel('time [s]');
 axis([-Inf Inf ymin ymax])
-text(textx,texty,strcat('RMS:',num2str(rms(q_B_I_error(4,:)))))
+text(textx,texty,strcat('std:',num2str(std(q_B_I_error(4,:)))))
 
 %% EULER ANGLE ERROR %%
 ymin = -1;
@@ -163,7 +163,7 @@ hold on;grid on;
 ylabel('x [\circ]');
 xlabel('time [s]');
 axis([-Inf Inf ymin ymax])
-text(textx,texty,strcat('RMS:',num2str(rms(e_B_I_error(1,:)*R2D))))
+text(textx,texty,strcat('std:',num2str(std(e_B_I_error(1,:)*R2D))))
 
 subplot(3,1,2)
 plot(tout,e_B_I_error(2,:)*R2D,'b')
@@ -171,7 +171,7 @@ hold on;grid on;
 ylabel('y [\circ]');
 xlabel('time [s]');
 axis([-Inf Inf ymin ymax])
-text(textx,texty,strcat('RMS:',num2str(rms(e_B_I_error(2,:)*R2D))))
+text(textx,texty,strcat('std:',num2str(std(e_B_I_error(2,:)*R2D))))
 
 subplot(3,1,3)
 plot(tout,e_B_I_error(3,:)*R2D,'b')
@@ -179,7 +179,7 @@ hold on;grid on;
 ylabel('z [\circ]');
 xlabel('time [s]');
 axis([-Inf Inf ymin ymax])
-text(textx,texty,strcat('RMS:',num2str(rms(e_B_I_error(3,:)*R2D))))
+text(textx,texty,strcat('std:',num2str(std(e_B_I_error(3,:)*R2D))))
 %% ANGULAR RATES ERROR %%
 ymin = -0.5;
 ymax = 0.5;
@@ -194,7 +194,7 @@ hold on;grid on;
 ylabel('x [\circ/s]');
 xlabel('time [s]');
 axis([-Inf Inf ymin ymax])
-text(textx,texty,strcat('RMS:',num2str(rms(w_B_BI_error(1,:)*R2D))))
+text(textx,texty,strcat('std:',num2str(std(w_B_BI_error(1,:)*R2D))))
 
 subplot(3,1,2)
 plot(tout,w_B_BI_error(2,:)*R2D,'b')
@@ -202,7 +202,7 @@ hold on;grid on;
 ylabel('y [\circ/s]');
 xlabel('time [s]');
 axis([-Inf Inf ymin ymax])
-text(textx,texty,strcat('RMS:',num2str(rms(w_B_BI_error(2,:)*R2D))))
+text(textx,texty,strcat('std:',num2str(std(w_B_BI_error(2,:)*R2D))))
 
 subplot(3,1,3)
 plot(tout,w_B_BI_error(3,:)*R2D,'b')
@@ -210,7 +210,7 @@ hold on;grid on;
 ylabel('z [\circ/s]');
 xlabel('time [s]');
 axis([-Inf Inf ymin ymax])
-text(textx,texty,strcat('RMS:',num2str(rms(w_B_BI_error(3,:)*R2D))))
+text(textx,texty,strcat('std:',num2str(std(w_B_BI_error(3,:)*R2D))))
 %% BIAS ERROR %%
 ymin = -0.01;
 ymax = 0.01;
@@ -225,7 +225,7 @@ hold on;grid on;
 ylabel('x [\circ/s]');
 xlabel('time [s]');
 axis([-Inf Inf ymin ymax])
-text(textx,texty,strcat('RMS:',num2str(rms(bias_error(1,end/2:end)*R2D))))
+text(textx,texty,strcat('std:',num2str(std(bias_error(1,end/2:end)*R2D))))
 
 subplot(3,1,2)
 plot(tout,bias_error(2,:)*R2D,'b')
@@ -233,7 +233,7 @@ hold on;grid on;
 ylabel('y [\circ/s]');
 xlabel('time [s]');
 axis([-Inf Inf ymin ymax])
-text(textx,texty,strcat('RMS:',num2str(rms(bias_error(2,end/2:end)*R2D))))
+text(textx,texty,strcat('std:',num2str(std(bias_error(2,end/2:end)*R2D))))
 
 subplot(3,1,3)
 plot(tout,bias_error(3,:)*R2D,'b')
@@ -241,4 +241,4 @@ hold on;grid on;
 ylabel('z [\circ/s]');
 xlabel('time [s]');
 axis([-Inf Inf ymin ymax])
-text(textx,texty,strcat('RMS:',num2str(rms(bias_error(3,end/2:end)*R2D))))
+text(textx,texty,strcat('std:',num2str(std(bias_error(3,end/2:end)*R2D))))

@@ -25,9 +25,8 @@ dt      = CONST.dt;         % Sampling Time of Kalman Filter
 
 sig_v   = CONST.sig_v;      % Noise Standard Deviation Attitude State
 sig_u   = CONST.sig_u;      % Noise Standard Deviation Bias State
-sig_w   = 1e-5   ;          % Noise Standard Deviation Angular Velocity State
 
-sig_mg  = CONST.sig_mg;     % Magnetometer Standard Deviation
+sig_mg  = CONST.sig_mg;     % Magnetometer Standard Deviation.
 
 t = get_param(CONST.model,'SimulationTime');
 %% LOOP VALUES
@@ -38,20 +37,23 @@ persistent qk biask wk Pxx_k coefk;  % Variables that are retained in memory bet
 if isempty(qk)
     
     % Initial Internal Loop
-    qk    = [0;0;0;1];                    % Initial Quaternion (xyzw) for internal variable
+    qk    = qnorm([0.0;0.0;0.0;1]);                    % Initial Quaternion (xyzw) for internal variable
     biask = [0;0;0];                % Initial Bias Value from Lab Calibration
     coefk = zeros(3,1);                   % Initial Temp Coeff
     wk    = [0;0;0];                      % Initial Value from measured gyro
     
     Pxx_k    = [(1)^2*eye(3)      zeros(3); 
                   zeros(3)  (3*pi/180)^2*eye(3)]; % Initial Error Covariance 
+%     Pxx_k    = [(0.01)^2*eye(3)      zeros(3); 
+%                   zeros(3)     (0.01)^2*eye(3)]; % Initial Error Covariance 
+              
               
     % Initial Output
     output(1:3,1)     = wk;
     output(4:6,1)     = biask;
     output(7:9,1)     = coefk;
     output(1:12,2:13) = zeros(12,12);
-    output(1:4,14)    = [0;0;0;1]; % Initial Quaternion (wxyz) for external output
+    output(1:4,14)    = qk; % Initial Quaternion (wxyz) for external output
     output(5:7,14)    = [0;0;0];   % Initial Euler Angles
     
     return;
@@ -64,7 +66,7 @@ f = 2*(a+1);
 
 %% SIGMA POINTS
 Qbar_k = dt/2*[(sig_v^2-1/6*sig_u^2*dt^2)*eye(3)      zeros(3)         ;
-                        zeros(3)                   (sig_u^2*dt)*eye(3) ];
+                        zeros(3)                   (sig_u^2)*eye(3) ];
  
 % Reset x-K
 x_k = [[0;0;0];biask];
@@ -74,7 +76,7 @@ Dy   = size(B_B,1); % Size of Measurement 3
 NSig = 2*Dx+1 ;       % Size of Sigma Points 13
 
 % Current Time Step Allocation
-sig_x     = chol((Dx + lambda)*(Pxx_k + Qbar_k))' ;         % 6x6      
+sig_x     = (chol((Dx + lambda)*(Pxx_k + Qbar_k)))' ;         % 6x6      
 chi_sig_k = x_k*ones(1,NSig)+[zeros(Dx,1) sig_x -sig_x];    % 6x6
 
 % Next Time Step Allocation
@@ -106,11 +108,9 @@ for i = 1:NSig
     % Propagate Sigma Points
     chi_sig_k1(1:3,i) = f*del_q_k1(1:3,1)/(a+del_q_k1(4,1));      % state sigma points
     chi_sig_k1(4:6,i) = chi_sig_k(4:6,i);                         % state sigma points 
-    
-%     R_B_I  = q2xi(q_sig_k1)'*q2psi(q_sig_k1);
 
     y_sig_k1(:,i) = q2dcm(q_sig_k1)*B_I;  % Estimated measurement Sigma Point                           
-%     y_sig_k1(:,i) = B_B;
+
 
 end
 
@@ -131,7 +131,7 @@ Pxx_k1p = Qbar_k;
 Pyy_k1p = R;
 Pxy_k1p = zeros(Dx,Dy);
 
-for i = NSig
+for i = 1:1:NSig
     xdif = chi_sig_k1(:,i) - x_k1p;
     ydif =   y_sig_k1(:,i) - y_k1p;
 
@@ -143,7 +143,7 @@ end
 % Gain and Update
 K      = Pxy_k1p/Pyy_k1p;              % Gain Update
 Pxx_k1 = Pxx_k1p - K*Pxy_k1p';    % Error Covariance Update
-x_k1   = x_k1p + K*(B_B - y_k1p); % State Update
+x_k1   = x_k1p + K*(B_B_m - y_k1p); % State Update
 
 % Calculation of Updated Quaternion Error
 del_q_k1 = delp2delq(x_k1(1:3,:),a,f);
@@ -172,5 +172,6 @@ output(7:9,1)     = coefk;
 output(1:12,2:13) = zeros(12,12);
 output(1:4,14)    = q_B_I_f;
 output(5:7,14)    = e_B_I_f;
+
 end
 

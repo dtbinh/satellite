@@ -4,7 +4,6 @@ w_B_BI_m = input(1:3,1);   % Measured Angular Velocity (Gyro)
 q_B_I_m(:,1)  = input(4:7,1);
 q_B_I_m(:,2)  = input(8:11,1);
 
-
 S_S_m(:,1)    = input(12:14,1); % Measured Sun vector in Sensor Frame
 S_S_m(:,2)    = input(15:17,1); % Measured Sun vector in Sensor Frame
 S_S_m(:,3)    = input(18:20,1); % Measured Sun vector in Sensor Frame
@@ -18,7 +17,6 @@ T_c      = input(36:38,1);  % Control Torque Desired
 s_flag   = input(39:41,1);  % Sensor Flag [Gyro;ST1;ST2]
 
 e_B_I_m  = q_B_I_m(1:3,:);% Measured Quaternion Euler Vector Only (Star Tracker 1 & 2)
-
 
 
 global CONST
@@ -45,6 +43,7 @@ mflag(1) = s_flag(2)*mflag(1);  % ST1 Flag
 mflag(2) = s_flag(3)*mflag(2);  % ST2 Flag
 mflag(8) = s_flag(1)*mflag(8);  % Gyro Flag
 
+
 %% LOOP VALUES
 
 persistent qk biask wk Pk coefk wkm dwk;  % Variables that are retained in memory between calls to the function.
@@ -53,7 +52,7 @@ persistent qk biask wk Pk coefk wkm dwk;  % Variables that are retained in memor
 if isempty(qk)
     
     % Initial Internal Loop
-    qk    = [0;0;0;1];                           % Initial Quaternion (xyzw) for internal variable
+    qk    = qnorm([0.0;0.0;0.0;1]);                           % Initial Quaternion (xyzw) for internal variable
     biask = [0.0;0.0;0.0]*pi/180;                % Initial Bias Value from Lab Calibration
     coefk = zeros(3,1);                          % Initial Temp Coeff
     wk    = [0;0;0];                            % Initial Value from measured gyro
@@ -62,13 +61,16 @@ if isempty(qk)
     
     sig_n = sqrt(sig_st(1)^2  +  sig_st(2)^2  +  sig_ss^2  + sig_mg^2);                     % Initial Scalar sig_n
     Pk    = dt^(1/4)*sig_n^(1/2)*(sig_v^2  +  2*sig_u*sig_v*dt^(1/2))^(1/4)*eye(12); % Initial Error Covariance - does not matter much
-   
+    Pk    = [(1)^2*eye(3)      zeros(3)  zeros(3)  zeros(3); 
+                zeros(3)   (3*pi/180)^2*eye(3)  zeros(3)  zeros(3); 
+                zeros(3)       zeros(3)  zeros(3)  zeros(3);
+                zeros(3)       zeros(3)  zeros(3)  zeros(3)]; % Initial Error Covariance 
     % Initial Output
     output(1:3,1)     = wk;
     output(4:6,1)     = biask;
     output(7:9,1)     = coefk;
     output(1:12,2:13) = Pk;
-    output(1:4,14)    = [0;0;0;1]; % Initial Quaternion (wxyz) for external output
+    output(1:4,14)    = qk; % Initial Quaternion (wxyz) for external output
     output(5:7,14)    = [0;0;0];   % Initial Euler Angles
     
     return;
@@ -81,6 +83,10 @@ MaxGg  = 8;  % Index of last Gyro
 SSaxis   = CONST.SSaxis;   % [axis] Sun Sensor rotation axis 1 = x, 2 = y, 3 = z
 SSangles = CONST.SSangles; % [rad] Sun Sensors fram angles
 
+for i =1:length(S_S_m);
+R_S_B = dcm(SSaxis(i),SSangles(i));
+S_B_m(:,i)    = R_S_B'*S_S_m(:,i);
+end
 
 
 %% MEASUREMENT
@@ -120,9 +126,9 @@ for i = 1:length(mflag)
             delX = delX + K*(res-H*delX);       % delta angle 
 
      elseif( (mflag(i) == 1) && (i <= MaxSS) ) 
-            % Sun Sensor Measurement
-            R_S_B = dcm(SSaxis(i-MaxST),SSangles(i-MaxST)); 
-            H = [R_S_B*smtrx(R_B_I*S_I) zeros(3,3) zeros(3,3) zeros(3,3)];         
+            % Sun Sensor Measurement          
+            H = [smtrx(R_B_I*S_I) zeros(3,3) zeros(3,3) zeros(3,3)];  
+            
             R = sig_ss^2*eye(3);                            
             
             % Gain
@@ -130,7 +136,7 @@ for i = 1:length(mflag)
             
             % Update
             Pk  = (eye(12) - K*H)*Pk;                 
-            res = S_S_m(:,i-MaxST) - R_S_B*R_B_I*S_I;  % Sensor Frame
+            res = S_B_m(:,i-MaxST) - R_B_I*S_I;  % Sensor Frame
             delX = delX + K*(res-H*delX);              
 
      elseif( (mflag(i) == 1) && (i <= MaxMag) ) 
@@ -273,6 +279,7 @@ switch FLTR.mode
         wk  = phi_dw*wk  +  Gmm*uk;  
 end
 
+
 %% OUTPUT
 w_B_BI_f = wk;                          % Angular Velocity of Body wrt to Inertial Frame 
 q_B_I_f  = qk;                          % Quaternion (xyzw) from Inertia to Body
@@ -284,6 +291,7 @@ output(4:6,1)     = biask;
 output(7:9,1)     = coefk;
 output(1:12,2:13) = Pk;
 output(1:4,14)    = q_B_I_f;
+
 output(5:7,14)    = e_B_I_f;
 end
 

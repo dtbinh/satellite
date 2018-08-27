@@ -22,7 +22,7 @@ Tcontrol_toggle = 1; % Toggle Torque Control
 
 %% TIME
 % UTC Time - Universal Time
-UTC_sim   = datetime(2000,3,21,6,0,0);                                       % [time] UTC Time
+UTC_sim   = datetime(2000,6,21,6,0,0);                                       % [time] UTC Time
 UTC_start = datetime(2000,3,21,6,0,0);                                       % [time] UTC Time
 UTC_end   = datetime(2000,3,21,7,0,0);                                       % [time] UTC Time
 
@@ -134,7 +134,7 @@ CONST.RAAN = RAAN;               % [rad] Initial Right Ascention - Angle on Equa
 
 % Inclination
 incl = acos((CONST.OmegaDot*(1-ecc^2)^2*a^(7/2))/(-3/2*sqrt(CONST.mu)*CONST.J2*CONST.Re^2)); % [rad] Orbit iination required for Sun-synchornous (eqn 4.47 from Curtis)                                                                          % [rad] Orbit iination 
-% incl = 90/180*pi;
+incl = 50/180*pi;
 
 % Initial orbital state vector in ECF Frame- computes the magnitude of state vector (r,v) from the classical orbital elements (coe)
 [R_0,V_0] = coe2rv(a, ecc, incl,RAAN, w, TAo,'curtis'); 
@@ -173,19 +173,19 @@ w_B_BO_0 = dps2rps(0.05)*[randn(1,1);randn(1,1);randn(1,1)]; % [rad/s] Body Fram
 w_B_BI_0 = w_B_BO_0 + w_B_OI_0;   % [rad] Body Frame Angular Rate relative to Inertial Frame in Body Frame
 
 %% SENSORS FLAG
-mflag(1) = 1; % Star Tracker 1
-mflag(2) = 1; % Star Tracker 2
-mflag(3) = 1; % Sun Sensor 1
-mflag(4) = 1; % Sun Sensor 2
-mflag(5) = 1; % Sun Sensor 3
-mflag(6) = 1; % Sun Sensor 4
+mflag(1) = 0; % Star Tracker 1
+mflag(2) = 0; % Star Tracker 2
+mflag(3) = 0; % Sun Sensor 1
+mflag(4) = 0; % Sun Sensor 2
+mflag(5) = 0; % Sun Sensor 3
+mflag(6) = 0; % Sun Sensor 4
 mflag(7) = 1; % Magnetometer
 mflag(8) = 1; % Gyroscope
 
 CONST.mflag = mflag; % Set as CONST global variable
 
 %% GYRO SENSOR
-GYRO_Bias   = [0.5;0.2;-0.3]*pi/180;       % [rad/s] Actual Offset at Reference Temperature
+GYRO_Bias   = [1.5;1.2;-3.3]*pi/180;       % [rad/s] Actual Offset at Reference Temperature
 GYRO_max    = 75/180*pi;                   % [rad/s] Maximum Gyro Rate 
 temp_coeff  = [0.01; 0.02; 0.005]*pi/180;  % [rad/s/C] Offset Temperature Coefficient
 temp_ref    = 20;                          % [C] Temperature Reference
@@ -266,7 +266,7 @@ dt_ts   = dt;           % [sec] Sampling Time of Temperature Sensor
 %% KALMAN FILTER
 global FLTR
 
-FLTR.mode   = 2;
+FLTR.mode   = 0;
 dt_ekf      = dt;               % [sec] (20 Hz) EKF speed8
 
 CONST.dt     = dt;               % [sec] (20 Hz) Model speed
@@ -366,7 +366,7 @@ CTRL_PT2_MODE = 5;   % Pointing mode  : REF/SLD/SUN/TA/SC/IDLE
 
 %% SOLVER
 CONST.model = 'satellite_adcs_model';
-tdur = P/8;            
+tdur = P;            
 sim('satellite_adcs_model',tdur);
 
 %% POST PROCESSING
@@ -387,6 +387,7 @@ e_B_I_error(:,i)  = e_B_I_f(:,i) - e_B_I(:,i);
 w_B_BI_error(:,i) = w_B_BI_f(:,i) - w_B_BI(:,i);
 w_B_BI_m_error(:,i) = w_B_BI_m(:,i)-w_B_BI(:,i)-bias_f(:,i);
 bias_error(:,i)   = bias_f(:,i) - bias(:,i);
+bias_error_ukf(:,i)   = bias_ukf(:,i) - bias(:,i);
 
 Pdiag(1,i)        = Pk_f(1,1,i);
 Pdiag(2,i)        = Pk_f(2,2,i);
@@ -397,10 +398,18 @@ Pdiag(6,i)        = Pk_f(6,6,i);
 
 R_B_I_tgt(:,:,i) = q2dcm(q_B_I_tgt(:,:,i));
 R_B_I_f(:,:,i)   = q2dcm(q_B_I_f(:,:,i));
+R_B_I_ukf(:,:,i) = q2dcm(q_B_I_ukf(:,:,i));
 
+% EKF
 LOS_error(1,i)  = rad2arcsec(vangle(R_B_I_f(:,:,i)'*[1;0;0],R_B_I(:,:,i)'*[1;0;0]));
 LOS_error(2,i)  = rad2arcsec(vangle(R_B_I_f(:,:,i)'*[0;1;0],R_B_I(:,:,i)'*[0;1;0]));
 LOS_error(3,i)  = rad2arcsec(vangle(R_B_I_f(:,:,i)'*[0;0;1],R_B_I(:,:,i)'*[0;0;1]));
+
+
+% UKF
+LOS_error_ukf(1,i)  = rad2arcsec(vangle(R_B_I_ukf(:,:,i)'*[1;0;0],R_B_I(:,:,i)'*[1;0;0]));
+LOS_error_ukf(2,i)  = rad2arcsec(vangle(R_B_I_ukf(:,:,i)'*[0;1;0],R_B_I(:,:,i)'*[0;1;0]));
+LOS_error_ukf(3,i)  = rad2arcsec(vangle(R_B_I_ukf(:,:,i)'*[0;0;1],R_B_I(:,:,i)'*[0;0;1]));
 
 
 LOS_SUN(i)     = rad2arcsec(vangle(S_I(:,i), R_B_I(:,:,i)'*[1 ;0 ;0]));
@@ -412,7 +421,6 @@ LOS_ANGLE(i)   = norm(cross(R_B_I_tgt(:,:,i)'*CONST.los_vec,R_B_I(:,:,i)'*CONST.
 end
 
 %% PLOT
-close all
 satellite_adcs_plot
 
 

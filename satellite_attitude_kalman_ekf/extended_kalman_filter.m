@@ -83,7 +83,7 @@ if(sum(mflag) >= 1)
     
     for i = 1:MaxMag
         if( (mflag(i) == 1) && (i <= MaxST) )
-            Star Tracker Measurement Matrix (when i = 1) quaternion
+%             Star Tracker Measurement Matrix (when i = 1) quaternion
             Xi = XI(qk1);                    % 
             H  = [1/2*Xi(1:3,:) zeros(3,3) ]; % Sensor Sensitivity Matrix
             R  = sig_st^2*eye(3);             % Sensor Noise

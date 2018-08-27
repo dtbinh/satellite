@@ -1,8 +1,8 @@
-close all
+
 screensize   = get(0,'ScreenSize');
 screenwidth  = screensize(3);
 screenheight = screensize(4);
-screennumber = 0;
+screennumber = 1;
 
 %% QUATERNION ERROR %%
 ymin = -10*std(q_B_I_error(1,ceil(end/2):end));
@@ -172,8 +172,9 @@ subplot(6,1,1)
 plot(tout,bias_error(1,:)*R2D,'b')
 title('Bias')
 hold on;grid on;
-plot(tout,3*sqrt(Pdiag(4,:))*R2D,'r')
-plot(tout,-3*sqrt(Pdiag(4,:))*R2D,'r')
+plot(tout,bias_error_ukf(1,:)*R2D,'r')
+plot(tout,3*sqrt(Pdiag(4,:))*R2D,'m')
+plot(tout,-3*sqrt(Pdiag(4,:))*R2D,'m')
 ylabel('x [\circ/s]');
 xlabel('time [s]');
 axis([-Inf Inf ymin ymax])
@@ -182,8 +183,9 @@ text(textx,texty,strcat('MEAN:',num2str(mean(bias_error(1,ceil(end/4):end)*R2D))
 subplot(6,1,2)
 plot(tout,bias_error(2,:)*R2D,'b')
 hold on;grid on;
-plot(tout,3*sqrt(Pdiag(5,:))*R2D,'r')
-plot(tout,-3*sqrt(Pdiag(5,:))*R2D,'r')
+plot(tout,bias_error_ukf(2,:)*R2D,'r')
+plot(tout,3*sqrt(Pdiag(5,:))*R2D,'m')
+plot(tout,-3*sqrt(Pdiag(5,:))*R2D,'m')
 ylabel('y [\circ/s]');
 xlabel('time [s]');
 axis([-Inf Inf ymin ymax])
@@ -192,8 +194,9 @@ text(textx,texty,strcat('MEAN:',num2str(mean(bias_error(2,ceil(end/4):end)*R2D))
 subplot(6,1,3)
 plot(tout,bias_error(3,:)*R2D,'b')
 hold on;grid on;
-plot(tout,3*sqrt(Pdiag(6,:))*R2D,'r')
-plot(tout,-3*sqrt(Pdiag(6,:))*R2D,'r')
+plot(tout,bias_error_ukf(3,:)*R2D,'r')
+plot(tout,3*sqrt(Pdiag(6,:))*R2D,'m')
+plot(tout,-3*sqrt(Pdiag(6,:))*R2D,'m')
 ylabel('z [\circ/s]');
 xlabel('time [s]');
 axis([-Inf Inf ymin ymax])
@@ -237,7 +240,7 @@ plot(tout,bias(3,:)*R2D,'r')
 xmin = 0;
 xmax = tdur;
 ymin = 0;
-ymax = 500;
+ymax = 10000;
 
 fig = figure;
 set(fig,'Position',[screenwidth*(screennumber+0.75) 0 screenwidth*0.25 screenheight]);
@@ -245,22 +248,25 @@ subplot(6,1,1)
 plot(tout,LOS_error(1,:))
 axis([xmin xmax ymin ymax])
 grid on; hold on;
+plot(tout,LOS_error_ukf(1,:),'r')
 title('LOS');
-xlabel('Period [cycle]');
-ylabel('LOS-Sun [arcsec]');
+xlabel('time [s]');
+ylabel('LOS-X [arcsec]');
 
 subplot(6,1,2)
 plot(tout,LOS_error(2,:))
 grid on; hold on;
-xlabel('Period [cycle]');
-ylabel('LOS-Nadir [arcsec]');
+plot(tout,LOS_error_ukf(2,:),'r')
+xlabel('time [s]');
+ylabel('LOS-Y [arcsec]');
 axis([xmin xmax ymin ymax])
 
 subplot(6,1,3)
 plot(tout,LOS_error(3,:))
 grid on; hold on;
-xlabel('Period [cycle]');
-ylabel('LOS-Tgt [arcsec]');
+plot(tout,LOS_error_ukf(3,:),'r')
+xlabel('time [s]');
+ylabel('LOS-Z [arcsec]');
 axis([xmin xmax ymin ymax])
 
 
@@ -295,37 +301,37 @@ axis([-Inf Inf ymin ymax])
 
 
 %% LOS & TORQUE
-xmin = 0;
-xmax = tdur;
-ymin = 0;
-ymax = 100;
-
-fig = figure;
-set(fig,'Position',[screenwidth*(screennumber+0.75) 0 screenwidth*0.25 screenheight]);
-
-subplot(3,1,1)
-plot(tout,LOS_SUN)
-axis([xmin xmax ymin ymax])
-grid on; hold on;
-title('LOS');
-xlabel('Period [cycle]');
-ylabel('LOS-Sun [arcsec]');
-
-
-subplot(3,1,2)
-plot(tout,LOS_NADIR)
-grid on; hold on;
-xlabel('Period [cycle]');
-ylabel('LOS-Nadir [arcsec]');
-axis([xmin xmax ymin ymax])
-
-
-subplot(3,1,3)
-plot(tout,LOS_TGT)
-grid on; hold on;
-xlabel('Period [cycle]');
-ylabel('LOS-Tgt [arcsec]');
-axis([xmin xmax ymin ymax])
+% xmin = 0;
+% xmax = tdur;
+% ymin = 0;
+% ymax = 100;
+% 
+% fig = figure;
+% set(fig,'Position',[screenwidth*(screennumber+0.75) 0 screenwidth*0.25 screenheight]);
+% 
+% subplot(3,1,1)
+% plot(tout,LOS_SUN)
+% axis([xmin xmax ymin ymax])
+% grid on; hold on;
+% title('LOS');
+% xlabel('Period [cycle]');
+% ylabel('LOS-Sun [arcsec]');
+% 
+% 
+% subplot(3,1,2)
+% plot(tout,LOS_NADIR)
+% grid on; hold on;
+% xlabel('Period [cycle]');
+% ylabel('LOS-Nadir [arcsec]');
+% axis([xmin xmax ymin ymax])
+% 
+% 
+% subplot(3,1,3)
+% plot(tout,LOS_TGT)
+% grid on; hold on;
+% xlabel('Period [cycle]');
+% ylabel('LOS-Tgt [arcsec]');
+% axis([xmin xmax ymin ymax])
 
 
 

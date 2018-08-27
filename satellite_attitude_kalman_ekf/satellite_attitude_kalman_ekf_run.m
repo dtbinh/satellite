@@ -34,7 +34,7 @@ qerrOn  = 1; % Toggle Error Quaternion
 
 %% CONSTANT PARAMETERS
 global CONST;
-
+CONST.model      = 'satellite_attitude_kalman_ekf_model';
 CONST.mu         = 398.6004118e12;          % [m^3/s^2] Earth's standard gravitational parameter
 CONST.mu_moon    = 4.902802953597e12;       % [m^3/s^2] Moon's standard gravitational parameter
 CONST.mu_sun     = 1.327122E20;             % [m^3/s^2] Sun's standard gravitational parameter
@@ -68,7 +68,7 @@ Rp  = CONST.Re+h_p;              % [m] radius of perigee
 Ra  = CONST.Re+h_a;              % [m] radius of apogee
 e   = (Ra-Rp)/(Ra+Rp);           % [m/m] eccentricity
 a   = (Ra+Rp)/2;                 % [m] semi-major axis
-ho  = sqrt(a*CONST.mu*(1-e^2));  % [mˆ2/s] Initial Angular momentum
+ho  = sqrt(a*CONST.mu*(1-e^2));  % [mï¿½2/s] Initial Angular momentum
 P   = 2*pi*sqrt(a^3/CONST.mu);   % [sec] Orbit Period
 w_O = 2*pi/P;                   % [rad/s] Orbit Angular Velocity
 
@@ -79,7 +79,7 @@ CONST.w_O = w_O;                    % [rad/s] Orbit Angular Velocity
 CONST.RAAN = RAAN;                  % [rad] Initial Right Ascention - Angle on Equatorial Plane from Vernal Equinox to Ascending Node
 
 i = acos((CONST.OmegaDot*(1-e^2)^2*a^(7/2))/(-3/2*sqrt(CONST.mu)*CONST.J2*CONST.Re^2)); % [rad] Orbit Inclination required for Sun-synchornous (eqn 4.47 from Curtis)
-i = 45/180*pi;
+i = 85/180*pi;
 [R_0,V_0,Q] = sv_from_coe(CONST.mu,[ho e RAAN i w TAo]);% initial orbital state vector in ECF Frame- computes the magnitude of state vector (r,v) from the classical orbital elements (coe) 
 
 %% INITIAL CONDITIONS
@@ -105,11 +105,11 @@ w_O_OI_0 = [0;-w_O;0];             % [rad] Orbital Frame Angular Rate relative t
 w_B_OI_0 = R_O_B_0'*w_O_OI_0; % [rad] Orbital Frame Angular Rates relative to Inertial Frame in Body Frame
 
 % Body Frame Angular Rate
-w_B_BO_0 = [0.00;0.00;0.00];               % [rad] Body Frame Angular Rates relative to Orbital Frame in Body Frame 
+w_B_BO_0 = [0.001;0.002;0.003];               % [rad] Body Frame Angular Rates relative to Orbital Frame in Body Frame 
 w_B_BI_0 = w_B_BO_0 + w_B_OI_0;   % [rad] Body Frame Angular Rate relative to Inertial Frame in Body Frame
 
 %% SENSORS FLAG
-mflag(1) = 0; % Star Tracker
+mflag(1) = 1; % Star Tracker
 mflag(2) = 1; % Sun Sensor 1
 mflag(3) = 1; % Sun Sensor 2
 mflag(4) = 1; % Sun Sensor 3
@@ -125,7 +125,7 @@ ARW       = N_ARW^2;                % [rad^2/s] Angular White Noise Variance
 RRW       = K_RRW^2/3;              % [rad^2/s^3] Bias Variance
 Gg        = eye(3).*(-0.01+0.02*rand(3))+ ...
             (ones(3,3)-eye(3)).*(-0.0006+0.0012*rand(3)); % [%] 3x3 Matrix diagonal values of G are the percent error in scale factor and the off-diagonal values of G are the percent error of misalignment
-gyro_max = 75/180*pi;
+gyro_max = 0.5;
 
 %% STAR TRACKER
 sigST = 70/3/60/60*pi/180; % [rad]   arcsec to rad (3 sigma)
@@ -148,7 +148,7 @@ R_S4_B = DCM(SSaxis(4),SSangles(4));   % [-] Rotation Matrix from Body Frame to 
 FOV   = 70; % [deg] Field of View
 sigSS = 0.1; % [deg] Standard Deviation
 % J     = Bessel(sigSS/3,FOV).*pi/180;
-dt_ss = 1/5;
+dt_ss = 0.5;
 
 CONST.SSaxis = SSaxis;        % [axis] Sun Sensor rotation axis 1 = x, 2 = y, 3 = z
 CONST.SSangles = SSangles;    % [deg] Sun Sensors fram angles
@@ -158,10 +158,10 @@ Mag_bias = (4*randn(3,1))*1e-7;                           % [T], +/- 4 mguass
 Gmg      = eye(3).*(-0.02+0.04*rand(3)) +...
             (ones(3,3)-eye(3)).*(-0.0028+0.0056*rand(3)); % [%] MisAlignment
 magn_max = 100/180*pi; 
-dt_mg    = 1/20;                                          
+dt_mg    = 0.5;                                          
 
 %% KALMAN FILTER
-dt     = 1/20;               % [sec] (20 Hz) Model speed
+dt     = 0.5;               % [sec] (20 Hz) Model speed
 dt_ekf  = dt;                % [sec] (20 Hz) EKF speed
 CONST.dt     = dt;
 CONST.dt_ekf = dt_ekf;
@@ -175,8 +175,8 @@ ReferenceOmega = w_B_OI_0;
 
 
 %% SOLVER
-fprintf("\nsatellite_attitude_kalman_ekf_model running\n");
-tdur = P;              
+fprintf('\nsatellite_attitude_kalman_ekf_model running\n');
+tdur = P/2;              
 sim('satellite_attitude_kalman_ekf_model',tdur);
 
 %% POST PROCESSING
@@ -272,10 +272,10 @@ set(earth,'facecolor','none','edgecolor',0.7*[1 1 1],'LineStyle',':');
 %  MagneticField();
 
 % UPDATE SIMULATION PLOT
-d=10;
-for i=1:10*d:(length(tout)-1)
 
-rotate(earth,[0 0 1],0.005*d)
+for i=1:5:(length(tout)-1)
+
+% rotate(earth,[0 0 1],0.005*d)
 % Update Axes Label
 
 
@@ -317,7 +317,7 @@ set(Z_sat_lab,'Position',R_B_I(:,:,i)'*[0 ;0 ;1]+R(:,1,i));
 % Update Satellite Body Frame
 updateVector(B_mag, B_I(:,i),  R(:,1,i));
 
-% Update Eclipse
+% Update Eclipsegyro_max
 set(eclipse_lab,'String',strcat('Eclipse:',int2str(ECLIPSE(i))));
 
 % Update Velocity Vectors
