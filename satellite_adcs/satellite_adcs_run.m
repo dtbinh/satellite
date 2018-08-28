@@ -173,7 +173,7 @@ w_B_BO_0 = dps2rps(0.05)*[randn(1,1);randn(1,1);randn(1,1)]; % [rad/s] Body Fram
 w_B_BI_0 = w_B_BO_0 + w_B_OI_0;   % [rad] Body Frame Angular Rate relative to Inertial Frame in Body Frame
 
 %% SENSORS FLAG
-mflag(1) = 0; % Star Tracker 1
+mflag(1) = 1; % Star Tracker 1
 mflag(2) = 0; % Star Tracker 2
 mflag(3) = 0; % Sun Sensor 1
 mflag(4) = 0; % Sun Sensor 2
@@ -185,7 +185,7 @@ mflag(8) = 1; % Gyroscope
 CONST.mflag = mflag; % Set as CONST global variable
 
 %% GYRO SENSOR
-GYRO_Bias   = [1.5;1.2;-3.3]*pi/180;       % [rad/s] Actual Offset at Reference Temperature
+GYRO_Bias   = [1.5;1.2;-3.3]*deg2rad;       % [rad/s] Actual Offset at Reference Temperature
 GYRO_max    = 75/180*pi;                   % [rad/s] Maximum Gyro Rate 
 temp_coeff  = [0.01; 0.02; 0.005]*pi/180;  % [rad/s/C] Offset Temperature Coefficient
 temp_ref    = 20;                          % [C] Temperature Reference
@@ -208,7 +208,7 @@ width_gyro  = 2*dt/update_gyro*100;
 
 %% STAR TRACKER
 % Star Tracker 1
-sigST(1)   = 30/3/60/60*pi/180;        % [rad]  arcsec to rad (3 sigma)
+sig_st(1)   = 30/3/60/60*pi/180;        % [rad]  arcsec to rad (3 sigma)
 varST_x(1) = (200/3/60/60*pi/180)^2;   % [rad^2] Covariance of StarTracker (roll)
 varST_y(1) = (30/3/60/60*pi/180)^2;    % [rad^2] Covariance of StarTracker (pitch)
 varST_z(1) = (30/3/60/60*pi/180)^2;    % [rad^2] Covariance of StarTracker (yaw)
@@ -216,7 +216,7 @@ ST1_Mis    = [0.0;0.0;0.0]*pi/180;     % [rad] Star Tracker Misalignment Euler A
 Ust1       = eul2dcm(ST1_Mis,'zyx');   % [-] Misalignment Matrix
 
 % Star Tracker 2
-sigST(2)   = 80/3/60/60*pi/180;        % [rad]  arcsec to rad (3 sigma)
+sig_st(2)   = 80/3/60/60*pi/180;        % [rad]  arcsec to rad (3 sigma)
 varST_x(2) = (150/3/60/60*pi/180)^2;   % [rad^2] Covariance of StarTracker (roll)
 varST_y(2) = (15/3/60/60*pi/180)^2;    % [rad^2] Covariance of StarTracker (pitch)
 varST_z(2) = (15/3/60/60*pi/180)^2;    % [rad^2] Covariance of StarTracker (yaw)
@@ -241,7 +241,7 @@ R_S2_B   = dcm(SSaxis(2),SSangles(2)); % [-] Rotation Matrix from Body Frame to 
 R_S3_B   = dcm(SSaxis(3),SSangles(3)); % [-] Rotation Matrix from Body Frame to Sun Sensor 3 Frame 
 R_S4_B   = dcm(SSaxis(4),SSangles(4)); % [-] Rotation Matrix from Body Frame to Sun Sensor 4 Frame 
 
-sigSS = 0.01*pi/180; % [rad] Standard Deviation
+sig_ss = 0.01*pi/180; % [rad] Standard Deviation
 dt_ss = dt;          % [sec] Sampling Time of Sun Sensors
 
 FOV      = 100*pi/180;  % [rad] Field of View of Sun Sensors
@@ -250,7 +250,7 @@ CONST.SSaxis   = SSaxis;        % [axis] Sun Sensor rotation axis 1 = x, 2 = y, 
 CONST.SSangles = SSangles;      % [deg]  Sun Sensors fram angles
 
 %% MAGNETOMETER
-sigMag   = 1.25e-7;                        % [T] Standard Deviation
+sig_mg   = 1.25e-7;                        % [T] Standard Deviation
 Mag_bias = (4*randn(3,1))*1e-7;            % [T], +/- 4 mguass
 Gmg      = eye(3).*(-0.02+0.04*rand(3)) +...
             (ones(3,3)-eye(3)).*(-0.0028+0.0056*rand(3)); % [%] MisAlignment
@@ -263,23 +263,48 @@ sigTemp = 0.002;        % [C] Sigma of Temperature Sensor
 varTemp = sigTemp^2;    % [C^2] Variance of Temperature Sensor
 dt_ts   = dt;           % [sec] Sampling Time of Temperature Sensor
 
-%% KALMAN FILTER
-global FLTR
+            
 
-FLTR.mode   = 0;
-dt_ekf      = dt;               % [sec] (20 Hz) EKF speed8
 
 CONST.dt     = dt;               % [sec] (20 Hz) Model speed
-CONST.dt_ekf = dt_ekf;           % [sec] (20 Hz) EKF speed
+CONST.dt_ekf = dt;               % [sec] (20 Hz) EKF speed
+CONST.dt_ukf = dt;               % [sec] (20 Hz) EKF speed
 CONST.sig_v  = sqrt(Var_ARW);    % [rad/s^(1/2)] sigma of process noise - attitude state
 CONST.sig_u  = sqrt(Var_RRW);    % [rad/s^(3/2)] sigma of process noise - bias state
 CONST.sig_w  = sqrt(VarW);       % [rad/C/s^(1/2)] Standard Deviation Measured
-CONST.sig_st = sigST;            % [rad] Star Tracker 
-CONST.sig_ss = sigSS;            % [rad] Sun Sensor 
-CONST.sig_mg = sigMag;           % [tesla] magnetometer 
+CONST.sig_st = sig_st;            % [rad] Star Tracker 
+CONST.sig_ss = sig_ss;            % [rad] Sun Sensor 
+CONST.sig_mg = sig_mg;           % [tesla] magnetometer 
 CONST.varST_x = varST_x;
 CONST.varST_y = varST_y;
 CONST.varST_z = varST_z;
+
+%% KALMAN FILTER
+global FLTR
+
+FLTR.mode = 2;
+FLTR.qk   = [0;0;0;1];
+FLTR.bk   = [0;0;0];
+FLTR.wk   = [0;0;0];
+
+
+% EKF Initial Error Covariance
+sig_n = sqrt(sig_st(1)^2  +  sig_ss^2  + sig_mg^2);
+
+FLTR.Pk_ekf = dt^(1/4)*sig_n^(1/2)*(CONST.sig_v^2  +  2*CONST.sig_u*CONST.sig_v*dt^(1/2))^(1/4)*eye(12); 
+% FLTR.Pk_ekf = [(1)^2*eye(3)      zeros(3)       zeros(3)  zeros(3); 
+%                 zeros(3)   (3*pi/180)^2*eye(3)  zeros(3)  zeros(3); 
+%                 zeros(3)       zeros(3)         zeros(3)  zeros(3);
+%                 zeros(3)       zeros(3)         zeros(3)  zeros(3)]; 
+            
+% UKF Initial Error Covariance
+FLTR.lamda  = 1;
+FLTR.alpha  = 1;
+FLTR.Pk_ukf = [(1)^2*eye(3)      zeros(3); 
+                zeros(3)  (3*pi/180)^2*eye(3)];
+            
+
+
 
 %% TARGET
 CONST.lat = 25;                 % [deg]
@@ -353,16 +378,16 @@ CTRL_SC.K_1 = 5e-03;         % [ ]
 CTRL_SC.K_2 = 5e-03;         % [kg.m^-2] 
 CTRL_SC.vec_tgt = vnorm([1;0;0]);   % [-] Desired spin vector in Body Frame
 CTRL_SC.w_tgt   = 0.01;      % [rad/s] Desired Angular Velocity
-CTRL_SC.type    = 'hihb';  % [ ] - 'ruiter','buhl','hihb'
+CTRL_SC.type    = 'hihb';    % [ ] - 'ruiter','buhl','hihb'
 
 
 % Controller Panel
-CTRL_SWITCH1  = 1; % Time to change mode from Detumbling to Sun Pointing.
-CTRL_SWITCH2  = P/8; % Time to change mode from Sun Pointing to Operation Mode.
+CTRL_SWITCH1  = P/4; % Time to change mode from Detumbling to Sun Pointing.
+CTRL_SWITCH2  = P/2; % Time to change mode from Sun Pointing to Operation Mode.
 
 CTRL_DT_MODE  = 2;   % Detumbling mode: BDOT/EDSP/VDOT/
-CTRL_PT1_MODE = 5;   % Pointing mode  : REF/SLD/SUN/TA/SC/IDLE
-CTRL_PT2_MODE = 5;   % Pointing mode  : REF/SLD/SUN/TA/SC/IDLE
+CTRL_PT1_MODE = 3;   % Pointing mode  : REF/SLD/SUN/TA/SC/IDLE
+CTRL_PT2_MODE = 2;   % Pointing mode  : REF/SLD/SUN/TA/SC/IDLE
 
 %% SOLVER
 CONST.model = 'satellite_adcs_model';
@@ -382,11 +407,16 @@ vr(i) = norm(Vr(:,1,i));
 vt(i) = norm(Vt(:,1,i));
 v(i)  = sqrt(vr(i)^2+vt(i));
 
+% EKF
 q_B_I_error(:,i)  = q_B_I_f(:,i) - q_B_I(:,i);
 e_B_I_error(:,i)  = e_B_I_f(:,i) - e_B_I(:,i);
 w_B_BI_error(:,i) = w_B_BI_f(:,i) - w_B_BI(:,i);
 w_B_BI_m_error(:,i) = w_B_BI_m(:,i)-w_B_BI(:,i)-bias_f(:,i);
 bias_error(:,i)   = bias_f(:,i) - bias(:,i);
+
+q_B_I_error_ukf(:,i)  = q_B_I_ukf(:,i) - q_B_I(:,i);
+e_B_I_error_ukf(:,i)  = e_B_I_ukf(:,i) - e_B_I(:,i);
+w_B_BI_error_ukf(:,i) = w_B_BI_ukf(:,i) - w_B_BI(:,i);
 bias_error_ukf(:,i)   = bias_ukf(:,i) - bias(:,i);
 
 Pdiag(1,i)        = Pk_f(1,1,i);

@@ -52,19 +52,14 @@ persistent qk biask wk Pk coefk wkm dwk;  % Variables that are retained in memor
 if isempty(qk)
     
     % Initial Internal Loop
-    qk    = qnorm([0.0;0.0;0.0;1]);                           % Initial Quaternion (xyzw) for internal variable
-    biask = [0.0;0.0;0.0]*pi/180;                % Initial Bias Value from Lab Calibration
-    coefk = zeros(3,1);                          % Initial Temp Coeff
-    wk    = [0;0;0];                            % Initial Value from measured gyro
-    wkm   = [0;0;0];                            % Initial Value from measured gyro
-    dwk   = [0;0;0];
+    qk    = FLTR.qk;                % Initial Quaternion (xyzw) for internal variable
+    biask = FLTR.bk;                % Initial Bias Value from Lab Calibration
+    coefk = zeros(3,1);             % Initial Temp Coeff
+    wk    = FLTR.wk;                % Initial Value from measured gyro
+    wkm   = FLTR.wk;                % Initial Value from measured gyro
     
-    sig_n = sqrt(sig_st(1)^2  +  sig_st(2)^2  +  sig_ss^2  + sig_mg^2);                     % Initial Scalar sig_n
-    Pk    = dt^(1/4)*sig_n^(1/2)*(sig_v^2  +  2*sig_u*sig_v*dt^(1/2))^(1/4)*eye(12); % Initial Error Covariance - does not matter much
-    Pk    = [(1)^2*eye(3)      zeros(3)  zeros(3)  zeros(3); 
-                zeros(3)   (3*pi/180)^2*eye(3)  zeros(3)  zeros(3); 
-                zeros(3)       zeros(3)  zeros(3)  zeros(3);
-                zeros(3)       zeros(3)  zeros(3)  zeros(3)]; % Initial Error Covariance 
+    Pk    = FLTR.Pk_ekf; % Initial Error Covariance 
+    
     % Initial Output
     output(1:3,1)     = wk;
     output(4:6,1)     = biask;
