@@ -188,14 +188,38 @@ Rx(i) = R(1,1,i); % Position Vector X of spacecraft
 Ry(i) = R(2,1,i); % Position Vector Y of spacecraft
 Rz(i) = R(3,1,i); % Position Vector Z of spacecraft
 
+R_B_I_f(:,:,i)   = q2dcm(q_B_I_f(:,:,i));
+R_B_I_ukf(:,:,i) = q2dcm(q_B_I_ukf(:,:,i));
+
+% EKF
+LOS_error(1,i)  = rad2arcsec(vangle(R_B_I_f(:,:,i)'*[1;0;0],R_B_I(:,:,i)'*[1;0;0]));
+LOS_error(2,i)  = rad2arcsec(vangle(R_B_I_f(:,:,i)'*[0;1;0],R_B_I(:,:,i)'*[0;1;0]));
+LOS_error(3,i)  = rad2arcsec(vangle(R_B_I_f(:,:,i)'*[0;0;1],R_B_I(:,:,i)'*[0;0;1]));
+
+
+% UKF
+LOS_error_ukf(1,i)  = rad2arcsec(vangle(R_B_I_ukf(:,:,i)'*[1;0;0],R_B_I(:,:,i)'*[1;0;0]));
+LOS_error_ukf(2,i)  = rad2arcsec(vangle(R_B_I_ukf(:,:,i)'*[0;1;0],R_B_I(:,:,i)'*[0;1;0]));
+LOS_error_ukf(3,i)  = rad2arcsec(vangle(R_B_I_ukf(:,:,i)'*[0;0;1],R_B_I(:,:,i)'*[0;0;1]));
+
+
 vr(i) = norm(Vr(:,1,i));
 vt(i) = norm(Vt(:,1,i));
 v(i)  = sqrt(vr(i)^2+vt(i));
+
+w_B_BI_m_error(:,i) = w_B_BI_m(:,i)-w_B_BI(:,i)-bias_f(:,i);
 
 q_B_I_error(:,i)  = q_B_I_f(:,i) - q_B_I(:,i);
 e_B_I_error(:,i)  = e_B_I_f(:,i) - e_B_I(:,i);
 w_B_BI_error(:,i) = w_B_BI_f(:,i) - w_B_BI(:,i);
 bias_error(:,i)   = bias_f(:,i) - bias(:,i);
+
+
+q_B_I_error_ukf(:,i)  = q_B_I_ukf(:,i) - q_B_I(:,i);
+e_B_I_error_ukf(:,i)  = e_B_I_ukf(:,i) - e_B_I(:,i);
+w_B_BI_error_ukf(:,i) = w_B_BI_ukf(:,i) - w_B_BI(:,i);
+bias_error_ukf(:,i)   = bias_ukf(:,i) - bias(:,i);
+
 end
 %% PLOT
 satellite_attitude_kalman_ekf_plot

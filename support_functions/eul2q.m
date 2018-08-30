@@ -1,4 +1,11 @@
 function q = eul2q(eul,etype,qtype)
+if ~exist('etype','var')
+   etype = 'zyx'; 
+end
+
+if ~exist('qtype','var')
+   qtype = 'xyzw'; 
+end
 
 phi   = eul(1); 
 theta = eul(2);  

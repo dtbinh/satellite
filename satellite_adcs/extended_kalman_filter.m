@@ -23,6 +23,10 @@ global CONST
 global FLTR
 
 t = get_param(CONST.model,'SimulationTime');
+if (FLTR.dbekf) 
+        fprintf('\n\nTime %.4f',t);
+end
+
 dt      = CONST.dt;         % Sampling Time of Kalman Filter
 
 sig_v   = CONST.sig_v;      % Noise Standard Deviation Attitude State
@@ -50,6 +54,9 @@ persistent qk biask wk Pk coefk wkm dwk;  % Variables that are retained in memor
 
 %% INITIAL VALUES
 if isempty(qk)
+    if (FLTR.dbekf) 
+        fprintf('\nInitialisation');
+    end
     
     % Initial Internal Loop
     qk    = FLTR.qk;                % Initial Quaternion (xyzw) for internal variable
@@ -85,12 +92,24 @@ end
 
 
 %% MEASUREMENT
+if (FLTR.dbekf) 
+    fprintf('\nMeasurements');
+end
 
 R_B_I  = q2xi(qk)'*q2psi(qk);    % Attitude Transformation Matrix of  Quaternion (xyzw) from Inertial to Body
 delX   = zeros(12,1); % Matrix Initiation for delX
 
 for i = 1:length(mflag)
+    
+    if (FLTR.dbekf) 
+        fprintf('\nMeasurements %d',i);
+    end
+    
      if( (1)&&(mflag(i) == 1) && (i <= MaxST) )
+         
+            if (FLTR.dbekf) 
+                fprintf('\nStar Tracker Measurements');
+            end
             % Star Tracker Measurement 
             Xi = q2xi(qk);                     
             H  = [1/2*Xi(1:3,:) zeros(3,3) zeros(3,3) zeros(3,3)]; 
@@ -105,7 +124,9 @@ for i = 1:length(mflag)
             delX = delX + K*(res-H*delX);       % delta angle 
             
      elseif ( (0)&&(mflag(i) == 1) && (i <= MaxST) )
-         % BST
+            if (FLTR.dbekf) 
+                fprintf('\nStar Tracker Measurements (BST)');
+            end
 
             % Star Tracker Measurement 
             Xi = q2xi(qk);                     
@@ -121,6 +142,11 @@ for i = 1:length(mflag)
             delX = delX + K*(res-H*delX);       % delta angle 
 
      elseif( (mflag(i) == 1) && (i <= MaxSS) ) 
+         
+            if (FLTR.dbekf) 
+                fprintf('\nSun Sensor Measurements');
+            end
+            
             % Sun Sensor Measurement          
             H = [smtrx(R_B_I*S_I) zeros(3,3) zeros(3,3) zeros(3,3)];  
             
@@ -135,6 +161,10 @@ for i = 1:length(mflag)
             delX = delX + K*(res-H*delX);              
 
      elseif( (mflag(i) == 1) && (i <= MaxMag) ) 
+            if (FLTR.dbekf) 
+                fprintf('\nMagnetometer Measurements');
+            end
+            
             % Magnetometer
             H = [smtrx(R_B_I*B_I) zeros(3,3) zeros(3,3) zeros(3,3)];
             R = sig_mg^2*eye(3);
@@ -148,9 +178,12 @@ for i = 1:length(mflag)
             delX = delX + K*(res-H*delX);
             
     elseif( (mflag(i) == 1) && (i <= MaxGg)) 
+            if (FLTR.dbekf) 
+                fprintf('\nGyro Measurements');
+            end
         
             % Gyroscope Measurements
-            switch FLTR.mode
+            switch FLTR.ekf
                 case 0
                     H = [ zeros(3,3) zeros(3,3) zeros(3,3) zeros(3,3)];
                 case 1
@@ -175,6 +208,9 @@ end
 
 
 %% UPDATE
+if (FLTR.dbekf) 
+    fprintf('\nUpdate');
+end
 % Update of Quaternion(xyzw)
 qk    = qk  +  1/2*q2xi(qk)*delX(1:3,:);  
 qk    = qnorm(qk);               
@@ -196,7 +232,10 @@ if (mflag(8))
 end
 
 %% ERROR COVARIANCE PROPAGATION
-switch FLTR.mode
+if (FLTR.dbekf) 
+    fprintf('\nError Covariance Propagate');
+end
+switch FLTR.ekf
     case 0
     F  = [-smtrx(wkm)   -eye(3)   zeros(3)    zeros(3);
            zeros(3)    zeros(3)   zeros(3)    zeros(3);
@@ -217,7 +256,7 @@ end
 Phi = eye(12) + F*dt + 0.5*(F*dt)^2;
 
 % Discrete Process Noise Covariance
-switch FLTR.mode
+switch FLTR.ekf
     case 0
     Qk = [(sig_v^2*dt+1/3*(sig_u^2)*dt^3)*eye(3)  -(1/2*sig_u^2*dt^2)*eye(3)           zeros(3)            zeros(3);
                 -(1/2*sig_u^2*dt^2)*eye(3)             (sig_u^2*dt)*eye(3)             zeros(3)            zeros(3);
@@ -240,8 +279,12 @@ end
 Pk = Phi*Pk*Phi'+ Qk;           
 
 %% STATE PROPAGATION 
+if (FLTR.dbekf) 
+    fprintf('\nState Propagate');
+end
+
 % Quaternion State 
-switch FLTR.mode
+switch FLTR.ekf
     case 0
     psik  = sin(1/2*norm(wkm)*dt)/norm(wkm)*wkm;
     omega = [cos(1/2*norm(wkm)*dt)*eye(3)-smtrx(psik)       psik;
@@ -265,7 +308,7 @@ phi_dw = eye(3) + dFdw*dt  +  0.5*(dFdw*dt)^2;
 B      = I^-1*eye(3);
 Gmm    = B*dt  +  0.5*B*dFdw*dt^2;  
 
-switch FLTR.mode
+switch FLTR.ekf
     case 0
         wk  = wkm; 
     case 1
@@ -286,7 +329,6 @@ output(4:6,1)     = biask;
 output(7:9,1)     = coefk;
 output(1:12,2:13) = Pk;
 output(1:4,14)    = q_B_I_f;
-
 output(5:7,14)    = e_B_I_f;
 end
 

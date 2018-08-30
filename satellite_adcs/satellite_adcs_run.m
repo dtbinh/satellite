@@ -12,10 +12,10 @@ dt  = 0.5;              % [sec] Model speed (0.5 for normal, 30 for orbit)
 
 %% TORQUE TOGGLE SWITCH
 
-Tgg_toggle      = 0; % Toggle Torque Gravity Gradient 
-Taero_toggle    = 0; % Toggle Torque Aerodynamic
-Tsolar_toggle   = 0; % Toggle Torque Solar
-Tnoise_toggle   = 0; % Toggle Torque Noise
+Tgg_toggle      = 1; % Toggle Torque Gravity Gradient 
+Taero_toggle    = 1; % Toggle Torque Aerodynamic
+Tsolar_toggle   = 1; % Toggle Torque Solar
+Tnoise_toggle   = 1; % Toggle Torque Noise
 sigTorq         = 5e-8;
 
 Tcontrol_toggle = 1; % Toggle Torque Control
@@ -169,16 +169,16 @@ w_B_OI_0 = R_O_B_0'*w_O_OI_0;  % [rad] Orbital Frame Angular Rates relative to I
 
 % Body Frame Angular Rate
 w_B_BO_0 = dps2rps(0.05)*[randn(1,1);randn(1,1);randn(1,1)]; % [rad/s] Body Frame Angular Rates relative to Orbital Frame in Body Frame 
-% w_B_BO_0 = dps2rps(5)*[1;1;1];
+w_B_BO_0 = dps2rps(0.05)*[1;1;1];
 w_B_BI_0 = w_B_BO_0 + w_B_OI_0;   % [rad] Body Frame Angular Rate relative to Inertial Frame in Body Frame
 
 %% SENSORS FLAG
 mflag(1) = 1; % Star Tracker 1
-mflag(2) = 0; % Star Tracker 2
-mflag(3) = 0; % Sun Sensor 1
-mflag(4) = 0; % Sun Sensor 2
-mflag(5) = 0; % Sun Sensor 3
-mflag(6) = 0; % Sun Sensor 4
+mflag(2) = 1; % Star Tracker 2
+mflag(3) = 1; % Sun Sensor 1
+mflag(4) = 1; % Sun Sensor 2
+mflag(5) = 1; % Sun Sensor 3
+mflag(6) = 1; % Sun Sensor 4
 mflag(7) = 1; % Magnetometer
 mflag(8) = 1; % Gyroscope
 
@@ -192,7 +192,7 @@ temp_ref    = 20;                          % [C] Temperature Reference
 dt_gyro     = 0.1;                         % [s] Sampling Time Interval of Gyro
 N_ARW       = (0.0029)*pi/180;             % [rad/s^0.5]    Parameter N variance coefficient at tau = 1 along +1/2
 K_RRW       = (0.0002)*pi/180;             % [rad/s^1.5]    Parameter K variance coefficient at tau = 3 along -1/2 slope
-N_W         = (1e-9)*pi/180;               % [rad/C/s^0.5]  Standard Deviation Measured
+N_W         = (1e-3)*pi/180;               % [rad/C/s^0.5]  Standard Deviation Measured
 Var_ARW     = N_ARW^2;                     % [rad^2/s]      Variance of Angular White Noise 
 Var_RRW     = K_RRW^2/3;                   % [rad^2/s^3]    Variance of Bias Rate
 VarW        = N_W^2;                       % [rad^2/s] 
@@ -235,7 +235,7 @@ end
 
 %% SUN SENSOR
 SSaxis   = [1; 1; 1; 1];               % [axis] Sun Sensor rotation axis 1 = x, 2 = y, 3 = z
-SSangles = [30;-150; 30; 150]*pi/180;  % [rad] Sun Sensors fram angles              
+SSangles = [90;-90; 0; 180]*pi/180;  % [rad] Sun Sensors fram angles              
 R_S1_B   = dcm(SSaxis(1),SSangles(1)); % [-] Rotation Matrix from Body Frame to Sun Sensor 1 Frame 
 R_S2_B   = dcm(SSaxis(2),SSangles(2)); % [-] Rotation Matrix from Body Frame to Sun Sensor 2 Frame 
 R_S3_B   = dcm(SSaxis(3),SSangles(3)); % [-] Rotation Matrix from Body Frame to Sun Sensor 3 Frame 
@@ -244,7 +244,7 @@ R_S4_B   = dcm(SSaxis(4),SSangles(4)); % [-] Rotation Matrix from Body Frame to 
 sig_ss = 0.01*pi/180; % [rad] Standard Deviation
 dt_ss = dt;          % [sec] Sampling Time of Sun Sensors
 
-FOV      = 100*pi/180;  % [rad] Field of View of Sun Sensors
+CONST.FOV_ss      = 100*pi/180;  % [rad] Field of View of Sun Sensors
 CONST.R_S1_B   = R_S1_B;         % [-] Rotation Matrix from Body Frame to Sun Sensor 1 Frame (Z-axis of sun sensor aligned with X-axis)
 CONST.SSaxis   = SSaxis;        % [axis] Sun Sensor rotation axis 1 = x, 2 = y, 3 = z
 CONST.SSangles = SSangles;      % [deg]  Sun Sensors fram angles
@@ -269,6 +269,7 @@ dt_ts   = dt;           % [sec] Sampling Time of Temperature Sensor
 CONST.dt     = dt;               % [sec] (20 Hz) Model speed
 CONST.dt_ekf = dt;               % [sec] (20 Hz) EKF speed
 CONST.dt_ukf = dt;               % [sec] (20 Hz) EKF speed
+CONST.dt_ss = dt_ss;
 CONST.sig_v  = sqrt(Var_ARW);    % [rad/s^(1/2)] sigma of process noise - attitude state
 CONST.sig_u  = sqrt(Var_RRW);    % [rad/s^(3/2)] sigma of process noise - bias state
 CONST.sig_w  = sqrt(VarW);       % [rad/C/s^(1/2)] Standard Deviation Measured
@@ -282,28 +283,29 @@ CONST.varST_z = varST_z;
 %% KALMAN FILTER
 global FLTR
 
-FLTR.mode = 2;
-FLTR.qk   = [0;0;0;1];
+
+FLTR.qk   = eul2q([pi/4 pi/6 pi/4]);
 FLTR.bk   = [0;0;0];
 FLTR.wk   = [0;0;0];
 
 
 % EKF Initial Error Covariance
+FLTR.ekf = 0;
 sig_n = sqrt(sig_st(1)^2  +  sig_ss^2  + sig_mg^2);
-
+FLTR.dbekf = 0;
 FLTR.Pk_ekf = dt^(1/4)*sig_n^(1/2)*(CONST.sig_v^2  +  2*CONST.sig_u*CONST.sig_v*dt^(1/2))^(1/4)*eye(12); 
-% FLTR.Pk_ekf = [(1)^2*eye(3)      zeros(3)       zeros(3)  zeros(3); 
-%                 zeros(3)   (3*pi/180)^2*eye(3)  zeros(3)  zeros(3); 
-%                 zeros(3)       zeros(3)         zeros(3)  zeros(3);
-%                 zeros(3)       zeros(3)         zeros(3)  zeros(3)]; 
+
             
 % UKF Initial Error Covariance
 FLTR.lamda  = 1;
 FLTR.alpha  = 1;
 FLTR.Pk_ukf = [(1)^2*eye(3)      zeros(3); 
                 zeros(3)  (3*pi/180)^2*eye(3)];
-            
 
+            
+% SKF
+FLTR.dbskf = 0;
+FLTR.Pk_skf   = dt^(1/4)*sig_n^(1/2)*(CONST.sig_v^2  +  2*CONST.sig_u*CONST.sig_v*dt^(1/2))^(1/4)*eye(12);
 
 
 %% TARGET
@@ -382,17 +384,20 @@ CTRL_SC.type    = 'hihb';    % [ ] - 'ruiter','buhl','hihb'
 
 
 % Controller Panel
-CTRL_SWITCH1  = P/4; % Time to change mode from Detumbling to Sun Pointing.
-CTRL_SWITCH2  = P/2; % Time to change mode from Sun Pointing to Operation Mode.
+CTRL_SWITCH1  = P/8; % Time to change mode from Detumbling to Sun Pointing.
+CTRL_SWITCH2  = P/4; % Time to change mode from Sun Pointing to Operation Mode.
 
-CTRL_DT_MODE  = 2;   % Detumbling mode: BDOT/EDSP/VDOT/
+CTRL_DT_MODE  = 4;   % Detumbling mode: BDOT/EDSP/VDOT/IDLE
 CTRL_PT1_MODE = 3;   % Pointing mode  : REF/SLD/SUN/TA/SC/IDLE
-CTRL_PT2_MODE = 2;   % Pointing mode  : REF/SLD/SUN/TA/SC/IDLE
+CTRL_PT2_MODE = 3;   % Pointing mode  : REF/SLD/SUN/TA/SC/IDLE
 
 %% SOLVER
 CONST.model = 'satellite_adcs_model';
-tdur = P;            
+tdur = P/8;            
 sim('satellite_adcs_model',tdur);
+sig_ss
+sunstd1 = [std(sun1(1,:));std(sun1(2,:));std(sun1(3,:))]
+sunstd2 = [std(sun2(1,:));std(sun2(2,:));std(sun2(3,:))]
 
 %% POST PROCESSING
 R     = R/CONST.Re;     % Position Vector of satellite (Normalized)
@@ -419,27 +424,38 @@ e_B_I_error_ukf(:,i)  = e_B_I_ukf(:,i) - e_B_I(:,i);
 w_B_BI_error_ukf(:,i) = w_B_BI_ukf(:,i) - w_B_BI(:,i);
 bias_error_ukf(:,i)   = bias_ukf(:,i) - bias(:,i);
 
-Pdiag(1,i)        = Pk_f(1,1,i);
-Pdiag(2,i)        = Pk_f(2,2,i);
-Pdiag(3,i)        = Pk_f(3,3,i);
-Pdiag(4,i)        = Pk_f(4,4,i);
-Pdiag(5,i)        = Pk_f(5,5,i);
-Pdiag(6,i)        = Pk_f(6,6,i);
+q_B_I_error_skf(:,i)  = q_B_I_skf(:,i) - q_B_I(:,i);
+e_B_I_error_skf(:,i)  = e_B_I_skf(:,i) - e_B_I(:,i);
+w_B_BI_error_skf(:,i) = w_B_BI_skf(:,i) - w_B_BI(:,i);
+bias_error_skf(:,i)   = bias_skf(:,i) - bias(:,i);
+
+Pdiag(1,i)        = Pk_skf(1,1,i);
+Pdiag(2,i)        = Pk_skf(2,2,i);
+Pdiag(3,i)        = Pk_skf(3,3,i);
+Pdiag(4,i)        = Pk_skf(4,4,i);
+Pdiag(5,i)        = Pk_skf(5,5,i);
+Pdiag(6,i)        = Pk_skf(6,6,i);
 
 R_B_I_tgt(:,:,i) = q2dcm(q_B_I_tgt(:,:,i));
 R_B_I_f(:,:,i)   = q2dcm(q_B_I_f(:,:,i));
 R_B_I_ukf(:,:,i) = q2dcm(q_B_I_ukf(:,:,i));
+R_B_I_skf(:,:,i) = q2dcm(q_B_I_skf(:,:,i));
 
 % EKF
 LOS_error(1,i)  = rad2arcsec(vangle(R_B_I_f(:,:,i)'*[1;0;0],R_B_I(:,:,i)'*[1;0;0]));
 LOS_error(2,i)  = rad2arcsec(vangle(R_B_I_f(:,:,i)'*[0;1;0],R_B_I(:,:,i)'*[0;1;0]));
 LOS_error(3,i)  = rad2arcsec(vangle(R_B_I_f(:,:,i)'*[0;0;1],R_B_I(:,:,i)'*[0;0;1]));
 
-
 % UKF
 LOS_error_ukf(1,i)  = rad2arcsec(vangle(R_B_I_ukf(:,:,i)'*[1;0;0],R_B_I(:,:,i)'*[1;0;0]));
 LOS_error_ukf(2,i)  = rad2arcsec(vangle(R_B_I_ukf(:,:,i)'*[0;1;0],R_B_I(:,:,i)'*[0;1;0]));
 LOS_error_ukf(3,i)  = rad2arcsec(vangle(R_B_I_ukf(:,:,i)'*[0;0;1],R_B_I(:,:,i)'*[0;0;1]));
+
+% SKF
+LOS_error_skf(1,i)  = rad2arcsec(vangle(R_B_I_skf(:,:,i)'*[1;0;0],R_B_I(:,:,i)'*[1;0;0]));
+LOS_error_skf(2,i)  = rad2arcsec(vangle(R_B_I_skf(:,:,i)'*[0;1;0],R_B_I(:,:,i)'*[0;1;0]));
+LOS_error_skf(3,i)  = rad2arcsec(vangle(R_B_I_skf(:,:,i)'*[0;0;1],R_B_I(:,:,i)'*[0;0;1]));
+
 
 
 LOS_SUN(i)     = rad2arcsec(vangle(S_I(:,i), R_B_I(:,:,i)'*[1 ;0 ;0]));
@@ -477,6 +493,12 @@ createSimulation([0 0 1 1],2)
 [w_sat,w_sat_lab] = plotvector(R_B_I(:,:,1)'*w_B_BI(:,1), R(:,1,1),'r','\omega',0.5);
 [B_sat,B_sat_lab] = plotvector(R_B_I(:,:,1)'*B_B_m(:,1), R(:,1,1),'m','B_m',0.5);
 [S_sat,S_sat_lab] = plotvector(R_B_I(:,:,1)'*S_B_hat(:,1), R(:,1,1),color('orange'),'S_m',0.5);
+
+% Sun Sensor Frame
+[Z_ss1,Z_ss1_lab] = plotvector(R_B_I(:,:,1)'*R_S1_B'*[0 ;0 ;1], R(:,1,1), color('orange'), 'Z_{ss1}',0.5);
+[Z_ss2,Z_ss2_lab] = plotvector(R_B_I(:,:,1)'*R_S2_B'*[0 ;0 ;1], R(:,1,1), color('orange'), 'Z_{ss2}',0.5);
+[Z_ss3,Z_ss3_lab] = plotvector(R_B_I(:,:,1)'*R_S3_B'*[0 ;0 ;1], R(:,1,1), color('orange'), 'Z_{ss3}',0.5);
+[Z_ss4,Z_ss4_lab] = plotvector(R_B_I(:,:,1)'*R_S4_B'*[0 ;0 ;1], R(:,1,1), color('orange'), 'Z_{ss4}',0.5);
 
 % Orbital Frame
 [X_orb,X_orb_lab] = plotvector(R_O_I(:,:,1)'*[1 ;0 ;0], R(:,1,1), 'g', 'x_o',0.5);
@@ -517,7 +539,7 @@ plot3(Rx,Ry,Rz,'-.')
 
 % UPDATE SIMULATION PLOT
 
-for i=1:5:(length(tout)-1)
+for i=1:1:(length(tout)-1)
 
 % Update Satellite Position
 updateposition(R_sat, R(:,i));
@@ -557,6 +579,16 @@ updatevector(w_sat, R_B_I(:,:,i)'*w_B_BI(:,i),  R(:,1,i),0.5);
 updatevector(B_sat, R_B_I(:,:,i)'*B_B_m(:,i),  R(:,1,i),0.5);
 updatevector(S_sat, R_B_I(:,:,i)'*S_B_hat(:,i),  R(:,1,i),0.5);
 
+% Sun Sensor
+updatevector(Z_ss1, R_B_I(:,:,i)'*R_S1_B'*[0 ;0 ;1],  R(:,1,i),0.5);
+updatevector(Z_ss2, R_B_I(:,:,i)'*R_S2_B'*[0 ;0 ;1],  R(:,1,i),0.5);
+updatevector(Z_ss3, R_B_I(:,:,i)'*R_S3_B'*[0 ;0 ;1],  R(:,1,i),0.5);
+updatevector(Z_ss4, R_B_I(:,:,i)'*R_S4_B'*[0 ;0 ;1],  R(:,1,i),0.5);
+set(Z_ss1_lab,'Position',R_B_I(:,:,i)'*R_S1_B'*[0 ;0 ;0.5]+R(:,1,i));
+set(Z_ss2_lab,'Position',R_B_I(:,:,i)'*R_S2_B'*[0 ;0 ;0.5]+R(:,1,i));
+set(Z_ss3_lab,'Position',R_B_I(:,:,i)'*R_S3_B'*[0 ;0 ;0.5]+R(:,1,i));
+set(Z_ss4_lab,'Position',R_B_I(:,:,i)'*R_S4_B'*[0 ;0 ;0.5]+R(:,1,i));
+
 set(X_sat_lab,'Position',R_B_I(:,:,i)'*0.5*[1 ;0 ;0]+R(:,1,i));
 set(Y_sat_lab,'Position',R_B_I(:,:,i)'*0.5*[0 ;1 ;0]+R(:,1,i));
 set(Z_sat_lab,'Position',R_B_I(:,:,i)'*0.5*[0 ;0 ;1]+R(:,1,i));
@@ -576,7 +608,7 @@ updateposition(R_target, R_tgt(:,i));
 set(R_target_lab,'Position',R_tgt(:,i));
 
 
-% Update Satellite Body Frame
+% Update Magnetic Frame
 updatevector(B_mag, B_I(:,i),  R(:,1,i));
 
 % Update Eclipse

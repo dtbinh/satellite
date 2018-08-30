@@ -1,7 +1,7 @@
-function [plot,label]= plotvector(V, R, color, name, factor)
+function [plot,label]= plotvector(V, R, color, name, factor,linestyle)
 % Default Setting
 if ~exist('color','var')
-    color = [1 1 1];
+    color = 'k';
 end
 
 if ~exist('name','var')
@@ -12,6 +12,9 @@ if ~exist('factor','var')
     factor = 1.0;
 end
 
+if ~exist('linestyle','var')
+    linestyle = '-';
+end
 
 
 % Normalize Vector
@@ -23,7 +26,7 @@ if exist('name','var')
 end
 
 % Plot
-plot = line([V(1)+R(1) R(1)],[V(2)+R(2) R(2)],[V(3)+R(3) R(3)],'Color',color);
+plot = line([V(1)+R(1) R(1)],[V(2)+R(2) R(2)],[V(3)+R(3) R(3)],'Color',color,'LineStyle',linestyle);
 hold on;
         
 end

@@ -10,9 +10,9 @@ set(gca,'CameraViewAngle',zoom);  % Set Zoom of Graph
 axis(3.5*[-1 1 -1 1 -1 1]);    % Set Limit of Axis 
 
 % Inertial Frame
-X_eci = plotvector([1 ;0 ;0], [0 0 0], 'k', 'X_e_c_i');
-Y_eci = plotvector([0 ;1 ;0], [0 0 0], 'k', 'Y_e_c_i');
-Z_eci = plotvector([0 ;0 ;1], [0 0 0], 'k', 'Z_e_c_i');
+X_eci = plotvector([1 ;0 ;0], [0 0 0],'k', 'X_e_c_i',1.2,':');
+Y_eci = plotvector([0 ;1 ;0], [0 0 0],'k', 'Y_e_c_i',1.2,':');
+Z_eci = plotvector([0 ;0 ;1], [0 0 0],'k', 'Z_e_c_i',1.2,':');
 hold on;
 
 % Create Sphere
