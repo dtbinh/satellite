@@ -12,21 +12,21 @@ dt  = 0.5;              % [sec] Model speed (0.5 for normal, 30 for orbit)
 
 %% TORQUE TOGGLE SWITCH
 
-Tgg_toggle      = 1; % Toggle Torque Gravity Gradient 
-Taero_toggle    = 1; % Toggle Torque Aerodynamic
-Tsolar_toggle   = 1; % Toggle Torque Solar
-Tnoise_toggle   = 1; % Toggle Torque Noise
+Tgg_toggle      = 1;    % Toggle Torque Gravity Gradient 
+Taero_toggle    = 1;    % Toggle Torque Aerodynamic
+Tsolar_toggle   = 1;    % Toggle Torque Solar
+Tnoise_toggle   = 1;    % Toggle Torque Noise
 sigTorq         = 5e-8;
 
-Tcontrol_toggle = 1; % Toggle Torque Control
+Tcontrol_toggle = 1;    % Toggle Torque Control
 
 %% TIME
 % UTC Time - Universal Time
-UTC_sim   = datetime(2000,6,21,6,0,0);                                       % [time] UTC Time
-UTC_start = datetime(2000,3,21,6,0,0);                                       % [time] UTC Time
-UTC_end   = datetime(2000,3,21,7,0,0);                                       % [time] UTC Time
+UTC_sim   = datetime(2000,6,21,6,0,0);                                     % [time] UTC Time
+UTC_start = datetime(2000,3,21,6,0,0);                                     % [time] UTC Time
+UTC_end   = datetime(2000,3,21,7,0,0);                                     % [time] UTC Time
 
-tgt_dur = datenum(UTC_end - UTC_start)*24*60*60;
+tgt_dur = datenum(UTC_end - UTC_start)*24*60*60;                           
 
 JD_UTC  = jd(UTC_sim.Year,UTC_sim.Month,UTC_sim.Day,UTC_sim.Hour,UTC_sim.Minute,UTC_sim.Second);   % [day]
 T_UTC   = (JD_UTC -2451545.0 )/36525;                                      % [century]
@@ -47,7 +47,6 @@ CONST.solarday = 24.00000000;        % [hrs] Hours in a Solar Day
 
 
 %% CONSTANT PARAMETERS
-
 
 CONST.mu         = 398.6004118e12;          % [m^3/s^2] Earth's standard gravitational parameter
 CONST.mu_moon    = 4.902802953597e12;       % [m^3/s^2] Moon's standard gravitational parameter
@@ -96,12 +95,12 @@ Acoil = [0.08*0.18;
 Rcoil = [110;110;110];    % [Ohm] Resistance in Coil 
 i_max = [V_max/Rcoil(1);
          V_max/Rcoil(2);
-         V_max/Rcoil(3)]; % 
+         V_max/Rcoil(3)]; 
 
 % K Coil Matrix
-K_coil = [Ncoil(1)*Acoil(1)/Rcoil(1)   0        0        ;
-             0       Ncoil(2)*Acoil(2)/Rcoil(2) 0        ;
-             0       0        Ncoil(3)*Acoil(3)/Rcoil(3) ];
+K_coil = [Ncoil(1)*Acoil(1)/Rcoil(1)   0        0        ;     
+             0       Ncoil(2)*Acoil(2)/Rcoil(2) 0        ;    
+             0       0        Ncoil(3)*Acoil(3)/Rcoil(3) ];    
 
 CONST.Ncoil = Ncoil;    % [-]   Number of Coils
 CONST.Acoil = Acoil;    % [m^2] Area of Coil
@@ -175,12 +174,9 @@ w_B_BI_0 = w_B_BO_0 + w_B_OI_0;   % [rad] Body Frame Angular Rate relative to In
 %% SENSORS FLAG
 mflag(1) = 1; % Star Tracker 1
 mflag(2) = 1; % Star Tracker 2
-mflag(3) = 1; % Sun Sensor 1
-mflag(4) = 1; % Sun Sensor 2
-mflag(5) = 1; % Sun Sensor 3
-mflag(6) = 1; % Sun Sensor 4
-mflag(7) = 1; % Magnetometer
-mflag(8) = 1; % Gyroscope
+mflag(3) = 1; % Sun Sensor 
+mflag(4) = 1; % Magnetometer
+mflag(5) = 1; % Gyroscope
 
 CONST.mflag = mflag; % Set as CONST global variable
 
@@ -234,20 +230,23 @@ if dt_st < dt
 end
 
 %% SUN SENSOR
-SSaxis   = [1; 1; 1; 1];               % [axis] Sun Sensor rotation axis 1 = x, 2 = y, 3 = z
-SSangles = [90;-90; 0; 180]*pi/180;  % [rad] Sun Sensors fram angles              
-R_S1_B   = dcm(SSaxis(1),SSangles(1)); % [-] Rotation Matrix from Body Frame to Sun Sensor 1 Frame 
-R_S2_B   = dcm(SSaxis(2),SSangles(2)); % [-] Rotation Matrix from Body Frame to Sun Sensor 2 Frame 
-R_S3_B   = dcm(SSaxis(3),SSangles(3)); % [-] Rotation Matrix from Body Frame to Sun Sensor 3 Frame 
-R_S4_B   = dcm(SSaxis(4),SSangles(4)); % [-] Rotation Matrix from Body Frame to Sun Sensor 4 Frame 
+SSaxis   = [1; 1; 1; 1; 2 ;2];             % [axis] Sun Sensor rotation axis 1 = x, 2 = y, 3 = z
+SSangles = [90;-90; 0; 180; -90; 90]*pi/180;  % [rad] Sun Sensors fram angles 
+SSnum    = length(SSaxis);           % [ ] Number of Sun Sensors
+
+R_S_B    = zeros(3,3,SSnum);
+for i = 1:1:SSnum
+R_S_B(:,:,i)   = dcm(SSaxis(i),SSangles(i)); % [-] Rotation Matrix from Body Frame to Sun Sensor Frame 
+end
 
 sig_ss = 0.01*pi/180; % [rad] Standard Deviation
-dt_ss = dt;          % [sec] Sampling Time of Sun Sensors
+dt_ss = dt;           % [sec] Sampling Time of Sun Sensors
 
-CONST.FOV_ss      = 100*pi/180;  % [rad] Field of View of Sun Sensors
-CONST.R_S1_B   = R_S1_B;         % [-] Rotation Matrix from Body Frame to Sun Sensor 1 Frame (Z-axis of sun sensor aligned with X-axis)
-CONST.SSaxis   = SSaxis;        % [axis] Sun Sensor rotation axis 1 = x, 2 = y, 3 = z
-CONST.SSangles = SSangles;      % [deg]  Sun Sensors fram angles
+CONST.FOV_ss   = 100*pi/180;   % [rad] Field of View of Sun Sensors
+CONST.R_S_B    = R_S_B;        % [-] Rotation Matrix from Body Frame to Sun Sensor 1 Frame (Z-axis of sun sensor aligned with X-axis)
+CONST.SSaxis   = SSaxis;       % [axis] Sun Sensor rotation axis 1 = x, 2 = y, 3 = z
+CONST.SSangles = SSangles;     % [deg]  Sun Sensors fram angles
+CONST.SSnum    = SSnum;        % [ ] Number of Sun Sensors
 
 %% MAGNETOMETER
 sig_mg   = 1.25e-7;                        % [T] Standard Deviation
@@ -258,13 +257,13 @@ Umg      = eye(3) + Gmg;
 
 dt_mg    = dt;   % [sec] Sampling Time of Magnetometer                                       
 
+CONST.sig_mg = sig_mg;
+CONST.Umg    = Umg;
+
 %% TEMPERATURE SENSOR
 sigTemp = 0.002;        % [C] Sigma of Temperature Sensor
 varTemp = sigTemp^2;    % [C^2] Variance of Temperature Sensor
 dt_ts   = dt;           % [sec] Sampling Time of Temperature Sensor
-
-            
-
 
 CONST.dt     = dt;               % [sec] (20 Hz) Model speed
 CONST.dt_ekf = dt;               % [sec] (20 Hz) EKF speed
@@ -275,7 +274,7 @@ CONST.sig_u  = sqrt(Var_RRW);    % [rad/s^(3/2)] sigma of process noise - bias s
 CONST.sig_w  = sqrt(VarW);       % [rad/C/s^(1/2)] Standard Deviation Measured
 CONST.sig_st = sig_st;            % [rad] Star Tracker 
 CONST.sig_ss = sig_ss;            % [rad] Sun Sensor 
-CONST.sig_mg = sig_mg;           % [tesla] magnetometer 
+
 CONST.varST_x = varST_x;
 CONST.varST_y = varST_y;
 CONST.varST_z = varST_z;
@@ -290,19 +289,19 @@ FLTR.wk   = [0;0;0];
 
 
 % EKF Initial Error Covariance
+FLTR.dbekf = 0;
 FLTR.ekf = 0;
 sig_n = sqrt(sig_st(1)^2  +  sig_ss^2  + sig_mg^2);
-FLTR.dbekf = 0;
 FLTR.Pk_ekf = dt^(1/4)*sig_n^(1/2)*(CONST.sig_v^2  +  2*CONST.sig_u*CONST.sig_v*dt^(1/2))^(1/4)*eye(12); 
 
             
 % UKF Initial Error Covariance
+FLTR.dbukf = 0;
 FLTR.lamda  = 1;
 FLTR.alpha  = 1;
 FLTR.Pk_ukf = [(1)^2*eye(3)      zeros(3); 
                 zeros(3)  (3*pi/180)^2*eye(3)];
 
-            
 % SKF
 FLTR.dbskf = 0;
 FLTR.Pk_skf   = dt^(1/4)*sig_n^(1/2)*(CONST.sig_v^2  +  2*CONST.sig_u*CONST.sig_v*dt^(1/2))^(1/4)*eye(12);
@@ -359,7 +358,7 @@ CTRL_SM.type = 'bst_mod';
 % Sun Pointing Controller
 CTRL_SP.K_p = 1e-03;                       % [ ] Proportional Gain
 CTRL_SP.K_v = 1e-02;                       % [ ] Damping Gain
-CTRL_SP.S_B_tgt = vnorm([1;0;0]);          % [-] Desired sun vector in Body Frame, should be optimal sun vector
+CTRL_SP.S_B_tgt = vnorm([0;0;1]);          % [-] Desired sun vector in Body Frame, should be optimal sun vector
 CTRL_SP.w_B_tgt = 0.05*CTRL_SP.S_B_tgt;    % [-] Desired Angular Velocity
 CTRL_SP.type    = 'noangmom';
 
@@ -395,9 +394,7 @@ CTRL_PT2_MODE = 3;   % Pointing mode  : REF/SLD/SUN/TA/SC/IDLE
 CONST.model = 'satellite_adcs_model';
 tdur = P/8;            
 sim('satellite_adcs_model',tdur);
-sig_ss
-sunstd1 = [std(sun1(1,:));std(sun1(2,:));std(sun1(3,:))]
-sunstd2 = [std(sun2(1,:));std(sun2(2,:));std(sun2(3,:))]
+
 
 %% POST PROCESSING
 R     = R/CONST.Re;     % Position Vector of satellite (Normalized)
@@ -492,14 +489,12 @@ createSimulation([0 0 1 1],2)
 [Z_sat,Z_sat_lab] = plotvector(R_B_I(:,:,1)'*[0 ;0 ;1], R(:,1,1), 'b', 'z_b',0.5);
 [w_sat,w_sat_lab] = plotvector(R_B_I(:,:,1)'*w_B_BI(:,1), R(:,1,1),'r','\omega',0.5);
 [B_sat,B_sat_lab] = plotvector(R_B_I(:,:,1)'*B_B_m(:,1), R(:,1,1),'m','B_m',0.5);
-[S_sat,S_sat_lab] = plotvector(R_B_I(:,:,1)'*S_B_hat(:,1), R(:,1,1),color('orange'),'S_m',0.5);
+[S_sat,S_sat_lab] = plotvector(-R_B_I(:,:,1)'*S_B_hat(:,1), R(:,1,1),color('orange'),'S_m',0.5);
 
 % Sun Sensor Frame
-[Z_ss1,Z_ss1_lab] = plotvector(R_B_I(:,:,1)'*R_S1_B'*[0 ;0 ;1], R(:,1,1), color('orange'), 'Z_{ss1}',0.5);
-[Z_ss2,Z_ss2_lab] = plotvector(R_B_I(:,:,1)'*R_S2_B'*[0 ;0 ;1], R(:,1,1), color('orange'), 'Z_{ss2}',0.5);
-[Z_ss3,Z_ss3_lab] = plotvector(R_B_I(:,:,1)'*R_S3_B'*[0 ;0 ;1], R(:,1,1), color('orange'), 'Z_{ss3}',0.5);
-[Z_ss4,Z_ss4_lab] = plotvector(R_B_I(:,:,1)'*R_S4_B'*[0 ;0 ;1], R(:,1,1), color('orange'), 'Z_{ss4}',0.5);
-
+for j = 1:SSnum
+[Z_ss(j),Z_ss_lab(j)] = plotvector(R_B_I(:,:,1)'*R_S_B(:,:,j)'*[0 ;0 ;1], R(:,1,1), color('orange'), strcat('SS',num2str(j)),0.5);
+end
 % Orbital Frame
 [X_orb,X_orb_lab] = plotvector(R_O_I(:,:,1)'*[1 ;0 ;0], R(:,1,1), 'g', 'x_o',0.5);
 [Y_orb,Y_orb_lab] = plotvector(R_O_I(:,:,1)'*[0 ;1 ;0], R(:,1,1), 'g', 'y_o',0.5);
@@ -577,24 +572,25 @@ updatevector(Y_sat, R_B_I(:,:,i)'*[0 ;1 ;0],  R(:,1,i),0.5);
 updatevector(Z_sat, R_B_I(:,:,i)'*[0 ;0 ;1],  R(:,1,i),0.5);
 updatevector(w_sat, R_B_I(:,:,i)'*w_B_BI(:,i),  R(:,1,i),0.5);
 updatevector(B_sat, R_B_I(:,:,i)'*B_B_m(:,i),  R(:,1,i),0.5);
-updatevector(S_sat, R_B_I(:,:,i)'*S_B_hat(:,i),  R(:,1,i),0.5);
+updatevector(S_sat, -R_B_I(:,:,i)'*S_B_hat(:,i),  R(:,1,i),0.5);
 
-% Sun Sensor
-updatevector(Z_ss1, R_B_I(:,:,i)'*R_S1_B'*[0 ;0 ;1],  R(:,1,i),0.5);
-updatevector(Z_ss2, R_B_I(:,:,i)'*R_S2_B'*[0 ;0 ;1],  R(:,1,i),0.5);
-updatevector(Z_ss3, R_B_I(:,:,i)'*R_S3_B'*[0 ;0 ;1],  R(:,1,i),0.5);
-updatevector(Z_ss4, R_B_I(:,:,i)'*R_S4_B'*[0 ;0 ;1],  R(:,1,i),0.5);
-set(Z_ss1_lab,'Position',R_B_I(:,:,i)'*R_S1_B'*[0 ;0 ;0.5]+R(:,1,i));
-set(Z_ss2_lab,'Position',R_B_I(:,:,i)'*R_S2_B'*[0 ;0 ;0.5]+R(:,1,i));
-set(Z_ss3_lab,'Position',R_B_I(:,:,i)'*R_S3_B'*[0 ;0 ;0.5]+R(:,1,i));
-set(Z_ss4_lab,'Position',R_B_I(:,:,i)'*R_S4_B'*[0 ;0 ;0.5]+R(:,1,i));
 
 set(X_sat_lab,'Position',R_B_I(:,:,i)'*0.5*[1 ;0 ;0]+R(:,1,i));
 set(Y_sat_lab,'Position',R_B_I(:,:,i)'*0.5*[0 ;1 ;0]+R(:,1,i));
 set(Z_sat_lab,'Position',R_B_I(:,:,i)'*0.5*[0 ;0 ;1]+R(:,1,i));
 set(w_sat_lab,'Position',R_B_I(:,:,i)'*0.5*vnorm(w_B_BI(:,i))+R(:,1,i));
 set(B_sat_lab,'Position',R_B_I(:,:,i)'*0.5*vnorm(B_B_m(:,i))+R(:,1,i));
-set(S_sat_lab,'Position',R_B_I(:,:,i)'*0.5*vnorm(S_B_hat(:,i))+R(:,1,i));
+set(S_sat_lab,'Position',-R_B_I(:,:,i)'*0.5*vnorm(S_B_hat(:,i))+R(:,1,i));
+
+
+% Sun Sensor
+for j = 1:SSnum
+updatevector(Z_ss(j), R_B_I(:,:,i)'*R_S_B(:,:,j)'*[0 ;0 ;1],  R(:,1,i),0.5);
+set(Z_ss_lab(j),'Position',R_B_I(:,:,i)'*R_S_B(:,:,j)'*[0 ;0 ;0.5]+R(:,1,i));
+end
+
+
+
 
 updatevector(X_tgt, R_B_I_tgt(:,:,i)'*[1 ;0 ;0],  R(:,1,i),0.75);
 updatevector(Y_tgt, R_B_I_tgt(:,:,i)'*[0 ;1 ;0],  R(:,1,i),2.50);

@@ -5,21 +5,21 @@ w_B_BI_m   = input(1:3,1);   % Measured Angular Velocity (Gyro)
 q_B_I_m(:,1) = input(4:7,1);
 q_B_I_m(:,2) = input(8:11,1);
 
-S_S_m(:,1)   = input(12:14,1); % Measured Sun vector in Sensor Frame
-S_S_m(:,2)   = input(15:17,1); % Measured Sun vector in Sensor Frame
-S_S_m(:,3)   = input(18:20,1); % Measured Sun vector in Sensor Frame
-S_S_m(:,4)   = input(21:23,1); % Measured Sun vector in Sensor Frame
+S_B_m   = input(12:14,1); % Measured Sun vector in Sensor Frame
+B_B_m   = input(15:17,1);   % Measured Magnetic Field in Body Frame
+S_I     = input(18:20,1);   % S Sun Vector in Inertial Frame since we have data of the Sun
+B_I     = input(21:23,1);  % B Magnetic Vector in Inertial Frame since we have data of the Magnetic Field
+B_B     = input(24:26,1);  % Measured Temperature, Referenced Temperaure, N/A
+S_B     = input(27:29,1);  % Control Torque Desired
+s_flag  = input(30:32,1);  % Sensor Flag [Gyro;ST1;ST2]
 
-B_B_m   = input(24:26,1);   % Measured Magnetic Field in Body Frame
-S_I     = input(27:29,1);  % Sun Vector in Inertial Frame since we have data of the Sun
-B_I     = input(30:32,1);  % B Magnetic Vector in Inertial Frame since we have data of the Magnetic Field
-B_B     = input(33:35,1);  % B magnetic Vector in Body Frame
-S_B     = input(36:38,1);  % Sun Vector in Body Frame
-s_flag  = input(39:41,1);  % Sensor Flag [Gyro;ST1;ST2]
-tau     = input(42:44,1);  % Torque Input
 
 %% PARAMETERS
 global CONST FLTR
+t = get_param(CONST.model,'SimulationTime');
+if (FLTR.dbukf) 
+        fprintf('\n\n------------------Time %.4f------------------',t);
+end
 
 dt      = CONST.dt;         % Sampling Time of Kalman Filter
 
@@ -37,6 +37,9 @@ persistent qk biask wk Pxx_k coefk;  % Variables that are retained in memory bet
 
 %% INITIAL VALUES
 if isempty(qk)
+    if (FLTR.dbukf) 
+        fprintf('\nInitialisation');
+    end
     
     % Initial Internal Loop
     qk    = FLTR.qk;          % Initial Quaternion (xyzw) for internal variable
@@ -69,6 +72,10 @@ a     = FLTR.alpha;
 f = 2*(a+1);
 
 %% SIGMA POINTS
+if (FLTR.dbukf) 
+    fprintf('\nSigma Points');
+end
+
 Qbar_k = dt/2*[(sig_v^2-1/6*sig_u^2*dt^2)*eye(3)      zeros(3)      ;
                         zeros(3)                   (sig_u^2)*eye(3) ];
  
@@ -154,9 +161,14 @@ for i = 1:1:NSig
 	Pxy_k1p_mg = Pxy_k1p_mg + xdif*ydif_mg'*W(i,1); % Covariance of states
 end
 
+%% GAIN AND UPDATE
+if (FLTR.dbukf) 
+    fprintf('\nGain and Update');
+end
+
 d_x_k1p = [0;0;0;0;0;0];
     
-% Gain and Update
+
 H = [eye(3) zeros(3)];
 
 K      = Pxy_k1p/Pyy_k1p;            % Gain Update depends on covariance of meas/state and variance of state
@@ -189,6 +201,10 @@ Pxx_k = Pxx_k1;
 wk    = wk1;
                    
 %% OUTPUT
+if (FLTR.dbukf) 
+    fprintf('\nOutput');
+end
+
 w_B_BI_f = wk;                 % Angular Velocity of Body wrt to Inertial Frame 
 q_B_I_f  = qk;                 % Quaternion (xyzw) from Inertia to Body
 R_B_I_f  = q2dcm(q_B_I_f);     % Transformation Matrix from Inertia to Body

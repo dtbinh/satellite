@@ -4,17 +4,13 @@ w_B_BI_m = input(1:3,1);   % Measured Angular Velocity (Gyro)
 q_B_I_m(:,1)  = input(4:7,1);
 q_B_I_m(:,2)  = input(8:11,1);
 
-S_S_m(:,1)    = input(12:14,1); % Measured Sun vector in Sensor Frame
-S_S_m(:,2)    = input(15:17,1); % Measured Sun vector in Sensor Frame
-S_S_m(:,3)    = input(18:20,1); % Measured Sun vector in Sensor Frame
-S_S_m(:,4)    = input(21:23,1); % Measured Sun vector in Sensor Frame
-
-B_B_m    = input(24:26,1);   % Measured Magnetic Field in Body Frame
-S_I      = input(27:29,1);   % S Sun Vector in Inertial Frame since we have data of the Sun
-B_I      = input(30:32,1);  % B Magnetic Vector in Inertial Frame since we have data of the Magnetic Field
-T_m      = input(33:35,1);  % Measured Temperature, Referenced Temperaure, N/A
-T_c      = input(36:38,1);  % Control Torque Desired
-s_flag   = input(39:41,1);  % Sensor Flag [Gyro;ST1;ST2]
+S_B_m    = input(12:14,1);  % Measured Sun vector in Sensor Frame
+B_B_m    = input(15:17,1);   % Measured Magnetic Field in Body Frame
+S_I      = input(18:20,1);   % S Sun Vector in Inertial Frame since we have data of the Sun
+B_I      = input(21:23,1);  % B Magnetic Vector in Inertial Frame since we have data of the Magnetic Field
+T_m      = input(24:26,1);  % Measured Temperature, Referenced Temperaure, N/A
+T_c      = input(27:29,1);  % Control Torque Desired
+s_flag   = input(30:32,1);  % Sensor Flag [Gyro;ST1;ST2]
 
 e_B_I_m  = q_B_I_m(1:3,:);% Measured Quaternion Euler Vector Only (Star Tracker 1 & 2)
 
@@ -45,7 +41,7 @@ uk      = T_c;              % Torque Input/ Control Torque
 
 mflag(1) = s_flag(2)*mflag(1);  % ST1 Flag
 mflag(2) = s_flag(3)*mflag(2);  % ST2 Flag
-mflag(8) = s_flag(1)*mflag(8);  % Gyro Flag
+mflag(5) = s_flag(1)*mflag(5);  % Gyro Flag
 
 
 %% LOOP VALUES
@@ -79,17 +75,9 @@ if isempty(qk)
 end
 
 MaxST  = 2;  % Index of last Star Tracker
-MaxSS  = 6;  % Index of last Sun Sensor
-MaxMag = 7;  % Index of last Magnetometer
-MaxGg  = 8;  % Index of last Gyro
-SSaxis   = CONST.SSaxis;   % [axis] Sun Sensor rotation axis 1 = x, 2 = y, 3 = z
-SSangles = CONST.SSangles; % [rad] Sun Sensors fram angles
-
-for i =1:length(S_S_m);
-R_S_B = dcm(SSaxis(i),SSangles(i));
-S_B_m(:,i)    = R_S_B'*S_S_m(:,i);
-end
-
+MaxSS  = 3;  % Index of last Sun Sensor
+MaxMag = 4;  % Index of last Magnetometer
+MaxGg  = 5;  % Index of last Gyro
 
 %% MEASUREMENT
 if (FLTR.dbekf) 
@@ -157,7 +145,7 @@ for i = 1:length(mflag)
             
             % Update
             Pk  = (eye(12) - K*H)*Pk;                 
-            res = S_B_m(:,i-MaxST) - R_B_I*S_I;  % Sensor Frame
+            res = S_B_m - R_B_I*S_I;  % Sensor Frame
             delX = delX + K*(res-H*delX);              
 
      elseif( (mflag(i) == 1) && (i <= MaxMag) ) 
@@ -227,7 +215,7 @@ wk    = wk  + dwk;
 
 % Update of Gyro Measurement
 
-if (mflag(8)) 
+if (mflag(5)) 
     wkm   = w_B_BI_m  -  biask ; %  Estimated Angular Velocity with Noise
 end
 

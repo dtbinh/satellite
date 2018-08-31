@@ -16,27 +16,37 @@ plotvector(R_B_I'*[0;0;1],origin,color('orange'),'z_{sat}')
 u1 = vnorm([2;5;6]);
 u2 = vnorm([-2;-1;7]);
 
-v10 = dot(u1,u2)
-vi1p0_1 = u1;
-vi1p0_2 = u2 - v10 * u1            % Perpendicular to u1 in direction close to u2
-vi1p0_2 = vnorm(vi1p0_2)
-
 plotvector(u1,origin,'r','u1');
 plotvector(u2,origin,'b','u2');
 
-plotvector(vi1p0_2,origin,'r','vi1p0_2');
-
-% Body Measured
+% Body Measured (Perfect)
 b1 = R_B_I*u1;
 b2 = R_B_I*u2;
 
-v10b = dot(b1,b2)
-vb1p0_1 = b1;
-vb1p0_2 = b2 - v10b * b1            % Perpendicular to u1 in direction close to u2
-vb1p0_2 = vnorm(vb1p0_2)
+
 
 plotvector(R_B_I'*b1,origin,'r','b1',1.2,'--');
 plotvector(R_B_I'*b2,origin,'r','b2',1.2,'--');
 
+
+% bst_attx_det_make_from_2vec
+v10 = dot(u1,u2);
+vi1p0_1 = u1;   
+vi1p0_2 = u2 - v10 * u1;            % Perpendicular to u1 in direction close to u2
+vi1p0_2 = vnorm(vi1p0_2);
+
+plotvector(vi1p0_1,origin,'r','vi1p0_1');
+plotvector(vi1p0_2,origin,'r','vi1p0_2');
+
+v10b = dot(b1,b2);
+vb1p0_1 = b1;
+vb1p0_2 = b2 - v10b * b1 ;           % Perpendicular to u1 in direction close to u2
+vb1p0_2 = vnorm(vb1p0_2);
+
+plotvector(R_B_I'*vb1p0_1,origin,'r','vb1p0_1');
+plotvector(R_B_I'*vb1p0_2,origin,'r','vb1p0_2');
+
 % Quest
+    
+
 

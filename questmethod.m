@@ -42,5 +42,14 @@ angle_error = acos(q_error(4))*2/pi*180;
 
 fprintf('\n Quest:\t\t %8.4f | %.4f  %.4f  %.4f  %.4f',angle_error,q_error);
 
+%% QUEST 2 (BST
+[Rbi_quest,q_quest,J_quest] = quest2(v1b,v2b,v1i,v2i);
+
+Rerr_quest = Rbi_quest'*Rbi_exact;
+q_error = dcm2q(Rerr_quest,'tsf','xyzw');
+angle_error = acos(q_error(4))*2/pi*180;
+
+fprintf('\n Quest2:\t %8.4f | %.4f  %.4f  %.4f  %.4f',angle_error,q_error);
+
 
 fprintf('\n\n');
