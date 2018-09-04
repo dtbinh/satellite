@@ -1,16 +1,16 @@
-function output = extended_kalman_filter(input)
+function output = filter_kalman_extended(input)
 w_B_BI_m = input(1:3,1);   % Measured Angular Velocity (Gyro)
 
 q_B_I_m(:,1)  = input(4:7,1);
 q_B_I_m(:,2)  = input(8:11,1);
-
-S_B_m    = input(12:14,1);  % Measured Sun vector in Sensor Frame
-B_B_m    = input(15:17,1);   % Measured Magnetic Field in Body Frame
-S_I      = input(18:20,1);   % S Sun Vector in Inertial Frame since we have data of the Sun
-B_I      = input(21:23,1);  % B Magnetic Vector in Inertial Frame since we have data of the Magnetic Field
-T_m      = input(24:26,1);  % Measured Temperature, Referenced Temperaure, N/A
-T_c      = input(27:29,1);  % Control Torque Desired
-s_flag   = input(30:32,1);  % Sensor Flag [Gyro;ST1;ST2]
+q_B_I_m(:,3)  = input(12:15,1);
+S_B_m    = input(16:18,1);  % Measured Sun vector in Sensor Frame
+B_B_m    = input(19:21,1);   % Measured Magnetic Field in Body Frame
+S_I      = input(22:24,1);   % S Sun Vector in Inertial Frame since we have data of the Sun
+B_I      = input(25:27,1);  % B Magnetic Vector in Inertial Frame since we have data of the Magnetic Field
+T_m      = input(28:30,1);  % Measured Temperature, Referenced Temperaure, N/A
+T_c      = input(31:33,1);  % Control Torque Desired
+s_flag   = input(34:36,1);  % Sensor Flag [Gyro;ST1;ST2]
 
 e_B_I_m  = q_B_I_m(1:3,:);% Measured Quaternion Euler Vector Only (Star Tracker 1 & 2)
 
@@ -30,9 +30,10 @@ sig_u   = CONST.sig_u;      % Noise Standard Deviation Bias State
 sig_w   = 1e-5   ;          % Noise Standard Deviation Angular Velocity State
 
 sig_st  = CONST.sig_st; 	% Star Tracker Standard Deviation (average)
+sig_sb  = CONST.sig_sb; 	% SB
 sig_ss  = CONST.sig_ss;	    % Sun Sensor Standard Deviation
 sig_mg  = CONST.sig_mg;     % Magnetometer Standard Deviation
-mflag   = CONST.mflag;      % Sensors Flag (Star Tracker, SS1, SS2, Mag)
+mflag   = FLTR.mflag;      % Sensors Flag (Star Tracker, SS1, SS2, Mag)
 I       = CONST.I;          % Spacecraft Moments of Inertia
 
 
@@ -75,9 +76,10 @@ if isempty(qk)
 end
 
 MaxST  = 2;  % Index of last Star Tracker
-MaxSS  = 3;  % Index of last Sun Sensor
-MaxMag = 4;  % Index of last Magnetometer
-MaxGg  = 5;  % Index of last Gyro
+MaxSB  = 3;  % Index of last SB
+MaxSS  = 4;  % Index of last Sun Sensor
+MaxMag = 5;  % Index of last Magnetometer
+MaxGg  = 6;  % Index of last Gyro
 
 %% MEASUREMENT
 if (FLTR.dbekf) 
@@ -93,7 +95,7 @@ for i = 1:length(mflag)
         fprintf('\nMeasurements %d',i);
     end
     
-     if( (1)&&(mflag(i) == 1) && (i <= MaxST) )
+     if( (mflag(i) == 1) && (i <= MaxST) )
          
             if (FLTR.dbekf) 
                 fprintf('\nStar Tracker Measurements');
@@ -109,25 +111,28 @@ for i = 1:length(mflag)
             % Update
             Pk   = (eye(12) - K*H)*Pk;          
             res  = e_B_I_m(1:3,i) - qk(1:3,1); % quaternion
+%           res  = 2*Xi'*q_B_I_m(:,i);        % [3x1]
             delX = delX + K*(res-H*delX);       % delta angle 
             
-     elseif ( (0)&&(mflag(i) == 1) && (i <= MaxST) )
+     elseif ( (mflag(i) == 1) && (i <= MaxSB) )
             if (FLTR.dbekf) 
-                fprintf('\nStar Tracker Measurements (BST)');
+                fprintf('\nSB Measurements ');
             end
 
             % Star Tracker Measurement 
-            Xi = q2xi(qk);                     
-            H  = [eye(3,3) zeros(3,3) zeros(3,3) zeros(3,3) ]; 
-            R  = sig_st(i)^2*eye(3);             
+            Xi = q2xi(qk);
+                H  = [eye(3) zeros(3,3) zeros(3,3) zeros(3,3) ];
+            R  = sig_sb^2*eye(3);            
             
             % Gain
             K = Pk*H'/(H*Pk*H' + R);        
             
             % Update
-            Pk   = (eye(12) - K*H)*Pk;           
-            res  = 2*Xi'*q_B_I_m(:,i);        % [3x1]
+            Pk   = (eye(12) - K*H)*Pk;
+            res  = 2*Xi'*q_B_I_m(:,i);        
+            
             delX = delX + K*(res-H*delX);       % delta angle 
+            
 
      elseif( (mflag(i) == 1) && (i <= MaxSS) ) 
          
@@ -201,7 +206,7 @@ if (FLTR.dbekf)
 end
 % Update of Quaternion(xyzw)
 qk    = qk  +  1/2*q2xi(qk)*delX(1:3,:);  
-qk    = qnorm(qk);               
+qk    = qnorm(qk);              
 
 % Update of Bias  
 biask = biask  +  delX(4:6,:);          
@@ -214,10 +219,8 @@ dwk   = delX(10:12,:);
 wk    = wk  + dwk;
 
 % Update of Gyro Measurement
-
-if (mflag(5)) 
     wkm   = w_B_BI_m  -  biask ; %  Estimated Angular Velocity with Noise
-end
+
 
 %% ERROR COVARIANCE PROPAGATION
 if (FLTR.dbekf) 

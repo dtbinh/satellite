@@ -18,11 +18,12 @@
 %
 % Reference
 %   chris hall http://www.dept.aoe.vt.edu/~cdhall/courses/aoe4140/
-%
+%   
 % ----------------------------------------------------------------------
 function [R_qmd,q_qmd,J_qmd] = qmethod(v1b,v2b, v1i, v2i)
-w1 = 1;
-w2 = 1;
+w1 = 1/2;
+w2 = 1/2;
+
 B = w1*(v1b*v1i')+w2*(v2b*v2i');
 S = B + B';
 Z = [B(2,3)-B(3,2);B(3,1)-B(1,3);B(1,2)-B(2,1)];
@@ -32,9 +33,9 @@ K = [S-sigma*eye(3)   Z  ;
           Z'        sigma];
       
 [Keig_vec,Keig_val] = eig(K);
-% Keigen_max = max(Keig_val);
+[Keigen_max,Keigen_max_index] = max(max(Keig_val));
 
-q = Keig_vec(:,4);
+q = Keig_vec(:,Keigen_max_index);
 eps = q(1:3);
 eta = q(4);
 

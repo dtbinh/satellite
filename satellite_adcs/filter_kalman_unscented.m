@@ -1,24 +1,23 @@
-function output = unscented_kalman_filter(input)
+function output = filter_kalman_unscented(input)
 %% INPUT
 w_B_BI_m   = input(1:3,1);   % Measured Angular Velocity (Gyro)
 
 q_B_I_m(:,1) = input(4:7,1);
 q_B_I_m(:,2) = input(8:11,1);
-
-S_B_m   = input(12:14,1); % Measured Sun vector in Sensor Frame
-B_B_m   = input(15:17,1);   % Measured Magnetic Field in Body Frame
-S_I     = input(18:20,1);   % S Sun Vector in Inertial Frame since we have data of the Sun
-B_I     = input(21:23,1);  % B Magnetic Vector in Inertial Frame since we have data of the Magnetic Field
-B_B     = input(24:26,1);  % Measured Temperature, Referenced Temperaure, N/A
-S_B     = input(27:29,1);  % Control Torque Desired
-s_flag  = input(30:32,1);  % Sensor Flag [Gyro;ST1;ST2]
-
+q_B_I_m(:,3)  = input(12:15,1);
+S_B_m    = input(16:18,1);  % Measured Sun vector in Sensor Frame
+B_B_m    = input(19:21,1);   % Measured Magnetic Field in Body Frame
+S_I      = input(22:24,1);   % S Sun Vector in Inertial Frame since we have data of the Sun
+B_I      = input(25:27,1);  % B Magnetic Vector in Inertial Frame since we have data of the Magnetic Field
+T_m      = input(28:30,1);  % Measured Temperature, Referenced Temperaure, N/A
+T_c      = input(31:33,1);  % Control Torque Desired
+s_flag   = input(34:36,1);  % Sensor Flag [Gyro;ST1;ST2]
 
 %% PARAMETERS
 global CONST FLTR
 t = get_param(CONST.model,'SimulationTime');
 if (FLTR.dbukf) 
-        fprintf('\n\n------------------Time %.4f------------------',t);
+        fprintf('\n\n---------------UKF Time %.4f------------------',t);
 end
 
 dt      = CONST.dt;         % Sampling Time of Kalman Filter
@@ -83,7 +82,7 @@ Qbar_k = dt/2*[(sig_v^2-1/6*sig_u^2*dt^2)*eye(3)      zeros(3)      ;
 x_k = [[0;0;0];biask];
 
 Dx   = size(x_k,1);   % Size of State 6
-Dy   = size(B_B,1); % Size of Measurement 3
+Dy   = size(B_B_m,1); % Size of Measurement 3
 NSig = 2*Dx+1 ;       % Size of Sigma Points 13
 
 % Current Time Step Allocation
@@ -173,7 +172,7 @@ H = [eye(3) zeros(3)];
 
 K      = Pxy_k1p/Pyy_k1p;            % Gain Update depends on covariance of meas/state and variance of state
 Pxx_k1 = Pxx_k1p - K*Pxy_k1p';       % Error Covariance Update 
-p_B_I_m = f*q_B_I_m(1:3,1)/(a+q_B_I_m(4,1)); % dp
+p_B_I_m = f*q_B_I_m(1:3,3)/(a+q_B_I_m(4,3)); % dp
 res   = p_B_I_m - y_k1p;
 d_x_k1p  = d_x_k1p + K*(res - H*d_x_k1p);             % dp           % [dp B] State Update
 

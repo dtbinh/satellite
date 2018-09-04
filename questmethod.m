@@ -1,6 +1,7 @@
 clear all
 close all
 clc
+format long
 %% VECTORS IN INERTIAL FRAME
 v1i = [ 0.2673; 0.5345; 0.8018]; % Normalized Vector 1 in Inertial Frame  
 v2i = [-0.3124; 0.9370; 0.1562]; % Normalized Vector 2 in Inertial Frame
@@ -24,7 +25,7 @@ Rerr_triad = Rbi_triad'*Rbi_exact;
 q_error = dcm2q(Rerr_triad,'tsf','xyzw');
 angle_error = acos(q_error(4))*2/pi*180;
 
-fprintf('\n Triad:\t\t %8.4f | %.4f  %.4f  %.4f  %.4f',angle_error,q_error);
+fprintf('\n Triad:\t\t %8.8f | %.8f  %.8f  %.8f  %.8f',angle_error,q_error);
 %% Q METHOD
 [Rbi_qmethod,q_qmethod,J_qmethod] = qmethod(v1b,v2b,v1i,v2i);
 
@@ -32,24 +33,32 @@ Rerr_qmethod = Rbi_qmethod'*Rbi_exact;
 q_error = dcm2q(Rerr_qmethod,'tsf','xyzw');
 angle_error = acos(q_error(4))*2/pi*180;
 
-fprintf('\n QMethod:\t %8.4f | %.4f  %.4f  %.4f  %.4f ',angle_error,q_error);
+fprintf('\n QMethod:\t %8.8f | %.8f  %.8f  %.8f  %.8f ',angle_error,q_error);
 %% QUEST
-[Rbi_quest,q_quest,J_quest] = quest(v1b,v2b,v1i,v2i);
+[Rbi_quest,q_quest,J_quest] = quest(v1b,v2b,v1i,v2i,'chris');
 
 Rerr_quest = Rbi_quest'*Rbi_exact;
 q_error = dcm2q(Rerr_quest,'tsf','xyzw');
 angle_error = acos(q_error(4))*2/pi*180;
 
-fprintf('\n Quest:\t\t %8.4f | %.4f  %.4f  %.4f  %.4f',angle_error,q_error);
+fprintf('\n Quest (Chris):\t %8.8f | %.8f  %.8f  %.8f  %.8f',angle_error,q_error);
 
-%% QUEST 2 (BST
-[Rbi_quest,q_quest,J_quest] = quest2(v1b,v2b,v1i,v2i);
-
-Rerr_quest = Rbi_quest'*Rbi_exact;
-q_error = dcm2q(Rerr_quest,'tsf','xyzw');
+%% QUEST 2 (BST)
+[Rbi_quest2,q_quest2,J_quest2] = quest(v1b,v2b,v1i,v2i,'buhl');
+Rerr_quest2 = Rbi_quest2'*Rbi_exact;
+q_error = dcm2q(Rerr_quest2,'tsf','xyzw');
 angle_error = acos(q_error(4))*2/pi*180;
 
-fprintf('\n Quest2:\t %8.4f | %.4f  %.4f  %.4f  %.4f',angle_error,q_error);
+fprintf('\n Quest (Buhl):\t %8.8f | %.8f  %.8f  %.8f  %.8f',angle_error,q_error);
+
+
+%% QUEST 2 (Crassidis)
+[Rbi_quest3,q_quest3,J_quest3] = quest(v1b,v2b,v1i,v2i,'crassidis');
+Rerr_quest3 = Rbi_quest3'*Rbi_exact;
+q_error = dcm2q(Rerr_quest3,'tsf','xyzw');
+angle_error = acos(q_error(4))*2/pi*180;
+
+fprintf('\n Quest (John):\t %8.8f | %.8f  %.8f  %.8f  %.8f',angle_error,q_error);
 
 
 fprintf('\n\n');

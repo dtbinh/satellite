@@ -167,18 +167,11 @@ w_O_OI_0 = [0;-w_O;0];         % [rad] Orbital Frame Angular Rate relative to In
 w_B_OI_0 = R_O_B_0'*w_O_OI_0;  % [rad] Orbital Frame Angular Rates relative to Inertial Frame in Body Frame
 
 % Body Frame Angular Rate
-w_B_BO_0 = dps2rps(0.05)*[randn(1,1);randn(1,1);randn(1,1)]; % [rad/s] Body Frame Angular Rates relative to Orbital Frame in Body Frame 
-w_B_BO_0 = dps2rps(0.05)*[1;1;1];
+w_B_BO_0 = dps2rps(0.5)*[randn(1,1);randn(1,1);randn(1,1)]; % [rad/s] Body Frame Angular Rates relative to Orbital Frame in Body Frame 
+w_B_BO_0 = dps2rps(0.5)*[1;1;1];
 w_B_BI_0 = w_B_BO_0 + w_B_OI_0;   % [rad] Body Frame Angular Rate relative to Inertial Frame in Body Frame
 
-%% SENSORS FLAG
-mflag(1) = 1; % Star Tracker 1
-mflag(2) = 1; % Star Tracker 2
-mflag(3) = 1; % Sun Sensor 
-mflag(4) = 1; % Magnetometer
-mflag(5) = 1; % Gyroscope
 
-CONST.mflag = mflag; % Set as CONST global variable
 
 %% GYRO SENSOR
 GYRO_Bias   = [1.5;1.2;-3.3]*deg2rad;       % [rad/s] Actual Offset at Reference Temperature
@@ -229,6 +222,9 @@ if dt_st < dt
     dt_st = dt;
 end
 
+%% SB
+sig_sb = 30/60/60*pi/180;
+
 %% SUN SENSOR
 SSaxis   = [1; 1; 1; 1; 2 ;2];             % [axis] Sun Sensor rotation axis 1 = x, 2 = y, 3 = z
 SSangles = [90;-90; 0; 180; -90; 90]*pi/180;  % [rad] Sun Sensors fram angles 
@@ -242,7 +238,7 @@ end
 sig_ss = 0.01*pi/180; % [rad] Standard Deviation
 dt_ss = dt;           % [sec] Sampling Time of Sun Sensors
 
-CONST.FOV_ss   = 100*pi/180;   % [rad] Field of View of Sun Sensors
+CONST.FOV_ss   = 180*pi/180;   % [rad] Field of View of Sun Sensors
 CONST.R_S_B    = R_S_B;        % [-] Rotation Matrix from Body Frame to Sun Sensor 1 Frame (Z-axis of sun sensor aligned with X-axis)
 CONST.SSaxis   = SSaxis;       % [axis] Sun Sensor rotation axis 1 = x, 2 = y, 3 = z
 CONST.SSangles = SSangles;     % [deg]  Sun Sensors fram angles
@@ -274,6 +270,7 @@ CONST.sig_u  = sqrt(Var_RRW);    % [rad/s^(3/2)] sigma of process noise - bias s
 CONST.sig_w  = sqrt(VarW);       % [rad/C/s^(1/2)] Standard Deviation Measured
 CONST.sig_st = sig_st;            % [rad] Star Tracker 
 CONST.sig_ss = sig_ss;            % [rad] Sun Sensor 
+CONST.sig_sb = sig_sb;            % [rad] SB 
 
 CONST.varST_x = varST_x;
 CONST.varST_y = varST_y;
@@ -282,15 +279,22 @@ CONST.varST_z = varST_z;
 %% KALMAN FILTER
 global FLTR
 
+FLTR.mflag(1) = 0; % Star Tracker 1
+FLTR.mflag(2) = 0; % Star Tracker 2
+FLTR.mflag(3) = 1; % SB
+FLTR.mflag(4) = 0; % Sun Sensor 
+FLTR.mflag(5) = 0; % Magnetometer
+FLTR.mflag(6) = 1; % Gyroscope
 
-FLTR.qk   = eul2q([pi/4 pi/6 pi/4]);
+
+FLTR.qk   = [0;0;0;1];
 FLTR.bk   = [0;0;0];
 FLTR.wk   = [0;0;0];
 
 
 % EKF Initial Error Covariance
 FLTR.dbekf = 0;
-FLTR.ekf = 0;
+FLTR.ekf = 2;
 sig_n = sqrt(sig_st(1)^2  +  sig_ss^2  + sig_mg^2);
 FLTR.Pk_ekf = dt^(1/4)*sig_n^(1/2)*(CONST.sig_v^2  +  2*CONST.sig_u*CONST.sig_v*dt^(1/2))^(1/4)*eye(12); 
 
@@ -386,13 +390,13 @@ CTRL_SC.type    = 'hihb';    % [ ] - 'ruiter','buhl','hihb'
 CTRL_SWITCH1  = P/8; % Time to change mode from Detumbling to Sun Pointing.
 CTRL_SWITCH2  = P/4; % Time to change mode from Sun Pointing to Operation Mode.
 
-CTRL_DT_MODE  = 4;   % Detumbling mode: BDOT/EDSP/VDOT/IDLE
+CTRL_DT_MODE  = 2;   % Detumbling mode: BDOT/EDSP/VDOT/IDLE
 CTRL_PT1_MODE = 3;   % Pointing mode  : REF/SLD/SUN/TA/SC/IDLE
-CTRL_PT2_MODE = 3;   % Pointing mode  : REF/SLD/SUN/TA/SC/IDLE
+CTRL_PT2_MODE = 2;   % Pointing mode  : REF/SLD/SUN/TA/SC/IDLE
 
 %% SOLVER
 CONST.model = 'satellite_adcs_model';
-tdur = P/8;            
+tdur = 3*P/8;            
 sim('satellite_adcs_model',tdur);
 
 
@@ -433,10 +437,24 @@ Pdiag(4,i)        = Pk_skf(4,4,i);
 Pdiag(5,i)        = Pk_skf(5,5,i);
 Pdiag(6,i)        = Pk_skf(6,6,i);
 
+R_B_I_m_1(:,:,i) = q2dcm(q_B_I_m_1(:,:,i));
+R_B_I_m_2(:,:,i) = q2dcm(q_B_I_m_2(:,:,i));
+R_B_I_m_3(:,:,i) = q2dcm(q_B_I_m_3(:,:,i));
+
 R_B_I_tgt(:,:,i) = q2dcm(q_B_I_tgt(:,:,i));
 R_B_I_f(:,:,i)   = q2dcm(q_B_I_f(:,:,i));
 R_B_I_ukf(:,:,i) = q2dcm(q_B_I_ukf(:,:,i));
 R_B_I_skf(:,:,i) = q2dcm(q_B_I_skf(:,:,i));
+
+% Measured Star Tracker
+LOS_error_1(1,i)  = rad2arcsec(vangle(R_B_I_m_1(:,:,i)'*[1;0;0],R_B_I(:,:,i)'*[1;0;0]));
+LOS_error_1(2,i)  = rad2arcsec(vangle(R_B_I_m_1(:,:,i)'*[1;0;0],R_B_I(:,:,i)'*[1;0;0]));
+LOS_error_1(3,i)  = rad2arcsec(vangle(R_B_I_m_1(:,:,i)'*[1;0;0],R_B_I(:,:,i)'*[1;0;0]));
+
+% Measured Star Tracker
+LOS_error_3(1,i)  = rad2arcsec(vangle(R_B_I_m_3(:,:,i)'*[1;0;0],R_B_I(:,:,i)'*[1;0;0]));
+LOS_error_3(2,i)  = rad2arcsec(vangle(R_B_I_m_3(:,:,i)'*[1;0;0],R_B_I(:,:,i)'*[1;0;0]));
+LOS_error_3(3,i)  = rad2arcsec(vangle(R_B_I_m_3(:,:,i)'*[1;0;0],R_B_I(:,:,i)'*[1;0;0]));
 
 % EKF
 LOS_error(1,i)  = rad2arcsec(vangle(R_B_I_f(:,:,i)'*[1;0;0],R_B_I(:,:,i)'*[1;0;0]));
@@ -465,9 +483,6 @@ end
 
 %% PLOT
 satellite_adcs_plot
-
-
-
 
 %% SIMULATION
 
