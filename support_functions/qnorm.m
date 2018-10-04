@@ -1,6 +1,6 @@
 % function q = qnorm(q)
 % --------------------------------------------------------------------------
-% This function inverse the rotation of the quaternion input
+% This function normalize the quaternion input
 % Example
 %              qout = qnorm(qin)
 % 
@@ -8,7 +8,7 @@
 %     qin     -   quaternion
 % 
 % Output 
-%     qout    -   quaternion inverted
+%     qout    -   quaternion normalized
 % 
 % Revision
 %     rusty   -   initial     05 jul 2018

@@ -102,7 +102,8 @@ for i = 1:length(mflag)
             end
             % Star Tracker Measurement 
             Xi = q2xi(qk);                     
-            H  = [1/2*Xi(1:3,:) zeros(3,3) zeros(3,3) zeros(3,3)]; 
+            H  = [1/2*Xi(1:3,:) zeros(3,3) zeros(3,3) zeros(3,3)];
+%             H  = [eye(3) zeros(3,3) zeros(3,3) zeros(3,3) ];
             R  = sig_st(i)^2*eye(3);             
             
             % Gain

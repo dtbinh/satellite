@@ -42,7 +42,7 @@ R_B_iADCS = dcm(3,90/180*pi); % Rotation Matrix from Component Frame to Satellit
 q_B_iADCS = dcm2q(R_B_iADCS,'tsf','xyzw');
 X_Y_iADCS = [0.0 0.0 -0.5];
 
-fprintf('iADCS [iADCS to Body] = [%.6f %.6f %.6f %.6f]\n',q_B_iADCS);
+fprintf('iADCS [iADCS to Body] = [%.12f %.12f %.12f %.12f]\n',q_B_iADCS);
 
 X_iADCS = plotvector(R_B_iADCS*[1 ;0 ;0], X_Y_iADCS, 'r', 'X_i_a_d_c_s');
 Y_iADCS = plotvector(R_B_iADCS*[0 ;1 ;0], X_Y_iADCS, 'g', 'Y_i_a_d_c_s');
@@ -58,8 +58,8 @@ q_B_C_ST200   = dcm2q(R_B_C_ST200,'tsf','xyzw');
 
 X_Y_Z_ST200 = [0.5 -0.5 -0.2];
 
-fprintf('ST200 [Instrument to iADCS] = [%.6f %.6f %.6f %.6f]\n',q_iADCS_C_ST200);
-fprintf('ST200 [Instrument to Body] = [%.6f %.6f %.6f %.6f]\n',q_B_C_ST200);
+fprintf('ST200 [Instrument to iADCS] = [%.12f %.12f %.12f %.12f]\n',q_iADCS_C_ST200);
+fprintf('ST200 [Instrument to Body] = [%.12f %.12f %.12f %.12f]\n',q_B_C_ST200);
 
 XYZ_ORIGIN  = [0 0 0];
 
@@ -99,8 +99,8 @@ X_Y_Z_RWA(:,3)       = [-1;0.5;-0.2];
 
 % Report
 for i=1:length(X_Y_Z_RWA)
-fprintf('Reaction Wheel %d [Instrument to iADCS] = [%.6f %.6f %.6f %.6f]\n',i,q_iADCS_C_RWA(:,i));
-fprintf('Reaction Wheel %d [Instrument to Body] = [%.6f %.6f %.6f %.6f]\n',i,q_B_C_RWA(:,i));
+fprintf('Reaction Wheel %d [Instrument to iADCS] = [%.12f %.12f %.12f %.12f]\n',i,q_iADCS_C_RWA(:,i));
+fprintf('Reaction Wheel %d [Instrument to Body] = [%.12f %.12f %.12f %.12f]\n',i,q_B_C_RWA(:,i));
 end
 
 % Plot
@@ -142,8 +142,8 @@ X_Y_Z_MTQ(:,3)       = [0.8;-0.8;-0.0];
 
 % Report
 for i=1:length(X_Y_Z_MTQ)
-fprintf('Magnetic Torquer %d [Instrument to iADCS] = [%.6f %.6f %.6f %.6f]\n',i,q_iADCS_C_MTQ(:,i));
-fprintf('Magnetic Torquer %d [Instrument to Body] = [%.6f %.6f %.6f %.6f]\n',i,q_B_C_MTQ(:,i));
+fprintf('Magnetic Torquer %d [Instrument to iADCS] = [%.12f %.12f %.12f %.12f]\n',i,q_iADCS_C_MTQ(:,i));
+fprintf('Magnetic Torquer %d [Instrument to Body] = [%.12f %.12f %.12f %.12f]\n',i,q_B_C_MTQ(:,i));
 end
 
 % Plot
@@ -168,8 +168,8 @@ X_Y_Z_HPM        = [0.0;-1;-0.2];
 
 % Report
 
-fprintf('HPM Gyro [Instrument to iADCS] = [%.6f %.6f %.6f %.6f]\n',q_iADCS_C_HPM);
-fprintf('HPM Gyro [Instrument to Body] = [%.6f %.6f %.6f %.6f]\n',q_B_C_HPM);
+fprintf('HPM Gyro [Instrument to iADCS] = [%.12f %.12f %.12f %.12f]\n',q_iADCS_C_HPM);
+fprintf('HPM Gyro [Instrument to Body] = [%.12f %.12f %.12f %.12f]\n',q_B_C_HPM);
 
 
 % Plot
