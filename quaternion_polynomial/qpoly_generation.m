@@ -5,13 +5,13 @@ clc
 format long
 
 %% LOAD DATA
-file    = 'qdata1.dat';
+file    = 'qdata4.dat';
 qpoly_generation_load
 
 %% INPUT PARAMETER
 dt_step   = 0.1;                                    % [sec] Time for each simulation step
-row_start = find(strcmp(utc_time,'11:15:00.000'));  % [ - ] Start Row
-row_end   = find(strcmp(utc_time,'11:17:30.000'));  % [ - ] End Row
+row_start = find(strcmp(utc_time,'11:18:00.000'));  % [ - ] Start Row
+row_end   = find(strcmp(utc_time,'11:20:20.000'));  % [ - ] End Row
 row_length = row_end-row_start;                     % [ - ] Row Length
 division  = 10;                                     % [ - ] Number of Division
 n_step    = row_length/division;                    % [ - ] step - each step is 0.1 sec

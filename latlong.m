@@ -3,11 +3,11 @@ clear all
 clc
 %% INPUT
 % Ground Track 
-SSP1 = [40.9801358476115 5.40069039583235]/180*pi;  % [rad] Start Sub Satellite Point in Lat Lon Coordinates
-SSP2 = [39.1315311094753 4.85221628962299]/180*pi;  % [rad] End Sub Satellite Point in Lat Lon Coordinates
+SSP1 = [52.013274672271 9.33023407545614]/180*pi;  % [rad] Start Sub Satellite Point in Lat Lon Coordinates
+SSP2 = [50.1828508760194 8.57748101305601]/180*pi;  % [rad] End Sub Satellite Point in Lat Lon Coordinates
 
 % Offset Angle
-n    = deg2rad(10);             % [rad] Input Offset Angle to point from Nadir
+n    = deg2rad(5);             % [rad] Input Offset Angle to point from Nadir
 
 % Orbit Parameter
 Re = 6873e3; % [m] Earth's Radius
