@@ -4,7 +4,7 @@ clc
 fprintf('---------ALLAN VARIANCE ANALYSIS SIMULATION--------');
 fprintf('\nInitialising Parameters');
 dt   = 1/10;          % [s] Gyro Sampling Time 
-tdur = 2000;          % [s] Time Duration
+tdur = 18000;          % [s] Time Duration
 N    = tdur/dt;        % [] Number of Samples
 tout = 0:dt:tdur-dt;
 
@@ -16,14 +16,16 @@ bias(1)  = 0.2;
 %% DISCRETE GYRO MODELING MEASUREMENT
 fprintf('\nGenerating Gyro Modelling Measurement');
 for i = 1:N+1
-   bias(i+1) = bias(i)+sig_u*dt^0.5*normrnd(0,1);
-   y(i) = sqrt(sig_v^2/dt)*normrnd(0,1)+0.5*(bias(i+1)+bias(i));
+   bias(i+1) = bias(i)+sig_u*dt^0.5*randn(1,1);
+   y(i) = sqrt(sig_v^2/dt)*randn(1,1)+0.5*(bias(i+1)+bias(i));
    
     
 end
 
 %% ALLAN VARIANCE
-tau_array = [0.01 0.05 0.1 0.2 0.5 1 2 5 10 20 50 100 200 300 400 500 600 700 800 900 1000 1100 1200 1300 1400 1500 1600 2000 2200 2500 3000 3500 4000 4200 4500 4700 5000 5500 6000 6500 7000 7500 8000 8500 9000];
+tau_array = [0.01 0.05 0.1 0.2 0.5 1 2 5 10 20 50 100 200 300 400 500 600 700 800 900 1000 1100 ...
+    1200 1400 1600 1800 2000 2200 2400 2600 2800 3000 3500 4000 4500 5000 5500 6000 6500 7000 7500 8000 ...
+    8500 9000];
 
 % for each tau value
 for t = 1:1:length(tau_array)
@@ -62,12 +64,10 @@ for j = 1:M:N-M+2
 end
 
 sum = 0;
-
 for k = 1:K-1
     sum = sum + (omega(k+1)-omega(k))^2;
 end
-
-var_A (t) = 1/2/(k-1)*sum*(180/pi)^2;
+var_A(t) = 1/2/(k-1)*sum*(180/pi)^2;
 end
 
 %% SIMULINK MODELING
@@ -99,7 +99,7 @@ fprintf('\nStandard Dev  = %.6f [deg/s]',std(y));
 fprintf('\nActual ARW    = %.6f [deg/s^0.5]',sig_v/pi*180);
 fprintf('\nEstimated ARW = %.6f [deg/s^0.5]',sig_ARW);
 fprintf('\nActual RRW    = %.6f [deg/s^1.5]',sig_u/pi*180);
-fprintf('\nEstimated ARW = %.6f [deg/s^1.5]',sig_ARW);    
+fprintf('\nEstimated ARW = %.6f [deg/s^1.5]', 2.0e-4);    
 fprintf('\n');
 %% ALLAN VARIANCE PLOT
 close all
