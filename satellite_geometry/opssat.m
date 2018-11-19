@@ -42,7 +42,7 @@ R_B_iADCS = dcm(3,90/180*pi)*dcm(2,180/180*pi); % Rotation Matrix from Component
 q_B_iADCS = dcm2q(R_B_iADCS,'tsf','xyzw');
 X_Y_iADCS = [0.0 0.0 -0.5];
 
-fprintf('iADCS [iADCS to Body] = [%.12f, %.12f, %.12f, %.12f]\n',q_B_iADCS);
+fprintf('iADCS [iAq2dcmDCS to Body] = [%.12f, %.12f, %.12f, %.12f]\n',q_B_iADCS);
 
 X_iADCS = plotvector(R_B_iADCS*[1 ;0 ;0], X_Y_iADCS, 'r', 'X_i_a_d_c_s');
 Y_iADCS = plotvector(R_B_iADCS*[0 ;1 ;0], X_Y_iADCS, 'g', 'Y_i_a_d_c_s');

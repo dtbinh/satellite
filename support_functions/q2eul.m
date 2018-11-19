@@ -1,4 +1,12 @@
 function eul = q2eul(q,type,option)
+if~exist('type','var')
+   type = 'xyzw'; 
+end
+
+if~exist('option','var')
+   option = 'zyx'; 
+end
+
 switch type
     case 'wxyz'
         switch option

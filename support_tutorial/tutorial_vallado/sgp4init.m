@@ -127,14 +127,14 @@ function [satrec] = sgp4init(whichconst, opsmode, satrec, epoch, xbstar, xndot, 
    % it is possible to streamline the sgp4init call by deleting the "x"
    % variables, but the user would need to set the satrec.* values first. we
    % include the additional assignment in case twoline2rv is not used. 
-   satrec.bstar      = xbstar;
+   satrec.bstar  = xbstar;
    % sgp4fix allow additional parameters in the struct
-   satrec.ndot	= xndot;
-   satrec.nddot	= xnddot;
-   satrec.ecco    = xecco;
-   satrec.argpo   = xargpo;
-   satrec.inclo   = xinclo;
-   satrec.mo	    = xmo;
+   satrec.ndot	 = xndot;
+   satrec.nddot	 = xnddot;
+   satrec.ecco   = xecco;
+   satrec.argpo  = xargpo;
+   satrec.inclo  = xinclo;
+   satrec.mo	 = xmo;
    % sgp4fix rename variables to clarify which mean motion is intended
    satrec.no_kozai   = xno_kozai;
    satrec.nodeo      = xnodeo;

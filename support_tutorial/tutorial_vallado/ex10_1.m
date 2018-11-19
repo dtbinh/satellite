@@ -34,3 +34,11 @@
     atai = inv(ata)
     ans= atai*atb
 
+    
+    x = 1:1:8;
+    y = ans(1)+ans(2)*x
+    
+    figure
+    plot(xo,yo,'x')
+    grid on; hold on
+    plot(x,y)
