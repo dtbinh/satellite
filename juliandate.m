@@ -24,11 +24,11 @@ JD = 367*yr-floor((7*(yr+floor((mo+9)/12)))/4)+floor(275*mo/9)+d+1721013.5+((s/6
 
 JD_ut1 = JD + 0.4071728/60/60/24;
 JD_ut1 = JD;
-fprintf("Date: %d/%d/%d %d:%d:%.2f\n",yr,mo,d,h,m,s);
-fprintf("Julian Days: %.2f [days]\n",JD);
-fprintf("Julian Days: %.2f [msec]\n",(JD*86400 - since*86400)*1000);
+fprintf('Date: %d/%d/%d %d:%d:%.2f\n',yr,mo,d,h,m,s);
+fprintf('Julian Days: %.2f [days]\n',JD);
+fprintf('Julian Days: %.2f [msec]\n',(JD*86400 - since*86400)*1000);
 T_ut1 = (JD_ut1 - 2451545.0)/36525
-fprintf("Julian Days: %.2f [secs]",(JD*86400 - since*86400));
+fprintf('Julian Days: %.2f [secs]',(JD*86400 - since*86400));
 mean_long = 280.460 + 36000.771*T_ut1
 
 T_tdb = T_ut1;
@@ -45,8 +45,5 @@ r = [R*cos(deg2rad(ecliptic_long));
      R*cos(deg2rad(e))*sin(deg2rad(ecliptic_long));
      R*sin(deg2rad(e))*sin(deg2rad(ecliptic_long))]
  
- 
- 
-
  R_km= r*149597870.7
  norm(R_km)
