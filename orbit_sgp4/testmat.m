@@ -219,4 +219,24 @@ fprintf(' %8.2f %10.4f %10.4f %10.4f %9.6f %9.6f %9.6f %5i %3i %3i %2i:%2i:%9.6f
 fprintf(' %8.4f %8.4f %8.4f\n',...
                 latgd*rad2deg,lon*rad2deg,hellp);
  
- 
+%-----------------------------------------
+% True Anomaly Elliptic Orbits
+ho = cross(ro,vo);
+eo = cross(vo,ho)/mu - ro/norm(ro);
+
+TA = acos(dot(eo,ro)/(norm(eo)*norm(ro)));
+if  (dot(ro,vo)<0)
+    TA = 2*pi - TA;
+end
+fprintf('\nELIPTIC ORBIT\n');
+fprintf('True Anomaly: %.6f [deg]\n',TA*180/pi);
+
+% True Anomaly Elliptic Orbits
+no = cross([0;0;1],ho);
+TA = acos(dot(no,ro)/(norm(no)*norm(ro)));
+
+if  (dot(no,vo)<0)
+    TA = 2*pi - TA;
+end
+fprintf('\nCIRCULAR ORBIT\n');
+fprintf('True Anomaly: %.6f [deg]\n',TA*180/pi);

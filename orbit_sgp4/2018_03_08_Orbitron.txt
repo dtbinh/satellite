@@ -1,0 +1,40 @@
+------43132-----
+Lon	13.7736° E
+Lat	58.5238° N
+Alt (km)	501.702
+Azm	1.8°
+Elv	32.8°
+RA	19h 31m 50s
+Decl	70° 16' 04"
+Range (km)	856.302
+RRt (km/s)	5.691
+Vel (km/s)	7.623
+Direction	Ascending
+Eclipse	Umbral
+MA (phase)	330.1° (234)
+TA	330.0°
+Orbit #	844
+Mag (illum)	Eclipsed
+Constellation	Dra
+
+----Sun----
+Azm	299.4°
+Elv	-26.1°
+RA	23h 16m 34s
+Decl	-4° 40' 08"
+Lon	114.8428° W
+Lat	4.6670° S
+Range (km)	148 505 767
+Constellation	Aqr
+
+-----Moon------
+Azm	64.7°
+Elv	-39.9°
+RA	16h 42m 25s
+Decl	-18° 03' 34"
+Lon	146.1959° E
+Lat	17.4953° S
+Range (km)	405 912
+Illum	57%
+Phase	Last quarter
+Constellation	Oph
