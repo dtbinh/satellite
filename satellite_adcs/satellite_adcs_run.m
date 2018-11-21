@@ -3,9 +3,6 @@ clear all
 clc
 format long
 global CONST;
-%% GLOBAL
-R2D = 180/pi;
-D2R = pi/180;
 
 %% MODEL PARAMETER
 dt  = 0.5;              % [sec] Model speed (0.5 for normal, 30 for orbit)
@@ -33,7 +30,7 @@ T_UTC   = (JD_UTC -2451545.0 )/36525;                                      % [ce
 d_AT    = 33.0;                                                            % [sec] From Astronomical Almanac 2006:K9
 d_UT1   = 0.2653628;                                                       % [sec]
 [UT1, T_UT1, JD_UT1, UTC_sim, TAI, TT, T_TT, JD_TT, T_TDB, JD_TDB] ...
-    = convtime (UTC_sim.Year,UTC_sim.Month,UTC_sim.Day,UTC_sim.Hour,UTC_sim.Minute,UTC_sim.Second,d_UT1, d_AT);
+    = convtime(UTC_sim.Year,UTC_sim.Month,UTC_sim.Day,UTC_sim.Hour,UTC_sim.Minute,UTC_sim.Second,d_UT1, d_AT);
 
 CONST.JD_UT1 = JD_UT1;
 CONST.JD_UTC = JD_UTC;
@@ -44,7 +41,6 @@ CONST.solarday = 24.00000000;        % [hrs] Hours in a Solar Day
 
 [r_sun_mod,rtasc_sun,decl_sun]  = jdut2sun(JD_UTC);
 [r_sun_eci,v_sun_eci,a_sun_eci] = mod2eci(r_sun_mod,[0; 0; 0],[0; 0; 0],T_TT );
-
 
 %% CONSTANT PARAMETERS
 
@@ -142,7 +138,7 @@ CONST.incl = incl;
 CONST.ecc  = ecc;
 
 %% INITIAL CONDITIONS
-R_O_I   = dcm(1,-90*D2R)*dcm(3,(TAo+90)*D2R)*dcm(1,incl)*dcm(3,RAAN); % [3x3] Rotation Matrix from Inertial (X axis is vernal equinox) to Orbit Frame (x is orbit direction)
+R_O_I   = dcm(1,-90*deg2rad)*dcm(3,(TAo+90)*deg2rad)*dcm(1,incl)*dcm(3,RAAN); % [3x3] Rotation Matrix from Inertial (X axis is vernal equinox) to Orbit Frame (x is orbit direction)
 
 Euler_I_B_0  = [ 0 ; deg2rad(-23.5) ; pi/2 ];   % [rad] Euler Angle from Body Frame to Inertial Frame (Initial)
 Euler_O_I_0 = dcm2eul(R_O_I,'zyx');             % [rad] Initial Euler Angle transforming from Inertial Frame to Orbit Frame (ZYX means rotate X, then Y, then Z)
@@ -279,7 +275,7 @@ CONST.varST_z = varST_z;
 %% KALMAN FILTER
 global FLTR
 
-FLTR.mflag(1) = 0; % Star Tracker 1
+FLTR.mflag(1) = 1; % Star Tracker 1
 FLTR.mflag(2) = 0; % Star Tracker 2
 FLTR.mflag(3) = 1; % SB
 FLTR.mflag(4) = 0; % Sun Sensor 

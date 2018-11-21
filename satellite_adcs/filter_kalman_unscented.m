@@ -172,7 +172,7 @@ H = [eye(3) zeros(3)];
 
 K      = Pxy_k1p/Pyy_k1p;            % Gain Update depends on covariance of meas/state and variance of state
 Pxx_k1 = Pxx_k1p - K*Pxy_k1p';       % Error Covariance Update 
-p_B_I_m = f*q_B_I_m(1:3,3)/(a+q_B_I_m(4,3)); % dp
+p_B_I_m = f*q_B_I_m(1:3,1)/(a+q_B_I_m(4,1)); % dp
 res   = p_B_I_m - y_k1p;
 d_x_k1p  = d_x_k1p + K*(res - H*d_x_k1p);             % dp           % [dp B] State Update
 
