@@ -120,7 +120,7 @@ fprintf(' %8s %10s %10s %10s %9s %9s %9s\n',...
 % ------------------------------------------------------------------------
 %  SGP4: input start stop times manually
    year = 2018;
-   mon  = 3;
+   mon  = 10;
    day  = 5;
    hr   = 17;
    min  = 25;
