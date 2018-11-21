@@ -46,7 +46,7 @@ rad = 180.0 / pi;
 
 %   ---------------- setup files for operation ------------------
 %   input 2-line element set file
-infilename = '2018_03_05_PICSAT.txt';
+infilename = '2018_10_05_CLYS_FM1.txt';
 infile     = fopen(infilename, 'r');
 
 if (infile == -1)
@@ -121,10 +121,10 @@ fprintf(' %8s %10s %10s %10s %9s %9s %9s\n',...
 %  SGP4: input start stop times manually
    year = 2018;
    mon  = 3;
-   day  = 8;
-   hr   = 19;
-   min  = 50;
-   sec  = 5;
+   day  = 5;
+   hr   = 17;
+   min  = 25;
+   sec  = 56;
    jdstart = jday( year,mon,day,hr,min,sec );
 
    startmfe = (jdstart - satrec.jdsatepoch) * 1440.0;
@@ -162,9 +162,9 @@ while ((tsince < stopmfe) && (satrec.error == 0))
     [year,mon,day,hr,minute,sec] = invjday ( jd );
 
     fprintf(outfile,...
-        ' %8.2f %10.4f %10.4f %10.4f %9.6f %9.6f %9.6f %5i %3i %3i %2i:%2i:%9.6f\n',...
+        ' %8.3f %10.4f %10.4f %10.4f %9.6f %9.6f %9.6f %5i %3i %3i %2i:%2i:%9.6f\n',...
         tsince,ro(1),ro(2),ro(3),vo(1),vo(2),vo(3),year,mon,day,hr,minute,sec );
-    fprintf(' %8.2f %10.4f %10.4f %10.4f %9.6f %9.6f %9.6f %5i %3i %3i %2i:%2i:%9.6f\n',...
+    fprintf(' %8.3f %10.4f %10.4f %10.4f %9.6f %9.6f %9.6f %5i %3i %3i %2i:%2i:%9.6f\n',...
         tsince,ro(1),ro(2),ro(3),vo(1),vo(2),vo(3),year,mon,day,hr,minute,sec );
   
 end 
@@ -187,9 +187,9 @@ dat  = 0;%34.0;       %2009 Jan 1 Vallado
          = convtime ( year, mon, day, hr, min, sec, dut1, dat);
      
      
-lod = 0.87/1000;
-xp  = 0.0327*pi / (180.0*3600.0);
-yp  = 0.2524*pi / (180.0*3600.0);
+lod = 0;%0.87/1000;
+xp  = 0;%0.0327*pi / (180.0*3600.0);
+yp  = 0;%0.2524*pi / (180.0*3600.0);
 eqeterms = 1;
 
 [recef, vecef, aecef] = teme2ecef( rteme, vteme, ateme, ttt, jdut1, lod, xp, yp, eqeterms );
@@ -197,7 +197,7 @@ eqeterms = 1;
 fprintf('\nECEF\n');
     fprintf(' %8s %10s %10s %10s %9s %9s %9s\n',...
     't[min]','recef(1)','recef(2)','recef(3)','vecef(1)','vecef(2)','vecef(3)');
-fprintf(' %8.2f %10.4f %10.4f %10.4f %9.6f %9.6f %9.6f %5i %3i %3i %2i:%2i:%9.6f\n',...
+fprintf(' %8.3f %10.4f %10.4f %10.4f %9.6f %9.6f %9.6f %5i %3i %3i %2i:%2i:%9.6f\n',...
                 tsince,recef(1),recef(2),recef(3),vecef(1),vecef(2),vecef(3),year,mon,day,hr,minute,sec );
  % ------------------------------------------------------------------------    
  % ECEF to COE
@@ -219,24 +219,41 @@ fprintf(' %8.2f %10.4f %10.4f %10.4f %9.6f %9.6f %9.6f %5i %3i %3i %2i:%2i:%9.6f
 fprintf(' %8.4f %8.4f %8.4f\n',...
                 latgd*rad2deg,lon*rad2deg,hellp);
  
+            
+            
+fprintf('\nELIPTIC ORBIT\n');      
 %-----------------------------------------
-% True Anomaly Elliptic Orbits
+% Elliptic Orbits
+ro = rteme;
+vo = vteme;
+
+%-----------------------------------------
+% Inclination
+
+ro = rteme;
+vo = vteme;
+
+ho = cross(ro,vo);
+io = acos(ho(3,1)/norm(ho));
+
+fprintf('Inclination : %10.6f [deg]\n',io*180/pi);
+
+%-----------------------------------------
+% Right Ascension
+no = cross([0;0;1],ho);
+raan = acos(no(1,1)/norm(no));
+fprintf('RAAN        : %10.6f [deg]\n',raan*180/pi);
+
+%-----------------------------------------
+% True Anomaly
 ho = cross(ro,vo);
 eo = cross(vo,ho)/mu - ro/norm(ro);
-
+fprintf('Eccentricity: %10.6f %10.6f %10.6f\n',eo);
+fprintf('e           : %10.6f\n',norm(eo));
 TA = acos(dot(eo,ro)/(norm(eo)*norm(ro)));
+
 if  (dot(ro,vo)<0)
     TA = 2*pi - TA;
 end
-fprintf('\nELIPTIC ORBIT\n');
-fprintf('True Anomaly: %.6f [deg]\n',TA*180/pi);
 
-% True Anomaly Elliptic Orbits
-no = cross([0;0;1],ho);
-TA = acos(dot(no,ro)/(norm(no)*norm(ro)));
-
-if  (dot(no,vo)<0)
-    TA = 2*pi - TA;
-end
-fprintf('\nCIRCULAR ORBIT\n');
-fprintf('True Anomaly: %.6f [deg]\n',TA*180/pi);
+fprintf('True Anomaly: %10.6f [deg]\n',TA*180/pi);
