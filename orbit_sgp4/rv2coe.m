@@ -57,7 +57,7 @@
 % [p,a,ecc,incl,omega,argp,nu,m,arglat,truelon,lonper ] = rv2coe (r,v);
 % ------------------------------------------------------------------------------
 
-function [p,a,ecc,incl,omega,argp,nu,m,arglat,truelon,lonper ] = rv2coe (r,v, mu);
+function [p,a,ecc,ebar,incl,omega,argp,nu,m,arglat,truelon,lonper ] = rv2coe (r,v, mu);
 
         constmath;
         constastro;  % don't overwrite mu
