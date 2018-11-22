@@ -9,7 +9,7 @@ satellite = 'opssat';
 screensize   = get(0,'ScreenSize');
 screenwidth  = screensize(3);
 screenheight = screensize(4);
-screennumber = 1;
+screennumber = 0;
 fig = figure;
 set(fig,'Position',[screenwidth*(screennumber+0) 0 screenwidth*0.35 screenheight]);
 fprintf(strcat('\n                [',upper(satellite),']\n'));
