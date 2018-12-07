@@ -4,7 +4,7 @@ clc
 format long
 
 model_type = 'BST_RW_MODEL_TYPE_GENERAL_BLDC';
-ctrl_mode  = 'BST_RW_CTRL_MODE_CURRENT';
+ctrl_mode  = 'BST_RW_CTRL_MODE_TORQUE';
 
 % RWA PARAMETERS     
 rw_moi      = 0.0009785480;
@@ -29,21 +29,21 @@ kd = 0.0;
 rw_n_max = 5000*rpm2rps;      %[rps]
 
 % Torque Control
-rw_T_tgt = 0.0040;    %[Nm]
+rw_T_tgt = 0.0020;    %[Nm]
 
 % Current control
 rw_I_tgt = 0.00; % [A]
 rw_I_max = 0.82; % [A]
 
 
-dt   = 0.01;        % [s]
-tdur = 600;
+dt   = 0.001;        % [s]
+tdur = 10;
 t    = 0:dt:tdur;
 
-
+% ---------------------------------------------------
 % Intial Condition
-rw_sp(1)  = -5000*rpm2rps;       % [rps] Initial Angular Velocity
-rw_h(1)   = rw_moi*rw_sp(1);
+rw_sp(1)  = 2000*rpm2rps;       % [rps] Initial Angular Velocity
+rw_h(1)   = rw_moi*rw_sp(1);    % Initial Angular Momentum
 rw_trq(1) = 0;   
 rw_cur(1) = 0;
 rw_cur_motor = 0;
@@ -51,19 +51,20 @@ rw_cur_motor = 0;
 trq_err_i     = 0;
 trq_err_old   = 0;
 
+ % ---------------------------------------------------
 % PID Control
 global pid
 
 pid.kp = 20.0; 
-pid.ki = 15.00; 
+pid.ki = 0.20; 
 pid.kd = 0.00;
 
 pid.init   = 1;
 pid.aw_thr = rw_I_max;
 pid.aw_flg = 0;
 pid.aw_fact = 0.7;
-pid.intvl  = 0.1;      % [s]
-is_int_cur = 1 ;
+pid.intvl  = 0.100;      % [s] PID Update Interval
+is_int_cur = 0 ;
 
 for i = 1:1:tdur/dt+1
 
@@ -76,6 +77,7 @@ switch ctrl_mode
             
     case 'BST_RW_CTRL_MODE_TORQUE'
         
+        % Initial
         if (pid.init ==1)
                 rw_cur_cmd = 1.0/rw_bldc_km * (rw_T_tgt - bst_rwa_friction_model(rw_sp(i)*rps2rpm));
         end
@@ -97,10 +99,11 @@ end
     % update the angular momentum
     h = rw_h(i);
 
-        spd_rpm = rw_sp(i)*rps2rpm;  % [rpm] 
+    spd_rpm = rw_sp(i)*rps2rpm;  % [rpm] 
     
+    % ---------------------------------------------------
     % Speed Saturation check
-	if abs(rw_sp(i)) > rw_n_max
+    if abs(rw_sp(i)) > rw_n_max
         cur = 0.0;
     else
         cur = sat(rw_cur_cmd,rw_I_max); % [A] current saturation check
@@ -120,6 +123,7 @@ end
     rw_cur_motor = cur;                % [A] current supplied to motor
     trq = cur*rw_bldc_n*rw_bldc_km;    
     
+    % ---------------------------------------------------
     % Torque friction
     trq_friction = bst_rwa_friction_model(spd_rpm);
     hdot         = trq + trq_friction; 

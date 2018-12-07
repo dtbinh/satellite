@@ -34,8 +34,9 @@ Vmax = 4;
 
 %% CONTROL MODE
 
-CTRL_MODE = 2; % CURRENT/TORQUE/SPEED/VOLTAGE
+CTRL_MODE = 4; % CURRENT/TORQUE/SPEED/VOLTAGE
 
+% ------------------------------------------------------
 % CURRENT CONTROLLER
 i_kp = 10; %1e2
 i_ki = 1e3; %1e3;
@@ -46,7 +47,7 @@ CONST.i_ki = i_ki;
 CONST.i_kd = i_kd;
 
 i_tgt = 0.15;     % [Nm] Maximum allowed is 0.15 [A]
-
+% ------------------------------------------------------
 % TORQUE CONTROL
 trq_kp = 1e3;
 trq_ki = 5e4;
@@ -58,6 +59,7 @@ CONST.trq_kd = trq_kd;
 
 trq_tgt = 0.02e-3; % [Nm] Maximum Torque allowed is 0.10 [mNm]
 
+% ------------------------------------------------------
 % SPEED CONTROL
 spd_kp = 0.50;
 spd_ki = 0.10;
@@ -69,6 +71,7 @@ CONST.spd_kd = spd_kd;
 
 w_tgt = rpm2rps(2000);
 
+% ------------------------------------------------------
 % VOLTAGE CONTROL
 V_tgt = 2.1;   
 
@@ -133,10 +136,10 @@ close all
 figure
 
 subplot(4,1,1)
-plot(tspan,i_m(1,:))
+plot(tspan,i_m(1,:),'b')
 grid on;hold on;
-plot(tspan,i_sm(1,:))
-plot(tspan,i_dm(1,:))
+plot(tspan,i_sm(1,:),'g')
+plot(tspan,i_dm(1,:),'color',color('orange'))
 if CTRL_MODE == 1
     plot(tspan,i_tgt*ones(1,tlgth),'r--');
 end
@@ -144,10 +147,10 @@ xlabel('Time [s]');
 ylabel('Current [A]');
 
 subplot(4,1,2)
-plot(tspan,J*wdot_m(1,:));
+plot(tspan,J*wdot_m(1,:),'b');
 grid on;hold on;
-plot(tspan,J*wdot_sm(1,:));
-plot(tspan,J*wdot_dm(1,:));
+plot(tspan,J*wdot_sm(1,:),'g');
+plot(tspan,J*wdot_dm(1,:),'color',color('orange'));
 if CTRL_MODE == 2
     plot(tspan,trq_tgt*ones(1,tlgth),'r--');
 end
@@ -155,10 +158,10 @@ xlabel('Time [s]');
 ylabel('Torque [Nm]');
 
 subplot(4,1,3)
-plot(tspan,w_m(1,:)*rps2rpm)
+plot(tspan,w_m(1,:)*rps2rpm,'b');
 grid on;hold on;
-plot(tspan,w_sm(1,:)*rps2rpm)
-plot(tspan,w_dm(1,:)*rps2rpm)
+plot(tspan,w_sm(1,:)*rps2rpm,'g');
+plot(tspan,w_dm(1,:)*rps2rpm,'color',color('orange'));
 if CTRL_MODE == 3
     plot(tspan,w_tgt*rps2rpm*ones(1,tlgth),'r--');
 end
@@ -167,10 +170,10 @@ ylabel('Angular Velocity [rpm]');
 
 
 subplot(4,1,4)
-plot(tspan,V_dc_m(1,:))
+plot(tspan,V_dc_m(1,:),'b')
 grid on;hold on;
-plot(tspan,V_dc_sm)
-plot(tspan,V_dm(1,:))
+plot(tspan,V_dc_sm,'g')
+plot(tspan,V_dm(1,:),'color',color('orange'))
 if CTRL_MODE == 4
     plot(tspan,V_tgt*ones(1,tlgth),'r--');
 end

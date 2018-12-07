@@ -177,6 +177,7 @@ temp_ref    = 20;                          % [C] Temperature Reference
 dt_gyro     = 0.1;                         % [s] Sampling Time Interval of Gyro
 N_ARW       = (0.0029)*pi/180;             % [rad/s^0.5]    Parameter N variance coefficient at tau = 1 along +1/2
 K_RRW       = (0.0002)*pi/180;             % [rad/s^1.5]    Parameter K variance coefficient at tau = 3 along -1/2 slope
+
 N_W         = (1e-3)*pi/180;               % [rad/C/s^0.5]  Standard Deviation Measured
 Var_ARW     = N_ARW^2;                     % [rad^2/s]      Variance of Angular White Noise 
 Var_RRW     = K_RRW^2/3;                   % [rad^2/s^3]    Variance of Bias Rate
@@ -271,12 +272,13 @@ CONST.sig_sb = sig_sb;            % [rad] SB
 CONST.varST_x = varST_x;
 CONST.varST_y = varST_y;
 CONST.varST_z = varST_z;
+CONST.sig_w
 
 %% KALMAN FILTER
 global FLTR
 
 FLTR.mflag(1) = 1; % Star Tracker 1
-FLTR.mflag(2) = 0; % Star Tracker 2
+FLTR.mflag(2) = 1; % Star Tracker 2
 FLTR.mflag(3) = 1; % SB
 FLTR.mflag(4) = 0; % Sun Sensor 
 FLTR.mflag(5) = 0; % Magnetometer
@@ -290,7 +292,7 @@ FLTR.wk   = [0;0;0];
 
 % EKF Initial Error Covariance
 FLTR.dbekf = 0;
-FLTR.ekf = 2;
+FLTR.ekf = 3;
 sig_n = sqrt(sig_st(1)^2  +  sig_ss^2  + sig_mg^2);
 FLTR.Pk_ekf = dt^(1/4)*sig_n^(1/2)*(CONST.sig_v^2  +  2*CONST.sig_u*CONST.sig_v*dt^(1/2))^(1/4)*eye(12); 
 

@@ -102,8 +102,8 @@ for i = 1:length(mflag)
             end
             % Star Tracker Measurement 
             Xi = q2xi(qk);                     
-            H  = [1/2*Xi(1:3,:) zeros(3,3) zeros(3,3) zeros(3,3)];
-%             H  = [eye(3) zeros(3,3) zeros(3,3) zeros(3,3) ];
+            %H  = [1/2*Xi(1:3,:) zeros(3,3) zeros(3,3) zeros(3,3)];
+            H  = [eye(3) zeros(3,3) zeros(3,3) zeros(3,3) ];
             R  = sig_st(i)^2*eye(3);             
             
             % Gain
@@ -111,8 +111,8 @@ for i = 1:length(mflag)
             
             % Update
             Pk   = (eye(12) - K*H)*Pk;          
-            res  = e_B_I_m(1:3,i) - qk(1:3,1); % quaternion
-%           res  = 2*Xi'*q_B_I_m(:,i);        % [3x1]
+   %        res  = e_B_I_m(1:3,i) - qk(1:3,1); % quaternion
+            res  = 2*Xi'*q_B_I_m(:,i);        % [3x1]
             delX = delX + K*(res-H*delX);       % delta angle 
             
      elseif ( (mflag(i) == 1) && (i <= MaxSB) )
@@ -122,7 +122,7 @@ for i = 1:length(mflag)
 
             % Star Tracker Measurement 
             Xi = q2xi(qk);
-                H  = [eye(3) zeros(3,3) zeros(3,3) zeros(3,3) ];
+            H  = [eye(3) zeros(3,3) zeros(3,3) zeros(3,3) ];
             R  = sig_sb^2*eye(3);            
             
             % Gain
@@ -183,7 +183,12 @@ for i = 1:length(mflag)
                 case 1
                     H = [ zeros(3,3) zeros(3,3) zeros(3,3)   eye(3)  ];
                 case 2
-                    H = [ zeros(3,3)   eye(3)    zeros(3,3)   eye(3)  ];
+                    H = [ zeros(3,3) eye(3) zeros(3,3)   eye(3)  ];
+                case 3
+                    H = [ zeros(3,3) zeros(3,3) zeros(3,3)   eye(3)  ];
+                otherwise
+                    
+                    return
             end
             
             R = sig_v^2*eye(3);
@@ -193,7 +198,7 @@ for i = 1:length(mflag)
             
             % Update
             Pk  = (eye(12) - K*H)*Pk;      
-            res  =  (w_B_BI_m - biask)  - wk ;       
+            res  =  (w_B_BI_m - biask)  - wk ; 
             delX = delX + K*(res - H*delX); 
             
     end
@@ -242,7 +247,12 @@ switch FLTR.ekf
     F  = [-smtrx(wk)   zeros(3)   zeros(3)     eye(3) ;
            zeros(3)    zeros(3)   zeros(3)    zeros(3);
            zeros(3)    zeros(3)   zeros(3)    zeros(3);
-           zeros(3)    zeros(3)   zeros(3)    I^-1*(-smtrx(wk)*I+smtrx(I*wk)-smtrx(dwk)*I+smtrx(I*dwk))];
+           zeros(3)    zeros(3)   zeros(3)    I^-1*(-smtrx(wk)*I+smtrx(I*wk))];%-smtrx(dwk)*I+smtrx(I*dwk))];
+    case 3
+    F  = [-smtrx(wk)   -eye(3)    zeros(3)    zeros(3);
+           zeros(3)    zeros(3)   zeros(3)    zeros(3);
+           zeros(3)    zeros(3)   zeros(3)    zeros(3);
+           zeros(3)    zeros(3)   zeros(3)    I^-1*(-smtrx(wk)*I+smtrx(I*wk))];%-smtrx(dwk)*I+smtrx(I*dwk))];
 end  
 
 Phi = eye(12) + F*dt + 0.5*(F*dt)^2;
@@ -262,6 +272,11 @@ switch FLTR.ekf
                        zeros(3)                             zeros(3)                   zeros(3)       (sig_w^2*dt)*eye(3)];
 
     case 2
+    Qk = [ (sig_v^2*dt+1/3*sig_w^2*dt^3)*eye(3)           zeros(3)                   zeros(3)       (1/2*sig_w^2*dt^2)*eye(3);
+                     zeros(3)                        (sig_u^2*dt)*eye(3)             zeros(3)            zeros(3);
+                     zeros(3)                             zeros(3)                   zeros(3)            zeros(3);
+                (1/2*sig_w^2*dt^2)*eye(3)                 zeros(3)                   zeros(3)          (sig_w^2*dt)*eye(3)];
+    case 3
     Qk = [ (sig_v^2*dt+1/3*sig_w^2*dt^3)*eye(3)           zeros(3)                   zeros(3)       (1/2*sig_w^2*dt^2)*eye(3);
                      zeros(3)                        (sig_u^2*dt)*eye(3)             zeros(3)            zeros(3);
                      zeros(3)                             zeros(3)                   zeros(3)            zeros(3);
@@ -289,6 +304,10 @@ switch FLTR.ekf
     psik  = sin(1/2*norm(wk)*dt)/norm(wk)*wk;
     omega = [cos(1/2*norm(wk)*dt)*eye(3)-smtrx(psik)       psik;
                     -psik'                       cos(1/2*norm(wk)*dt) ];
+    case 3
+    psik  = sin(1/2*norm(wk)*dt)/norm(wk)*wk;
+    omega = [cos(1/2*norm(wk)*dt)*eye(3)-smtrx(psik)       psik;
+                    -psik'                       cos(1/2*norm(wk)*dt) ];
 end
 
 qk   = omega*qk;      
@@ -304,9 +323,11 @@ switch FLTR.ekf
     case 0
         wk  = wkm; 
     case 1
-        wk  = phi_dw*wk  +  Gmm*uk;
+        wk  = phi_dw*wk  +  Gmm*uk ;
     case 2
-        wk  = phi_dw*wk  +  Gmm*uk;  
+        wk  = phi_dw*wk  +  Gmm*uk; 
+    case 3
+        wk  = phi_dw*wk  +  Gmm*uk; 
 end
 
 
