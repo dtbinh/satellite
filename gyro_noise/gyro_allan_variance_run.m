@@ -99,16 +99,24 @@ fprintf('\nEstimated ARW = %.6f [deg/s^0.5]',sig_ARW);
 fprintf('\nEstimated RRW = %.6f [deg/s^1.5]', 2.0e-4);    
 fprintf('\n');
 %% ALLAN VARIANCE PLOT
-xmin = 1e-2;
+xmin = 1e-1;
 xmax = 1e4;
-ymin = 1e-12;
-ymax = 1e4;
+ymin = 1e-2;
+ymax = 1e0;
+
+x = 0.001: 0.1: 10000;
+y = 0.29*x.^(-1/2);
+z = 0.0014*x.^(1/2);
 
 figure
 loglog(tau_array,sqrt(var_A),'x-')
 grid on;hold on;
 xlabel('tau [s]');
 ylabel('Allan deviation [dps]');
-% axis([xmin xmax ymin ymax]);
+loglog(x,y,'k');
+loglog(x,z,'k');
+loglog([1 1], [1e-5 sig_ARW], 'r')
+loglog([1e-5 1],[sig_ARW sig_ARW], 'r')
+axis([xmin xmax ymin ymax]);
 
 
