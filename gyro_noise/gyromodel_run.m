@@ -8,10 +8,9 @@ tdur = 18000;          % [s] Time Duration
 N    = tdur/dt;        % [] Number of Samples
 tout = 0:dt:tdur;
 
-sig_v = 0.033/180*pi;  % [rad/s^0.5] Angular Random Walk
-sig_u = 2e-4/180*pi;   % [rad/s^1.5] Rate Random Walk
-
-bias(1)  = 0.2;
+sig_v   = 0.033/180*pi;  % [rad/s^0.5] Angular Random Walk - Noise
+sig_u   = 2e-4/180*pi;   % [rad/s^1.5] Rate Random Walk - Bias Drift
+bias(1) = 15.2/180*pi;   % [rad/s] Bias Base
 
 %% DISCRETE GYRO MODELING MEASUREMENT
 fprintf('\nGenerating Gyro Modelling Measurement');
@@ -90,7 +89,7 @@ fprintf('\nStandard Dev  = %.6f [deg/s]',std(y));
 fprintf('\nActual ARW    = %.6f [deg/s^0.5]',sig_v/pi*180);
 fprintf('\nEstimated ARW = %.6f [deg/s^0.5]',sig_ARW);
 fprintf('\nActual RRW    = %.6f [deg/s^1.5]',sig_u/pi*180);
-fprintf('\nEstimated ARW = %.6f [deg/s^1.5]', 2.0e-4);    
+fprintf('\nEstimated RRW = %.6f [deg/s^1.5]', 2.0e-4);    
 fprintf('\n');
 %% ALLAN VARIANCE PLOT
 close all
@@ -114,6 +113,8 @@ loglog(x,z,'k');
 loglog([1e-5 1e4],[biasline biasline],  'g')
 loglog([1 1], [1e-5 sig_ARW], 'r')
 loglog([1e-5 1],[sig_ARW sig_ARW], 'r')
+loglog([3 3], [1e-5 sig_u/pi*180], 'r')
+loglog([1e-5 3],[sig_u/pi*180 sig_u/pi*180], 'r')
 axis([xmin xmax ymin ymax]);
 
 
