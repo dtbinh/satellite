@@ -1,3 +1,14 @@
+% -------------------------------------------------------------------------
+% UKF PENDULUM
+% -------------------------------------------------------------------------
+% This program runs the estimation using Unscented Kalman Filter for a
+% simple pendulum model
+% 
+% Author: Rusty Goh
+% Date:   17 Dec 2018 
+% 
+% ------------------------------------------------------------------------
+
 close all
 clear all
 clc
@@ -6,7 +17,7 @@ global CONST
 dt = 0.05;
 tdur = 100;
 sig_noise = 1e-2;
-CONST.model = 'ukf_simple_model';
+CONST.model = 'ukf_pendulum_model';
 CONST.R = sig_noise^2;
 CONST.Q = diag([0.00001,0.00001,0.001]);
 CONST.kappa = 1;
@@ -15,8 +26,7 @@ CONST.dt = dt;
 x_0 = [deg2rad(15);0;5];
 u_0 = [0;0;0];
 
-sim('ukf_simple_model',tdur);
-
+sim(CONST.model,tdur);
 
 %Plot
 x_true=zeros;
