@@ -1,8 +1,19 @@
+% -------------------------------------------------------------------------
+% RWA CONTROL TORQUE ALLOCATION
+% -------------------------------------------------------------------------
+% This program runs the control torque allocation for a defined reaction
+% wheel array of 4 reaction wheels on a satellite.
+% 
+% Author: Rusty Goh
+% Date:   17 Dec 2018 
+% -------------------------------------------------------------------------
+
 close all
 clear all
 clc
 global CONST
-
+% -------------------------------------------------------------------------
+% Reaction Wheel Definition 
 CONST.J = diag([0.056671585047683 0.057102938216026 0.0147]);
 
 R_B_RW1 = [ sqrt(2)/2  ;
@@ -29,8 +40,8 @@ CONST.D_RW_B = D_RW_B;
 
 T_cmd = [0;0;0.1e-2];
 I_rw  = 1.5465e-6;
-
-%% TIME 
+% -------------------------------------------------------------------------
+% Simulation Parameter 
 dt     = 0.01;          % [sec] time step
 tdur   = 300;           % [sec] time at final
 tspan  = 0:dt:tdur;     % [sec] time array
@@ -68,7 +79,8 @@ R_B_I(:,:,i+1) = q2dcm(q(:,i+1),'xyzw');
 track(i+1,:) = R_B_I(:,:,i+1)'*[0 ;0 ;1];
 
 end
-%% PLOT
+% -------------------------------------------------------------------------
+% Plot
 close all
 figure
 subplot(3,1,1)
@@ -116,8 +128,9 @@ grid on;
 subplot(4,1,4)
 plot(tspan,w_h(4,:));
 grid on;
-%% SIMULATION
-% Figure Setting
+% -------------------------------------------------------------------------
+% Simulation 
+Figure Setting
 fig = figure;
 screensize = get(0,'ScreenSize');
 set(fig,'Position',[0 0 screensize(4)*0.8 screensize(4)*0.8]);
@@ -126,7 +139,6 @@ cameratoolbar('SetMode','orbit')
 set(gca,'Position',[0 0 1 1]); % Set Position of Graph
 set(gca,'CameraViewAngle',6);  % Set Zoom of Graph
 axis(3.5*[-1 1 -1 1 -1 1]);    % Set Limit of Axis 
-
 
 % Earth Centered Inertial Frame
 plotvector([1 ;0 ;0], [0 0 0], 'k', 'X',2);
@@ -143,8 +155,6 @@ plotvector([0 ;0 ;1], [0 0 0], 'k', 'Z',2);
 [rw2,rw2_lab] = plotvector(R_B_I(:,:,1)'*D_B_RW*[0 ;1 ;0 ;0], [0 ;0 ;0], 'k','rw_2');
 [rw3,rw3_lab] = plotvector(R_B_I(:,:,1)'*D_B_RW*[0 ;0 ;1 ;0], [0 ;0 ;0], 'k','rw_3');
 [rw4,rw4_lab] = plotvector(R_B_I(:,:,1)'*D_B_RW*[0 ;0 ;0 ;1], [0 ;0 ;0], 'k','rw_4');
-
-
 
 % Track
 plot3(track(:,1),track(:,2),track(:,3))
