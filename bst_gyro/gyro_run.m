@@ -8,6 +8,8 @@
 % Gyro values [b-fr]:   0.018   0.004   0.042 | Abs.   0.046 [dps] @ t=        1308912[msec]
 % Gyro values [b-fr]:   0.048   0.010   0.011 | Abs.   0.050 [dps] @ t=        1310012[msec]
 %
+% Author: Rusty Goh
+% Date:   17 Dec 2018 
 % ------------------------------------------------------------------------
 
 close all

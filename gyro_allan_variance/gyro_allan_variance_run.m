@@ -1,3 +1,14 @@
+% -------------------------------------------------------------------------
+% GYRO ALLAN VARIANCE PLOT
+% -------------------------------------------------------------------------
+% This program runs the allan variance analysis with a defined discrete 
+% gyro model to show the plot of the allan variance with input values of
+% Angular Random Walk and Rate Random Walk value
+% 
+% Author: Rusty Goh
+% Date:   17 Dec 2018 
+% 
+% ------------------------------------------------------------------------
 close all
 clear all
 clc
@@ -6,19 +17,18 @@ fprintf('\nInitialising Parameters');
 dt   = 1/10;          % [s] Gyro Sampling Time 
 tdur = 18000;          % [s] Time Duration
 N    = tdur/dt;        % [] Number of Samples
-tout = 0:dt:tdur;
+tout = 0:dt:tdur-dt;
 
-sig_v   = 0.033/180*pi;  % [rad/s^0.5] Angular Random Walk - Noise
-sig_u   = 2e-4/180*pi;   % [rad/s^1.5] Rate Random Walk - Bias Drift
-bias(1) = 15.2/180*pi;   % [rad/s] Bias Base
+sig_v = 0.033/180*pi;  % [rad/s^0.5] Angular Random Walk
+sig_u = 2e-4/180*pi;   % [rad/s^1.5] Rate Random Walk
+
+bias(1)  = 0.2;
 
 %% DISCRETE GYRO MODELING MEASUREMENT
 fprintf('\nGenerating Gyro Modelling Measurement');
 for i = 1:N+1
    bias(i+1) = bias(i)+sig_u*dt^0.5*randn(1,1);
    y(i) = sqrt(sig_v^2/dt)*randn(1,1)+0.5*(bias(i+1)+bias(i));
-   
-    
 end
 
 %% ALLAN VARIANCE
@@ -49,8 +59,8 @@ for j = 1:M:N-M+2
     omega(k)= 0;
     
     % Summong up omega for n samples at m set
-   j = uint32(j);
-    for m = j:1:j+M-2
+   
+    for m = j:1:j+M-1
         omega(k) = omega(k) + y(m);
     end
 
@@ -71,9 +81,8 @@ end
 
 
 %% PLOT
-
 figure
-plot(tout,y)
+plot(tout,y(1:end-1))
 grid on;
 text(0,0,strcat(' STD:',num2str(std(y))));
 axis([-inf inf -inf inf])
@@ -89,7 +98,7 @@ fprintf('\nStandard Dev  = %.6f [deg/s]',std(y));
 fprintf('\nActual ARW    = %.6f [deg/s^0.5]',sig_v/pi*180);
 fprintf('\nEstimated ARW = %.6f [deg/s^0.5]',sig_ARW);
 fprintf('\nActual RRW    = %.6f [deg/s^1.5]',sig_u/pi*180);
-fprintf('\nEstimated RRW = %.6f [deg/s^1.5]', 2.0e-4);    
+fprintf('\nEstimated ARW = %.6f [deg/s^1.5]', 2.0e-4);    
 fprintf('\n');
 %% ALLAN VARIANCE PLOT
 close all
@@ -113,8 +122,6 @@ loglog(x,z,'k');
 loglog([1e-5 1e4],[biasline biasline],  'g')
 loglog([1 1], [1e-5 sig_ARW], 'r')
 loglog([1e-5 1],[sig_ARW sig_ARW], 'r')
-loglog([3 3], [1e-5 sig_u/pi*180], 'r')
-loglog([1e-5 3],[sig_u/pi*180 sig_u/pi*180], 'r')
 axis([xmin xmax ymin ymax]);
 
 

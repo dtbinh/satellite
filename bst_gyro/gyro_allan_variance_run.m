@@ -9,6 +9,8 @@
 % Gyro values [b-fr]:   0.018   0.004   0.042 | Abs.   0.046 [dps] @ t=        1308912[msec]
 % Gyro values [b-fr]:   0.048   0.010   0.011 | Abs.   0.050 [dps] @ t=        1310012[msec]
 %
+% Author: Rusty Goh
+% Date:   17 Dec 2018 
 % ------------------------------------------------------------------------
 
 close all
@@ -18,7 +20,7 @@ fprintf('---------ALLAN VARIANCE ANALYSIS SIMULATION--------');
 fprintf('\nInitialising Parameters\n');
 % ------------------------------------------------------------------------
 % LOAD DATA
-file   = 'trisat_gyro2_long.dat';
+file   = 'trisat_gyro0.dat';
 fileID = fopen(file);
 wdata  = textscan(fileID,'%19c %f %f %f | %4c %f %11c %f %6c');
 fclose(fileID);
@@ -55,7 +57,8 @@ for ii=1:1:length(tout)-1
     
     dtarray(ii) = tout(ii+1)-tout(ii);   % [sec] Time at which the .dat file is measured
 end
-dt = mean(dtarray);
+dt   = mean(dtarray);
+type = 2;              % type 1 for dt = 0.2, type 2 for dt = 1.0
 tdur = tout(end);       % [sec] Duration of Measurement 
 
 % ------------------------------------------------------------------------
@@ -107,20 +110,20 @@ k = 1;
 % for each measurement
 for j = 1:M:N-M+2
 
-% Initialise for Time Set
-omega(k)= 0;
+    % Initialise for Time Set
+    omega(k)= 0;
 
-% Summing up omega for n samples at m set
-j = uint32(j);
-for m = j:1:j+M-2
-    omega(k) = omega(k) + y(m);
-end
+    % Summing up omega for n samples at m set
+    j = uint32(j);
+    for m = j:1:j+M-2
+        omega(k) = omega(k) + y(m);
+    end
 
-% Average value of each cluster
-omega(k) = omega(k)/M;       % average of omega for each time set
+    % Average value of each cluster
+    omega(k) = omega(k)/M;       % average of omega for each time set
 
-% Next Time Step
-k  = k+1;
+    % Next Time Step
+    k  = k+1;
 
 end
 
@@ -164,15 +167,15 @@ ylabel('Gyro Measurement [dps]');
 
 switch kk
     case 0
-        sig_ARW = 0.290;                  % [deg/s^0.5] Adjust this value with plot
+        sig_ARW = 7.00;                  % [deg/s^0.5] Adjust this value with plot
         sig_RRW = 0.001;                 % [deg/s^1.5] Adjust this value with plot
         BW      =  1/((std(y)/sig_ARW)^2); % Bandwidth                
     case 1
-        sig_ARW = 0.275;                  % [deg/s^0.5] Adjust this value with plot
+        sig_ARW = 6.00;                  % [deg/s^0.5] Adjust this value with plot
         sig_RRW = 0.0015;                 % [deg/s^1.5] Adjust this value with plot
         BW      =  1/((std(y)/sig_ARW)^2); % Bandwidth                
     case 2
-        sig_ARW = 0.290;                    % [deg/s^0.5] Adjust this value with plot
+        sig_ARW = 8.00;                    % [deg/s^0.5] Adjust this value with plot
         sig_RRW = 0.002;                   % [deg/s^1.5] Adjust this value with plot
         BW      =  1/((std(y)/sig_ARW)^2); % Bandwidth
     otherwise
@@ -200,7 +203,7 @@ loglog([1 1], [1e-5 sig_ARW], 'r')
 loglog([1e-5 1],[sig_ARW sig_ARW], 'r')
 loglog([3 3], [1e-5 sig_RRW], 'r')
 loglog([1e-5 3],[sig_RRW sig_RRW], 'r')
-axis([xmin xmax ymin ymax]);
+% axis([xmin xmax ymin ymax]);
 
 % ------------------------------------------------------------------------
 % Report
