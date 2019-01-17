@@ -2,9 +2,11 @@ close all
 clear all
 clc
 format long
+% ------------------------------------------------------------------------
 % Parameters
 global CONST
 
+% OPSSAT
 R   = 16;                 % [Ohm] Terminal Resistance               
 L   = 26e-6;              % [H] Terminal Inductance, phase to phase
 eff = 0.51;               % [-] Efficiency
@@ -15,7 +17,26 @@ kn  = 10587*(2*pi/60);    % [(rad/s)/V] Speed Constant
 J   = 0.125e-7+1.5465e-6;%0.125e-7; % [kgm^2] Rotor Inertia with wheel of 1.5465e-6 [kgm^2]               
 Co  = 3.00e-6;            % [Nm] Friction Torque Static
 Cv  = 0.52e-9/(2*pi/60);  % [Nm/(rad/s)] Friction Torque Dynamic  
-p   = 4;                  % [-] Number of Poles
+p   = 6;                  % [-] Number of Poles
+Vmax = 4;
+
+% BST DM24
+R   = 2.5;                % [Ohm] Terminal Resistance               
+L   = 26e-6;              % [H] Terminal Inductance, phase to phase
+eff = 0.51;               % [-] Efficiency               
+ki  = 1.109e3;            % [A/Nm] Current constant
+ke  = 1.026E-3/(2*pi/60) ;% [V/(rad/s)] Back-EMF Constant 
+kt  = 1/ki;               % [Nm/A] Torque Constant, also known as kM   
+kn  = 10587*(2*pi/60);    % [(rad/s)/V] Speed Constant
+J   = 978.548e-6;         % [kgm2]                
+Co  = 3.00e-6;            % [Nm] Friction Torque Static
+Cv  = 0.52e-9/(2*pi/60);  % [Nm/(rad/s)] Friction Torque Dynamic  
+p   = 6;                  % [-] Number of Poles
+Vmax = 24;                % [V] Max Voltage
+Imax = 0.9;               % [A] Max current
+Nmax = 5000*(2*pi/60);    % [rad/s]Maximum Speed
+Tmax = 0.01;              % [Nm] Maximum Torque
+
 
 CONST.R   = R;    % [Ohm] Terminal Resistance               
 CONST.L   = L;    % [H] Terminal Inductance, phase to phase 
@@ -29,12 +50,10 @@ CONST.Co  = Co ;  % [Nm] Friction Torque Static
 CONST.Cv  = Cv ;  % [Nm/(rad/s)] Friction Torque Dynamic 
 CONST.p   = p;    % [-] Number of Poles
 
-%% VOLTAGE
-Vmax = 4;
 
 %% CONTROL MODE
 
-CTRL_MODE = 4; % CURRENT/TORQUE/SPEED/VOLTAGE
+CTRL_MODE = 1; % CURRENT/TORQUE/SPEED/VOLTAGE
 
 % ------------------------------------------------------
 % CURRENT CONTROLLER
@@ -46,7 +65,7 @@ CONST.i_kp = i_kp;
 CONST.i_ki = i_ki;
 CONST.i_kd = i_kd;
 
-i_tgt = 0.15;     % [Nm] Maximum allowed is 0.15 [A]
+i_tgt = 0.15;      % [Nm] Maximum allowed is 0.15 [A]
 % ------------------------------------------------------
 % TORQUE CONTROL
 trq_kp = 1e3;
@@ -57,7 +76,7 @@ CONST.trq_kp = trq_kp;
 CONST.trq_ki = trq_ki;
 CONST.trq_kd = trq_kd;
 
-trq_tgt = 0.02e-3; % [Nm] Maximum Torque allowed is 0.10 [mNm]
+trq_tgt = 0.1e-3; % [Nm] Maximum Torque allowed is 0.10 [mNm]
 
 % ------------------------------------------------------
 % SPEED CONTROL
@@ -76,13 +95,13 @@ w_tgt = rpm2rps(2000);
 V_tgt = 2.1;   
 
 %% INITIAL
-theta_m_0 = 0;
+theta_m_0 = 0; 
 w_m_0     = 0;
 wdot_dm_0 = 0;
 
 %% TIME 
-dt     = 0.01;        % [sec] time step
-tdur   = 10;          % [sec] time at final
+dt     = 0.2;        % [sec] time step
+tdur   = 33;          % [sec] time at final
 tspan  = 0:dt:tdur;   % [sec] time array
 tlgth  = length(tspan);
 thold  = 0.5;
