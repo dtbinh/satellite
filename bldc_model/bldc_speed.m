@@ -13,30 +13,30 @@ w_m   = in(8);
 
 global CONST
 
-kt = CONST.kt;     
-J  = CONST.J; 
 Cv = CONST.Cv;
-Co = CONST.Co;
 
 % Electrical Torque
-Ta = kt*i_a*f_a;
-Tb = kt*i_b*f_b;
-Tc = kt*i_c*f_c; 
+Ta = CONST.kt*i_a*f_a;
+Tb = CONST.kt*i_b*f_b;
+Tc = CONST.kt*i_c*f_c; 
 
 Te = Ta+Tb+Tc;
 
 % Static Friction
-if w_m < 0
-    Co = -Co;
-else if w_m == 0
-        Co = 0;
-     else
-     end
+if w_m == 0;
+    if Te < 0
+        Co = -CONST.Co;
+    else 
+        Co = CONST.Co;
+    end
+else
+    Co = 0;
 end
 
-    
+frict = -Cv*w_m-Co;    
+
 % Mechanical Dynamics
-wdot_m = 1/J*(Te-Co-Cv*w_m+To);
+wdot_m = 1/CONST.J*(Te+frict+To);
 
 out(1,1) = wdot_m;   
 out(2,1) = Te;       % Electrical Torque

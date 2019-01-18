@@ -3,17 +3,17 @@ function out = bldc_backemf(in)
 w_e     = in(1);
 theta_e = in(2); 
 
-
 global CONST
-ke  = CONST.ke;
 
+% Trapezium Signal based on Rotation Angle
 f_a = bldc_trap(theta_e);
 f_b = bldc_trap(theta_e-2*pi/3);
 f_c = bldc_trap(theta_e+2*pi/3);
 
-E_a = ke*f_a*w_e;     % [V]
-E_b = ke*f_b*w_e;     % [V]
-E_c = ke*f_c*w_e;     % [V]
+% Back EMF
+E_a = CONST.ke*f_a*w_e;     % [V]
+E_b = CONST.ke*f_b*w_e;     % [V]
+E_c = CONST.ke*f_c*w_e;     % [V]
 
 
 out(1,1) = f_a;

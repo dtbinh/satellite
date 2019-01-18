@@ -2,8 +2,10 @@ function out = bldc_inverter(in)
 
 pulse1 = in(1);
 pulse2 = in(2);
-pulse3 = in(3);
-V_dc   = in(4);
+pulse3 = in(3); 
+
+% Voltage across the phase
+V_dc   = in(4); 
 
 V_a = 1/3*(2*pulse1-pulse2-pulse3)*V_dc;
 V_b = 1/3*(2*pulse2-pulse1-pulse3)*V_dc;
