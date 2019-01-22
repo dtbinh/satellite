@@ -2,23 +2,23 @@ clear all
 clc
 format long
 
-% 5000 rpm - 83.33 rounds per sec - 0.012 sec/round
-% 4000 rpm - 66.67 rounds per sec - 0.015 sec/round
-% 3000 rpm - 50.00 rounds per sec - 0.020 sec/round
+% 5000 rpm - 83.33 rounds per sec - 0.012 sec/round - 1 msec is 0.083 rds
+% 4000 rpm - 66.67 rounds per sec - 0.015 sec/round - 1 msec is 0.067 rds
+% 3000 rpm - 50.00 rounds per sec - 0.020 sec/round - 1 msec is 0.050 rds
 % 2000 rpm - 33.33 rounds per sec - 0.030 sec/round
 % 1000 rpm - 16.67 rounds per sec - 0.060 sec/round
 % 500  rpm -  8.33 rounds per sec - 0.120 sec/round
 % 
+ki  = 96.154;             % [A/Nm] Current Constant
+km  = 1/96.154;           % [Nm/A] Torque Constant
+ke  = 1.026E-3/(2*pi/60); % [V/(rad/s)] Back-emf constant
+J   = 978.548e-6;         % [kgm2] Moment of Inertia
+R   = 2.5;                % [R] Terminal Resistance
+cur_max = 0.9;            % [A] Max Allowable current
 
-km  = 1/96.154;           % [Nm/A] Torque Constant, also known as kM (9.8 mNm/A)
-ke  = 1.026E-3/(2*pi/60); % [V/(rad/s)]
-J   = 978.548e-6;         % [kgm2] 
-R   = 2.5;                % [R] 
-cur_max = 0.9;   % [A] Max current
+V_in  = 8.0;              % [V] Input Voltage
 
-V_in  = 8.0;  % [V]
-
-
+% Friction Model
 frct_c = [-3.77e-09, -1.42e-06, -6.76e-04];
 frct_p = [-3.39e-09, -1.57e-06, -5.89e-04];
 frct_n = [-9.44e-09, -4.31e-05, +3.57e-04];
@@ -30,15 +30,15 @@ frct_n = [-9.44e-09, -4.31e-05, +3.57e-04];
 % 3 - trq cmd (closed)
 % 4 - trq cmd (open)
 
-ctrl_mode = 4;
+ctrl_mode = 3;
 
-cur_tgt   = -0.8;         % [A]
+cur_tgt = -0.8;         % [A]
 spd_tgt = 5000*rpm2rps; % [rad/s]
 trq_tgt = 0.0065;        % [Nm]
 
 % TIME 
-dt     = 0.001;         % [sec] time step resolution is 1 microsec
-tdur   = 72.5;           % [sec] time at final
+dt     = 0.001;         % [sec] time step 
+tdur   = 72.5;          % [sec] time at final
 tspan  = 0:dt:tdur;     % [sec] time array
 tlgth  = length(tspan); % [n] step lengths
 
@@ -48,6 +48,7 @@ ang   = zeros(1,tlgth);
 spd_m = zeros(1,tlgth);
 trq_m = zeros(1,tlgth);
 cur_cmd = zeros(1,tlgth);
+
 % Inital Values
 t_cur     = 0;
 spd_m_old = 0;
@@ -56,7 +57,7 @@ cur_motor = 0;
 spd(1)    = 500*rpm2rps;  %[rad/s]
 
 pid_trq_init = 1;
-
+pid_trq.init = 1;
 n_filter = 0.5;
 interval = 1;
 
@@ -87,18 +88,27 @@ for i = 2:1:tlgth
     spd(i) = trq(i)/J*dt + spd(i-1);
     
     
-    
+
     % Controller Step 
     switch ctrl_mode 
         
         case 1
             cur_cmd(i) = cur_tgt;
         case 2
-            cur_cmd(i) = pid_controller(100E-3, 3.0e-05, 0.0, spd_tgt - spd(i-1),dt);
+            pid_spd.kp = 100E-3;
+            pid_spd.ki = 3.0e-05;
+            pid_spd.kd = 0.0;
+            cur_cmd(i) = pid_controller(pid_spd, spd_tgt - spd(i-1),dt);
         case 3
+            pid_trq.kp = 5.0;
+            pid_trq.ki = 0.03;
+            pid_trq.kd = 0.0;
+            
             % Pre-load
             if (pid_trq_init)
+                fprintf('init\n');
               if(spd(i-1)*trq_tgt>0)
+                  fprintf('(spd(i-1)*trq_tgt>0\n');
                     cur_cmd(i) = 1/km*(trq_tgt - polyval(frct_p,spd(i-1)));
               else
                   trq_f = polyval(frct_n,spd(i-1));
@@ -111,9 +121,11 @@ for i = 2:1:tlgth
               end
               
             else
-                
+                cur_cmd(i) = 0;
             end
-            cur_cmd(i) = pid_controller(5.0, 0.03, 0.0, trq_tgt - trq(i-1),dt);
+            
+            cur_cmd(i) = pid_controller(cur_cmd(i),trq_tgt - trq(i),pid_trq,dt);
+            
             
             pid_trq_init = 0;
             
