@@ -390,7 +390,7 @@ CTRL_SWITCH2  = P/4; % Time to change mode from Sun Pointing to Operation Mode.
 
 CTRL_DT_MODE  = 2;   % Detumbling mode: BDOT/EDSP/VDOT/IDLE
 CTRL_PT1_MODE = 3;   % Pointing mode  : REF/SLD/SUN/TA/SC/IDLE
-CTRL_PT2_MODE = 2;   % Pointing mode  : REF/SLD/SUN/TA/SC/IDLE
+CTRL_PT2_MODE = 4;   % Pointing mode  : REF/SLD/SUN/TA/SC/IDLE
 
 %% SOLVER
 CONST.model = 'satellite_adcs_model';
@@ -547,7 +547,7 @@ plot3(Rx,Ry,Rz,'-.')
 
 % UPDATE SIMULATION PLOT
 
-for i=1:1:(length(tout)-1)
+for i=1:5:(length(tout)-1)
 
 % Update Satellite Position
 updateposition(R_sat, R(:,i));
