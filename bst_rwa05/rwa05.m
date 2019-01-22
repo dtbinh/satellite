@@ -10,13 +10,20 @@ format long
 % 500  rpm -  8.33 rounds per sec - 0.120 sec/round
 % 
 
-kt  = 9.8e-3;  % [Nm/A] Torque Constant, also known as kM (9.8 mNm/A) 
-J   = 978.548e-6 + 6.5e-7; % [kgm2] 
+km  = 1/96.154;           % [Nm/A] Torque Constant, also known as kM (9.8 mNm/A)
+ke  = 1.026E-3/(2*pi/60); % [V/(rad/s)]
+J   = 978.548e-6;         % [kgm2] 
+R   = 2.3;                % [R] 
 
-i_tgt = 0.3;   % A
+i_tgt = 0.8;  % [A]
+V_in  = 8.0;  % [V]
+
+frct_c = [-3.77e-09, -1.42e-06, -6.76e-04];
+frct_p = [-3.39e-09, -1.57e-06, -5.89e-04];
+frct_n = [-9.44e-09, -4.31e-05, +3.57e-04];
 
 %% TIME 
-dt     = 0.000001;    % [sec] time step resolution is 1 microsec
+dt     = 0.0001;    % [sec] time step resolution is 1 microsec
 tdur   = 5;           % [sec] time at final
 tspan  = 0:dt:tdur;   % [sec] time array
 tlgth  = length(tspan); % [n] step lengths
@@ -36,11 +43,20 @@ n_filter = 0.5;
 interval = 1;
 
 for i = 2:1:tlgth
-   
-    trq(i) = kt*i_tgt;
+    
+    i_int   = -1/km*polyval(frct_p,spd(i-1));
+
+    i_motor = i_tgt-i_int;
+    
+    trq(i) = km*i_motor;
     
     spd(i) = trq(i)/J*dt + spd(i-1);
     
+    Vemf = ke*spd(i-1);
+    Vmtr = R*i_motor;
+    
+    
+    % Measurement
     ang(i) = spd(i)*dt + ang(i-1);
     if (ang(i)>=2*pi)
         ang(i) = 0;
@@ -75,16 +91,14 @@ end
 figure
 plot(tspan,trq*1000);
 grid on; hold on;
-plot(tspan,trq_m*1000);
 axis([-inf inf 2.5 3.5 ]);
 xlabel('Time [sec');
 ylabel('Torque [mNm]');
 
 
 figure
-plot(tspan,spd);
+plot(tspan,spd*rps2rpm);
 grid on; hold on;
-plot(tspan,spd_m);
-axis([-inf inf spd(1)-25 spd(1)+25 ]);
+%axis([-inf inf 500 5000 ]);
 xlabel('Time [sec');
-ylabel('Speed [rad/s]');
+ylabel('Speed [rpm]');
