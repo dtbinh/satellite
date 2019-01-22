@@ -547,7 +547,11 @@ plot3(Rx,Ry,Rz,'-.')
 
 % UPDATE SIMULATION PLOT
 
+<<<<<<< HEAD
 for i=1:5:(length(tout)-1)
+=======
+for i=1:10:(length(tout)-1)
+>>>>>>> 9c8ef8b4a0d2dbb840526832b29d48af6de11d34
 
 % Update Satellite Position
 updateposition(R_sat, R(:,i));
