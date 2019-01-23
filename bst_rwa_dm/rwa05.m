@@ -30,31 +30,48 @@ frct_n = [-9.44e-09, -4.31e-05, +3.57e-04];
 % 3 - trq cmd (closed)
 % 4 - trq cmd (open)
 
-ctrl_mode = 3;
+ctrl_mode = 1;
 
-cur_tgt = -0.8;         % [A]
+cur_tgt = 0.8;         % [A]
 spd_tgt = 5000*rpm2rps; % [rad/s]
-trq_tgt = 0.0065;        % [Nm]
+trq_tgt = 0.002;        % [Nm]
+ctrl_itvl = 0.05;
+
+% measURE
+m_next = 0;
+
 
 % TIME 
 dt     = 0.001;         % [sec] time step 
-tdur   = 72.5;          % [sec] time at final
+tdur   = 9.736;          % [sec] time at final
 tspan  = 0:dt:tdur;     % [sec] time array
 tlgth  = length(tspan); % [n] step lengths
 
-trq   = zeros(1,tlgth);  % [Nm]
-spd   = zeros(1,tlgth);
+
 ang   = zeros(1,tlgth);
-spd_m = zeros(1,tlgth);
-trq_m = zeros(1,tlgth);
-cur_cmd = zeros(1,tlgth);
+spd_m = 0;
+trq_m = 0;
+
+out_cur_motor = zeros(1,tlgth);
+out_cur_cmd = zeros(1,tlgth);
+out_trq     = zeros(1,tlgth);  % [Nm]
+out_spd     = zeros(1,tlgth);
+out_trq_m   = zeros(1,tlgth);  % [Nm]
+out_spd_m   = zeros(1,tlgth);
 
 % Inital Values
+trq = 0;
+spd = 0;
 t_cur     = 0;
 spd_m_old = 0;
+trq_m_old = 0;
 tick_tot  = 0;
 cur_motor = 0;
-spd(1)    = 500*rpm2rps;  %[rad/s]
+spd       = 000*rpm2rps;  %[rad/s]
+ctrl_next = 0;
+cur_cmd = 0;
+t_m_cur = 0;
+t_m_old = 0;
 
 pid_trq_init = 1;
 pid_trq.init = 1;
@@ -63,135 +80,149 @@ interval = 1;
 
 for i = 2:1:tlgth
     
+    % Set Measure
+    if spd > 4000*rpm2rps
+        rds = 4;
+    else if spd > 3000*rpm2rps
+            rds = 3;
+         else if spd > 1500*rpm2rps
+                 rds = 2;
+             else
+                 rds = 1;
+             end
+        end
+    end
+    
+    m_itvl = 2*pi/spd*rds;
+    
     % Maximum allowable current
-    cur_cmd(i) = saturation(cur_cmd(i-1),cur_max);
+     cur_cmd = saturation(cur_cmd,cur_max);
     
     % Back EMF Saturation
-    iemf = (V_in-ke*spd(i-1))/R; %[V]
-    cur_cmd(i) = saturation(cur_cmd(i),iemf);
+    iemf = (V_in-ke*spd)/R; %[V]
+      cur_cmd = saturation(cur_cmd,iemf);
     
     % Voltage check / Diode check
-    Vemf = ke*spd(i-1); % [V] Voltage back emf
-    Vmtr = R*cur_motor;   % [V] Voltage across motor
+    Vemf = ke*spd; % [V] Voltage back emf
+    Vmtr = R*cur_motor; % [V] Voltage across motor
     
-    if (abs((V_in*sign(cur_cmd)-Vemf-Vmtr))>abs(V_in*sign(cur_cmd)))
+    if (abs((V_in*sign(cur_cmd)-Vemf-Vmtr)) > abs(V_in*sign(cur_cmd)))
         fprintf('Internal Current\n');
-        cur_int   = -1/km*polyval(frct_n,spd(i-1));
+        cur_int   = -1/km*polyval(frct_n,spd);
+        cur_motor = cur_cmd-cur_int;
     else
-        cur_int   = -1/km*polyval(frct_p,spd(i-1));
+        cur_int   = -1/km*polyval(frct_p,spd);
+        cur_motor = cur_cmd;
     end
 
-    % Motor current
-    cur_motor = cur_cmd(i)-cur_int;
-    
-    trq(i) = km*cur_motor;
-    spd(i) = trq(i)/J*dt + spd(i-1);
     
     
+    
+    trq = km*cur_motor;
+    spd = trq/J*dt + spd;
+    
+    % Measurement
+if tspan(i)>= m_next 
+    m_next = m_next + m_itvl;
+    
+    t_m_cur = tspan(i);
+    
+    
+    spd_m = 0.1*spd+0.9*spd_m; 
+    trq_m = 0.1*trq+0.9*trq_m;
+    
+    spd_m_old = spd_m;
+    trq_m_old = trq_m;
+    t_m_old   = t_m_cur;
+end
 
-    % Controller Step 
+% Controller Step 
+if tspan(i)>= ctrl_next 
+    
+%     fprintf('[%.3f] Ctrl Step\n',tspan(i));
+    ctrl_next = ctrl_next + ctrl_itvl;
+    
+    
     switch ctrl_mode 
         
         case 1
-            cur_cmd(i) = cur_tgt;
+            cur_cmd = cur_tgt;
         case 2
             pid_spd.kp = 100E-3;
             pid_spd.ki = 3.0e-05;
             pid_spd.kd = 0.0;
-            cur_cmd(i) = pid_controller(pid_spd, spd_tgt - spd(i-1),dt);
+            cur_cmd = pid_controller(pid_spd, spd_tgt - spd,dt);
         case 3
             pid_trq.kp = 5.0;
             pid_trq.ki = 0.03;
             pid_trq.kd = 0.0;
             
             % Pre-load
-            if (pid_trq_init)
+            if (pid_trq.init)
                 fprintf('init\n');
-              if(spd(i-1)*trq_tgt>0)
+                
+              if(spd_m*trq_tgt > 0)
                   fprintf('(spd(i-1)*trq_tgt>0\n');
-                    cur_cmd(i) = 1/km*(trq_tgt - polyval(frct_p,spd(i-1)));
+                    cur_cmd = 1/km*(trq_tgt - polyval(frct_p,spd_m));
               else
-                  trq_f = polyval(frct_n,spd(i-1));
+                  trq_f = polyval(frct_n,spd_m);
                   
-                  if (abs(trq_tgt)>abs(trq_f))
-                      cur_cmd(i) = 0;
+                  if (abs(trq_tgt) < abs(trq_f))
+                      cur_cmd = 0;
                   else
-                      cur_cmd(i) = 1/km*(trq_tgt - trq_f);
+                      cur_cmd = 1/km*(trq_tgt - trq_f);
                   end
               end
               
             else
-                cur_cmd(i) = 0;
+                cur_cmd = 0;
             end
             
-            cur_cmd(i) = pid_controller(cur_cmd(i),trq_tgt - trq(i),pid_trq,dt);
+            cur_cmd = pid_controller(cur_cmd, trq_tgt - trq_m, pid_trq, ctrl_itvl);
             
             
-            pid_trq_init = 0;
+            pid_trq.init = 0;
             
-            
-            
+
         case 4
-            if(spd(i-1)*trq_tgt>0)
-                cur_cmd(i) = 1/km*(trq_tgt - polyval(frct_p,spd(i-1)));
+            if(spd*trq_tgt>0)
+                cur_cmd = 1/km*(trq_tgt - polyval(frct_p,spd));
             end
             
         otherwise
     end
-    
-    
-    
-    
-    
-    
-    % Measurement
-    ang(i) = spd(i)*dt + ang(i-1);
-    if (ang(i)>=2*pi)
-        ang(i) = 0;
-        tick(i) = 1; 
-    else
-       tick(i) = 0;
-    end
-    
-    tick_tot = tick_tot + tick(i);
-    
-    if (tick_tot>=interval)
-        t_old = t_cur;
-        t_cur = tspan(i);
-        
-        spd_m(i) = (1-n_filter)*interval*2*pi/(t_cur-t_old)+ n_filter*spd_m_old ;
+end
 
-        trq_m(i) = J*(spd_m(i)-spd_m_old)/(t_cur-t_old);
-        spd_m_old = spd_m(i);
-        
-        tick_tot = 0;
-    else
-        spd_m(i) = spd_m(i-1);
-        trq_m(i) = trq_m(i-1);
-    end
-    
+out_trq_m(i)     = trq_m;
+out_spd_m(i)     = spd_m;
+out_trq(i)       = trq;
+out_spd(i)       = spd;
+out_cur_motor(i) = cur_motor;
+out_cur_cmd(i)   = cur_cmd;
 end
 
 %% PLOT
 close all;
 figure
-plot(tspan,trq*1000);
+plot(tspan,out_trq*1000);
 grid on; hold on;
-axis([-inf inf -1.0 10.0 ]);
+plot(tspan,out_trq_m*1000);
+%axis([-inf inf -1.0 10.0 ]);
 xlabel('Time [sec');
 ylabel('Torque [mNm]');
 
-
 figure
-plot(tspan,spd*rps2rpm);
+plot(tspan,out_spd*rps2rpm);
 grid on; hold on;
-%axis([-inf inf 500 5000 ]);
+plot(tspan,out_spd_m*rps2rpm);
+axis([-inf inf 500 5000 ]);
 xlabel('Time [sec');
 ylabel('Speed [rpm]');
 
 figure
-plot(tspan,cur_cmd*1000);
+plot(tspan,out_cur_cmd*1000);
 grid on; hold on;
+plot(tspan,out_cur_motor*1000);
 axis([-inf inf -1000.0 1000.0 ]);
 xlabel('Time [sec');
 ylabel('Tgt_Cur [mA]');

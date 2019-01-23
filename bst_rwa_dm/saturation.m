@@ -17,10 +17,11 @@
 %-------------------------------------------------------------------------
 
 function out = saturation(in,max)
-if abs(in)< max
+
+if abs(in)< abs(max)
     out = in;
 else
-    out = sign(in)*max;
+    out = max;
 end
 
 end
