@@ -224,13 +224,7 @@ if tspan(i)>= open_next
         if((p_cnt_old + cnt_ps) <= open_cnt_tot)
             
             if(spd_m*trq_tgt>0)
-                
                 cur_cmd = 1/km*(trq_tgt - polyval(frct_p,spd));
-                p1_ready = 1;   
-                cnt_p1 = cnt_min;
-                cnt_p2 = cnt_min;
-                cnt_ps = 2*cnt_min;
-                
             else
 
                 trq_int = polyval(frct_n,spd_m);
@@ -240,38 +234,19 @@ if tspan(i)>= open_next
                     fw_cur = (cnt_ps*1/km*trq_tgt - cnt_p1*1/km*trq_int)/cnt_p2;
                     fw_cur = fw_cur - 1/km*polyval(frct_p,spd_m);
 
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    p1_ready = 0;
+
                 else
                     cur_cmd = 1/km*(trq_tgt - polyval(frct_p,spd));
-                    p1_ready = 1;   
-                    cnt_p1 = cnt_min;
-                    cnt_p2 = cnt_min;
-                    cnt_ps = 2*cnt_min;
-                    
                 end
 
                 cur_cmd = 0;
             end
             
-            % Update Count Set
-            p_cnt_old = p_cnt_old + cnt_ps;
             
-        elseif ((p_cnt_old + cnt_p1) <= open_cnt_tot)
+            p_cnt_old = p_cnt_old 
+        else
             
-            if (p1_ready == 0)
-                
-                cur_cmd = cur_fw;
-                p1_ready = 1;
-            end
-   
+            
         end
     end
 end
