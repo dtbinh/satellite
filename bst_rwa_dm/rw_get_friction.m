@@ -1,12 +1,12 @@
-function trq = rw_get_friction(RW,spd,type)
+function trq = rw_get_friction(RW, spd, type)
 RW.diode_drop= 0.250;
 
 if (strcmp(type,'neg')) && ((spd*RW.ke) < RW.diode_drop)
+    fprintf('Neg but its ok\n');
     trq = polyval(RW.frct_p,spd);
-    return
-end
-
-switch type
+else
+    
+    switch type
     case 'pos'
         trq = polyval(RW.frct_p,spd);
     case 'neg'
@@ -16,7 +16,11 @@ switch type
     otherwise
         fprintf('frictino type not specified\n');
         trq = polyval(RW.frct_c,spd);
+    end
+
 end
+
+
 
 if spd < 0.0
    trq = -trq; 

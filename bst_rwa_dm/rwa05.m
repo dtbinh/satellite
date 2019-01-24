@@ -21,7 +21,7 @@ ctrl_mode = 4;
 
 cur_tgt = 0.8;          % [A]
 spd_tgt = 4000*rpm2rps; % [rad/s]
-trq_tgt = 0.001;       % [Nm]
+trq_tgt = 0.006;       % [Nm]
 
 spd_init = -4000*rpm2rps;  %[rad/s] Initial Speed
 
@@ -278,7 +278,7 @@ if tspan(i)>= open_next
                 
             else
                 % Calculate the Internal Current
-                trq_int = rw_get_friction(RW,spd,'neg');
+                trq_int = rw_get_friction(RW, spd_m ,'neg');
             
                 if(abs(trq_int) > abs(trq_tgt))
                     fprintf('[%.4f] Neg Parts Control trq_int:%.6f trq_tgt:%.6f \n',tspan(i),trq_int,trq_tgt);
@@ -319,7 +319,7 @@ if tspan(i)>= open_next
                     
                     p1_ready = 0;
                 else
-                    fprintf('[%.4f] Neg Direct Control \n',tspan(i));
+                    fprintf('[%.4f] Neg Direct Control trq_int:%.6f trq_tgt:%.6f \n',tspan(i),trq_int,trq_tgt);
                     cur_cmd = RW.ki*(trq_tgt - rw_get_friction(RW,spd,'pos'));
                     p1_ready = 1;   
                     cnt_p1 = cnt_min;
