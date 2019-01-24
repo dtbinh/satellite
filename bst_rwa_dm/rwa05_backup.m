@@ -15,9 +15,9 @@ ki  = 96.154;             % [A/Nm] Current Constant
 km  = 1/ki;               % [Nm/A] Torque Constant
 ke  = 1.026E-3/(2*pi/60); % [V/(rad/s)] Back-emf constant
 J   = 978.548e-6;         % [kgm2] Moment of Inertia
-R   = 2.5;                % [R] Terminal Resistance
+R   = 2.3;                % [R] Terminal Resistance
 cur_max = 0.9;            % [A] Max Allowable current
-
+cur_min = 0.00; %[A]
 V_in  = 8.0;              % [V] Input Voltage
 
 % Friction Model
@@ -39,7 +39,6 @@ spd_tgt = 5000*rpm2rps; % [rad/s]
 trq_tgt = -0.0065;      % [Nm]
 
 ctrl_itvl = 0.05;       % [sec] 
-open_itvl = 0.005;      % [sec] like a phase cnt time
 
 spd_init = 5000*rpm2rps;  %[rad/s]
 
@@ -89,6 +88,7 @@ interval = 1;
 open_cnt_tot = 0;
 open_next = 0;
 open_init = 1;
+open_rds = 1;
 for i = 2:1:tlgth
 
 % --------------- Motor Dynamics-----------------    
@@ -101,7 +101,7 @@ for i = 2:1:tlgth
     Vmtr = R*cur_motor; % [V] Voltage across motor
     
     if (abs((V_in*sign(cur_cmd)-Vemf-Vmtr)) > abs(V_in*sign(cur_cmd)))
-        fprintf('[%.3f] Internal Current\n',tspan(i));
+%         fprintf('[%.3f] Internal Current\n',tspan(i));
         cur_int   = -1/km*polyval(frct_n,spd); % in intcur ops, this is int current + frict, 
        
     else
@@ -198,58 +198,134 @@ if tspan(i)>= ctrl_next
                         
             pid_trq.init = 0;
             
+%         case 4
+%             cur_cmd = 1/km*(trq_tgt - polyval(frct_p,spd));
+%             
         otherwise
-            cur_cmd = 0;
+            
     end
 end
 
 
 
 % --------------- Open Loop Control ------------------
-if tspan(i)>= open_next 
+if tspan(i)>= open_next
+    
     if (ctrl_mode == 4)
+        
+        % Set Interval
+        open_itvl = 2*pi/spd*open_rds;
+        fprintf('open_itvl: %.6f rpm:%.6f\n',open_itvl,spd*rps2rpm);
         open_next = open_next+open_itvl;
         open_cnt_tot = open_cnt_tot+1;
 
-        cnt_min = 2;
+        % Set Minimum Count
+        if spd>4000*rpm2rps
+            cnt_min = 10;
+        elseif spd>3000*rpm2rps
+            cnt_min = 7;
+        elseif spd>2000*rpm2rps
+            cnt_min = 4;
+        elseif spd>1000*rpm2rps
+            cnt_min = 2;
+        else
+            cnt_min = 2;
+        end    
+        
 
+        % Init
         if(open_init)
+            
             cnt_p1 = cnt_min;
             cnt_p2 = cnt_min;
             cnt_ps = 2*cnt_min;
             p_cnt_old = open_cnt_tot - cnt_ps;
             open_init = 0;
         end
-
+         fprintf('tot: %d ps: %d p1:%d  p2:%d\n',open_cnt_tot,cnt_ps, cnt_p1,cnt_p2);
         if((p_cnt_old + cnt_ps) <= open_cnt_tot)
-            
-            if(spd_m*trq_tgt>0)
-                cur_cmd = 1/km*(trq_tgt - polyval(frct_p,spd));
-            else
+%             fprintf('-----------------cnt_ps----------------\n');
 
+            if(spd_m*trq_tgt>0)
+                
+                cur_cmd = 1/km*(trq_tgt - polyval(frct_p,spd));
+                p1_ready = 1;   
+                cnt_p1 = cnt_min;
+                cnt_p2 = cnt_min;
+                cnt_ps = 2*cnt_min;
+                
+            else
+                % Calculate the Internal Current
                 trq_int = polyval(frct_n,spd_m);
 
                 if(abs(trq_int) > abs(trq_tgt))
-                    % Update fw cur
-                    fw_cur = (cnt_ps*1/km*trq_tgt - cnt_p1*1/km*trq_int)/cnt_p2;
-                    fw_cur = fw_cur - 1/km*polyval(frct_p,spd_m);
-
-
+                    
+                    % Drive the minimum reverse current in part 1 (triggers internal current)
+                    if(spd_m > 0.0)  
+                        cur_cmd = -cur_min; 
+                    else
+                        cur_cmd = +cur_min; 
+                    end
+                    
+                    % Check 
+                    while( ((cnt_p1/cnt_ps)*abs(trq_int)) < abs(trq_tgt))
+                        if(cnt_p2 > cnt_min)
+                            cnt_p2 = cnt_p2 - 1;
+                            cnt_ps = cnt_p1 + cnt_p2;
+                        else
+                            cnt_p1 = cnt_p1 + 1;
+                            cnt_ps = cnt_p1 + cnt_p2;
+                        end
+                    end
+                    
+                    % Update cur_fw
+                    cur_fw = update_cur_fw(trq_tgt,trq_int, cnt_p1, cnt_p2, cnt_ps, ki, frct_p, spd_m);
+    
+                    % Check cur_fw
+                    while(abs(cur_fw) > cur_max)
+                        if(cnt_p1 > cnt_min)
+                            cnt_p1 = cnt_p1 - 1;
+                            cnt_ps = cnt_p1 + cnt_p2;
+                        else
+                            cnt_p2 = cnt_p2 + 1;
+                            cnt_ps = cnt_p1 + cnt_p2;
+                        end
+                    
+                        cur_fw = update_cur_fw(trq_tgt,trq_int, cnt_p1, cnt_p2, cnt_ps, ki, frct_p, spd_m);
+                    end
+                    
+                    p1_ready = 0;
                 else
                     cur_cmd = 1/km*(trq_tgt - polyval(frct_p,spd));
+                    p1_ready = 1;   
+                    cnt_p1 = cnt_min;
+                    cnt_p2 = cnt_min;
+                    cnt_ps = 2*cnt_min;
+                    
                 end
 
-                cur_cmd = 0;
             end
+            %Set Current
             
             
-            p_cnt_old = p_cnt_old 
-        else
             
+            % Update Count Set
+            p_cnt_old = p_cnt_old + cnt_ps;
             
+%         fprintf('new tot: %d ps: %d p1:%d  p2:%d\n',open_cnt_tot,cnt_ps, cnt_p1,cnt_p2);    
+        elseif ((p_cnt_old + cnt_p1) <= open_cnt_tot)
+          
+            if (p1_ready == 0)
+                
+                cur_cmd = cur_fw;
+                p1_ready = 1;
+            end
+             
         end
     end
 end
+% fprintf('cur_cmd: %.3f \n',cur_cmd); 
+
 
 % Maximum allowable current
 cur_cmd = satcheck(cur_cmd,cur_max);
@@ -271,7 +347,7 @@ grid on; hold on;
 plot(tspan,out_trq_m*1000);
 legend('trq','trq_{meas}');
 %axis([-inf inf -1.0 10.0 ]);
-xlabel('Time [sec');
+xlabel('Time [sec]');
 ylabel('Torque [mNm]');
 title('Torque [mNm] vs Time [sec]');
 
@@ -280,7 +356,7 @@ plot(tspan,out_spd*rps2rpm);
 grid on; hold on;
 plot(tspan,out_spd_m*rps2rpm);
 axis([-inf inf 400 5100]);
-xlabel('Time [sec');
+xlabel('Time [sec]');
 ylabel('Speed [rpm]');
 title('Speed [rpm] vs Time [sec]');
 
@@ -290,6 +366,6 @@ grid on; hold on;
 plot(tspan,out_cur_motor*1000);
 legend('cur_c_m_d','cur_m_o_t_o_r');
 % axis([-inf inf -1000.0 1000.0 ]);
-xlabel('Time [sec');
+xlabel('Time [sec]');
 ylabel('Current [mA]');
 title('Current [mA] vs Time [sec]');
