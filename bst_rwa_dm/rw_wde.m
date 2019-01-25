@@ -5,7 +5,7 @@ switch ctrl.ctrl_mode
         ctrl.cur_cmd = ctrl.cur_tgt;
     case 2
         ctrl.cur_cmd = 0.0;
-        ctrl.pid_spd = pid_controller(ctrl.cur_cmd, ctrl.spd_tgt - dat.spd_m, ctrl.pid_spd, ctrl.ctrl_itvl);
+        ctrl.pid_spd = rw_pid_controller(ctrl.cur_cmd, ctrl.spd_tgt - dat.spd_m, ctrl.pid_spd, ctrl.ctrl_itvl);
         ctrl.cur_cmd = ctrl.pid_spd.out;
         ctrl.pid_spd.init = 0;
 
@@ -36,7 +36,7 @@ switch ctrl.ctrl_mode
             ctrl.cur_cmd = 0.0;
         end
 
-        ctrl.pid_trq = pid_controller(ctrl.cur_cmd, ctrl.trq_tgt - dat.trq_m, ctrl.pid_trq, ctrl.ctrl_itvl*1000);
+        ctrl.pid_trq = rw_pid_controller(ctrl.cur_cmd, ctrl.trq_tgt - dat.trq_m, ctrl.pid_trq, ctrl.ctrl_itvl*1000);
         ctrl.cur_cmd = ctrl.pid_trq.out;            
         ctrl.pid_trq.init = 0;
 

@@ -2,7 +2,7 @@ function trq = rw_get_friction(RW, spd, type)
 RW.diode_drop= 0.250;
 
 if (strcmp(type,'neg')) && ((spd*RW.ke) < RW.diode_drop)
-    fprintf('Neg but its ok\n');
+%     fprintf('Neg but its ok\n');
     trq = polyval(RW.frct_p,spd);
 else
     

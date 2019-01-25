@@ -2,7 +2,7 @@ function [trq,spd] = rw_dynamics(par,voltage,cur_cmd, spd, dt)
    
 % Back EMF Saturation
 iemf = (voltage - par.ke*spd)/ par.R;   % [V]
-cur_cmd = satcheck(cur_cmd,iemf);
+cur_cmd = rw_satcheck(cur_cmd,iemf);
 
 % Internal Current
 if(spd*cur_cmd >= 0)
