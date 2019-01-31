@@ -1,4 +1,4 @@
-function [par, dat, ctrl] = rw_init(spd_init)
+function [par, dat, ctrl] = rw_init(spd_init, model)
 
 rpm2rps = 2*pi/60;
 
@@ -19,18 +19,34 @@ rpm2rps = 2*pi/60;
         par.km  = 1/96.154;         % [Nm/A] Torque Constant
         par.ke  = 1.026E-3/(2*pi/60); % [V/(rad/s)] Back-emf constant
         par.J   = 978.548e-6;         % [kgm2] Moment of Inertia
-        par.R   = 2.3;                % [R] Terminal Resistance
+        par.R   = 2.05;                % [R] Terminal Resistance
         par.spd_max = 5050.0*rpm2rps; % [rad/s] Maximum wheel Speed
         par.cur_max = 0.9;            % [A] Max Allowable current
         par.cur_min = 0.001;           %[A] This value has to be zero (cur_min = 0.001 in par)
-
+        par.diode_drop= 0.250;         % [V]
         par.filter = 0.9; % Complimentary Fitler (0.0 - no filter, 1.0 full filter)
         par.rds    = 1;   % Rounds when Speed is Updated 
 
         % Friction Model
-        par.frct_c = [-3.77e-09, -1.42e-06, -6.76e-04];
-        par.frct_p = [-3.39e-09, -1.57e-06, -5.89e-04];
-        par.frct_n = [-9.44e-09, -4.31e-05, +3.57e-04];
+        switch model
+            case 'dm'
+                par.frct_c = [-3.77e-09, -1.42e-06, -6.76e-04];
+                par.frct_p = [-3.39e-09, -1.57e-06, -5.89e-04];
+                par.frct_n = [-9.44e-09, -4.31e-05, +3.57e-04];
+            case'fm1'
+                par.frct_c = [-1.96e-09, -1.75e-06, -6.81e-04];
+                par.frct_p = [-1.66e-09, -1.89e-06, -6.39e-04];
+                par.frct_n = [-8.23e-09, -4.92e-05,  5.59e-04];
+            case'fm2'
+                par.frct_c = [-2.07e-09, -1.65e-06, -6.93e-04];
+                par.frct_p = [-2.17e-09, -1.61e-06, -6.87e-04];
+                par.frct_n = [-7.60e-09, -4.78e-05,  5.46e-04];
+            case'fm3'
+                par.frct_c = [-1.88e-09, -1.82e-06, -6.65e-04];
+                par.frct_p = [-1.88e-09, -1.81e-06, -6.47e-04];
+                par.frct_n = [-7.20e-09, -5.01e-05,  6.25e-04];
+            otherwise
+        end
 
         % Controller
         % Speed PID Parameter

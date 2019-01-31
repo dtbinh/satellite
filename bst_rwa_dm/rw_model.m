@@ -6,7 +6,7 @@
 % 1000 rpm - 16.67 rounds per sec - 0.060 sec/round
 % 500  rpm -  8.33 rounds per sec - 0.120 sec/round
 
-function [trq,spd,trq_m,spd_m,cur_cmd] = rw_model(ctrl_mode, cur_tgt, spd_tgt, trq_tgt, vol_in, spd_init, dt, tnow) 
+function [trq, spd, trq_m, spd_m, cur_cmd] = rw_model(model,ctrl_mode, cur_tgt, spd_tgt, trq_tgt, vol_in, spd_init, dt, tnow) 
 
 tt = tnow; % Running Time in Reaction Wheel
 
@@ -14,9 +14,9 @@ persistent init m_next ctrl_next rw_par rw_dat rw_ctrl
 % fprintf('rw run time:%.3f  dt:%.3f\n',tt,dt);
 
 if tnow == 0
-    fprintf('Reaction Wheel Initialisation\n');
+    fprintf('Reaction Wheel Initialisation: %s\n',model);
 
-    [rw_par, rw_dat, rw_ctrl] = rw_init(spd_init);
+    [rw_par, rw_dat, rw_ctrl] = rw_init(spd_init, model);
 
 
     m_next = 0;
@@ -25,8 +25,7 @@ if tnow == 0
 
     init = 1;
 
-    rw_par
-
+    
     fprintf('Reaction Wheel Model Running...\n');
 else 
     if init ~= 1
@@ -37,14 +36,14 @@ end
         
         
 % User Input
-rw_ctrl.ctrl_mode = ctrl_mode;
+rw_ctrl.ctrl_mode = ctrl_mode; % [] Controller Mode
 rw_ctrl.cur_tgt = cur_tgt;     % [A]
 rw_ctrl.spd_tgt = spd_tgt;     % [rad/s]
 rw_ctrl.trq_tgt = trq_tgt;     % [Nm]
      
         % --------------- rw_par dynamics ------------------
-        [rw_dat.trq,rw_dat.spd] = rw_dynamics(rw_par,vol_in,rw_ctrl.cur_cmd, rw_dat.spd, dt);
-
+        [rw_dat.trq,rw_dat.spd,rw_dat.cur_int] = rw_dynamics(rw_par,vol_in,rw_ctrl.cur_cmd, rw_dat.spd, dt);
+        
         % --------------- Measurement ------------------
         if tt>= m_next 
             % Set Measure
@@ -103,5 +102,6 @@ spd     = rw_dat.spd;
 trq_m   = rw_dat.trq_m;
 spd_m   = rw_dat.spd_m;
 cur_cmd = rw_ctrl.cur_cmd;
+cur_int = rw_dat.cur_int;
 
 end
