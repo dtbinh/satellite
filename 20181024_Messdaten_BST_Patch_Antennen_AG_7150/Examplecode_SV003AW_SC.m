@@ -39,7 +39,7 @@ Dlog = 10*log10(Dlin);
 % theta - azimuth
 % phi   - elevation
 [theta_int,phi_int] = meshgrid(pattern.measurement.dim(2).value, pattern.measurement.dim(1).value - 90 ); 
-[x,y,z]     = sph2cart(theta_int*pi/180, phi_int*pi/180, -plog);
+[x,y,z]             = sph2cart(theta_int*pi/180, phi_int*pi/180, -plog);
 
 % ------------------------------------------------------------------------
 % Obtain Measurement Data
@@ -73,14 +73,22 @@ for i = 62:1:121
     end
 end
 
+% Mapping
+for i = 1:1:121   % elev 
+    for j=1:1:61
+        
+    end
+end
+
 
 for i = 1:1:61   % elev 
     for j=1:1:61   % azi
-        fprintf('[%2d,%2d] azi: %11.6f ele: %11.6f phi(azi): %11.6f theta(ele): %11.6f \n',i,j,azi(i,j)*180/pi,elev(i,j)*180/pi, phi(i,j), theta(i,j) );
+        fprintf('[%2d,%2d] azi: %11.6f ele: %11.6f phi(azi): %11.6f theta(ele): %11.6f phi_int: %11.6f theta_int: %11.6f\n',...
+            i,j,azi(i,j)*180/pi,elev(i,j)*180/pi, phi(i,j), theta(i,j), phi_int(i,j), theta_int(i,j)  );
         
         % Rotate Vector
         vector_test(:,i,j)   = [x(i,j);y(i,j);z(i,j)];
-        vector_sc_int(:,i,j) = dcm(1,pi/2)*dcm(3,-pi/2)*vector_test(:,i,j);   % BST
+        vector_sc_int(:,i,j) = dcm(1,pi/2)*dcm(3,-pi/2)*vector_test(:,i,j);       % BST
         vector_sc(:,i,j)     = dcm(3,-pi/2)*dcm(1,-pi/2)*vector_sc_int(:,i,j);    % STM
         
         % Test Frame
