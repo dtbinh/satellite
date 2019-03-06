@@ -1,0 +1,5 @@
+AW (14.12.18)
+NOTE:
+All values in represent the respective absolute antenna gain. The original values use the relative gain. 
+Therefore, the nominal antenna gain of 7dB has been added. Consequently, the splitter (6dB) had been subtracted.
+All in all, 1dB was added.
