@@ -44,7 +44,10 @@ Dlog = 10*log10(Dlin);
 [x_int,y_int,z_int] = sph2cart(phi_int*pi/180,theta_int*pi/180, plog); %[x,y,z] = sph2cart(azimuth,elevation,r)
 
 fig = figure;
-surf(phi_int,theta_int+90,-plog);
+h3 = surf(phi_int,theta_int+90,-plog);
+set(get(colorbar,'title'),'String', 'gain [dBi]', 'FontSize', 18, 'fontname', 'arial');
+caxis([-20 30])
+set(h3,'edgecolor','none');
 set(fig,'Name','RAW');
 xlabel('phi [deg]');
 ylabel('theta [deg]');
@@ -143,7 +146,7 @@ fig = figure;
 set(fig,'Position',[screensize(3)*0.5 screensize(4)*0.25  screensize(3)*0.5 screensize(4)*0.5]);
 set(fig,'Name',upper(type));
 
-h3 = surf(xx,yy,zz); hold on;
+h3 = surf(xx,yy,zz,-plog); hold on;
 
 axis equal; axis off;
 cameratoolbar('SetMode','orbit')   
@@ -151,7 +154,8 @@ cameratoolbar('Show')
 cameratoolbar('SetCoordSys','none')
 set(gca,'CameraViewAngle',8); % Set Zoom of Graph
 set(get(colorbar,'title'),'String', 'gain [dBi]', 'FontSize', 18, 'fontname', 'arial'); 
-caxis manual; 
+% caxis manual; 
+caxis([-20 30])
 set(h3,'edgecolor','none'); 
 % shading interp;
 
