@@ -1,5 +1,5 @@
 clear all; 
-close all; 
+% close all; 
 clc;
 
 % Load Data
@@ -60,6 +60,9 @@ end
 % Obtain Measurement Data
 [azi_int,elev_int,r_int] = bst_cart2sph(x_int,y_int,z_int); % THis function is not 100%
 
+plot2d(azi_int*180/pi, elev_int*180/pi, -plog, [0 -90], 'TEST');
+plot3d(x_int,y_int,z_int,r_int, 'test'); 
+
 
 for i = 1:1:121      % ele
     for j=1:1:61   % azi
@@ -93,39 +96,35 @@ for i = 1:1:121      % ele
     fprintf('\n');
 end
 
-% ------------------------------------------------------------------------
-% Spacecraft 
-[azi_sc,elev_sc,r_sc] = bst_cart2sph(x_sc,y_sc,z_sc);
-
-
-
-% STM 
-[azi_stm,elev_stm,r_stm] = bst_cart2sph(x_stm,y_stm,z_stm);
-
-
-if (0)
 % -------------------------------------------------------------------------
 % Plot
 figure
 contour(azi_int*180/pi, elev_int*180/pi, r_int,70, 'Fill', 'on');
 
 figure
-scatterplot(azi_int*180/pi,elev_int*180/pi,r_sc);
+plotscatter(azi_int*180/pi,elev_int*180/pi,r_int);
 
 plot2d(azi_int*180/pi, elev_int*180/pi, r_int, [0 -90], 'TEST');
 plot3d(x_test,y_test,z_test,mag_test, 'test'); 
-else
 
+% -----------------------------------------------------------------------
 % Spacecraft
+[azi_sc,elev_sc,r_sc] = bst_cart2sph(x_sc,y_sc,z_sc);
+
 figure
-scatterplot(azi_sc*180/pi,elev_sc*180/pi,r_sc);
+plotscatter(azi_sc*180/pi,elev_sc*180/pi,r_sc);
 
 figure
 contour(azi_sc*180/pi, elev_sc*180/pi, r_sc,70, 'Fill', 'on');
 
 plot2d(azi_sc*180/pi, elev_sc*180/pi, r_sc, [0 -90], 'SPACECRAFT');
 plot3d(x_sc,y_sc,z_sc,r_sc, 'spacecraft'); 
-end
+
+[xq,yq,vq] = plotinterpolate(azi_sc,elev_sc,r_sc);
+plot2d(xq*180/pi, yq*180/pi, vq, [0 90], 'SPACECRAFT_INTERPOLATE');
+% -----------------------------------------------------------------------
+% STM 
+[azi_stm,elev_stm,r_stm] = bst_cart2sph(x_stm,y_stm,z_stm);
 
 % figure
 % scatterplot(azi_stm*180/pi,elev_stm*180/pi,r_stm);
