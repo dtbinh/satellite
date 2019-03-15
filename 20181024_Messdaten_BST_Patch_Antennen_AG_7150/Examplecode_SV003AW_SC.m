@@ -1,5 +1,5 @@
 clear all; 
-% close all; 
+%close all; 
 clc;
 
 % Load Data
@@ -34,6 +34,22 @@ umax=max(max(abs(plin)));
 
 Dlin = 4*pi*max(max(PowerPatt)) / Prad;
 Dlog = 10*log10(Dlin);
+
+
+freq    = 1;  % Vektorindex
+dynamic = 30;
+pc1 = abs(pattern.value.cal(:,:,freq,1));
+pc2 = abs(pattern.value.cal(:,:,freq,2));
+pc = sqrt((pc1 .* pc1) + (pc2 .* pc2));
+
+
+% Gmax ???ber allen theta und phi der ausgew???hlten Frequenz
+Glin = (max(max(pc(:,:))))^2;
+Glog = max(max(20*log10(pc(:,:))));
+
+zcal = max(20*log10(pc(:,:)), Glog-dynamic); 
+
+
 % ------------------------------------------------------------------------
 % Obtain the phi and theta mesh grid
 [phi_int,theta_int] = meshgrid(pattern.measurement.dim(2).value, pattern.measurement.dim(1).value - 90 ); 
@@ -60,8 +76,8 @@ end
 % Obtain Measurement Data
 [azi_int,elev_int,r_int] = bst_cart2sph(x_int,y_int,z_int); % THis function is not 100%
 
-plot2d(azi_int*180/pi, elev_int*180/pi, -plog, [0 -90], 'TEST');
-plot3d(x_int,y_int,z_int,r_int, 'test'); 
+% plot2d(azi_int*180/pi, elev_int*180/pi, -plog, [0 -90], 'TEST');
+% plot3d(x_int,y_int,z_int,r_int, 'test'); 
 
 
 for i = 1:1:121      % ele
@@ -97,38 +113,56 @@ for i = 1:1:121      % ele
 end
 
 % -------------------------------------------------------------------------
-% Plot
-figure
-contour(azi_int*180/pi, elev_int*180/pi, r_int,70, 'Fill', 'on');
-
-figure
-plotscatter(azi_int*180/pi,elev_int*180/pi,r_int);
-
-plot2d(azi_int*180/pi, elev_int*180/pi, r_int, [0 -90], 'TEST');
-plot3d(x_test,y_test,z_test,mag_test, 'test'); 
+% Test
+% figure
+% contour(azi_int*180/pi, elev_int*180/pi, r_int,70, 'Fill', 'on');
+% 
+% figure
+% plotscatter(azi_int*180/pi,elev_int*180/pi,r_int);
+% 
+% plot2d(azi_int*180/pi, elev_int*180/pi, r_int, [0 -90], 'TEST');
+% plot3d(x_test,y_test,z_test,mag_test, 'test'); 
 
 % -----------------------------------------------------------------------
 % Spacecraft
+screensize = get(0,'ScreenSize');
+
 [azi_sc,elev_sc,r_sc] = bst_cart2sph(x_sc,y_sc,z_sc);
 
-figure
-plotscatter(azi_sc*180/pi,elev_sc*180/pi,r_sc);
-
-figure
-contour(azi_sc*180/pi, elev_sc*180/pi, r_sc,70, 'Fill', 'on');
-
-plot2d(azi_sc*180/pi, elev_sc*180/pi, r_sc, [0 -90], 'SPACECRAFT');
-plot3d(x_sc,y_sc,z_sc,r_sc, 'spacecraft'); 
-
-[xq,yq,vq] = plotinterpolate(azi_sc,elev_sc,r_sc);
-plot2d(xq*180/pi, yq*180/pi, vq, [0 90], 'SPACECRAFT_INTERPOLATE');
-% -----------------------------------------------------------------------
-% STM 
-[azi_stm,elev_stm,r_stm] = bst_cart2sph(x_stm,y_stm,z_stm);
-
 % figure
-% scatterplot(azi_stm*180/pi,elev_stm*180/pi,r_stm);
+% plotscatter(azi_sc*180/pi,elev_sc*180/pi,r_sc);
 % 
-% plot2d(azi_stm*180/pi, elev_stm*180/pi, r_stm, [0 -90], 'STM');
-% plot3d(x_stm,y_stm,z_stm,r_stm, 'stm'); 
+% figure
+% contour(azi_sc*180/pi, elev_sc*180/pi, r_sc,70, 'Fill', 'on');
+% 
+% plot2d(azi_sc*180/pi, elev_sc*180/pi, r_sc, [0 -90], 'SPACECRAFT');
+fig = figure;
+set(fig,'Name','MEASUREMENT - SPACECRAFT');
+set(fig,'Position',[screensize(3)*0.5 screensize(4)*0.25  screensize(3)*0.75 screensize(4)*0.5]);
+sub2D = subplot(1,2,1);
+[xq,yq,vq] = plotinterpolate(azi_sc,elev_sc,zcal);
+plot2d(xq*180/pi, yq*180/pi, vq,[0 90]);
+sub3D = subplot(1,2,2);
+plot3d(x_sc,y_sc,z_sc,zcal); 
+
+% r_sc -- > zcal how?
+
+Name = 'measurement_spacecraft';
+% ----------------------------------------------------------
+pos = get(fig,'Position');
+set(fig,'PaperPositionMode','Auto','PaperUnits','Inches','PaperSize',[pos(3)/100, pos(4)/100])
+print(fig,strcat(Name,'.pdf'),'-dpdf')
+print(fig,strcat(Name,'.jpeg') ,'-djpeg')
+
+subfig2D = figure;
+fig_2D = copyobj(sub2D, subfig2D);
+set(fig_2D, 'Position', get(0, 'DefaultAxesPosition'));
+set(get(colorbar,'title'),'String', 'gain [dBi]', 'FontSize', 10, 'fontname', 'arial');
+print(subfig2D,strcat(Name,'_2D','.jpeg') ,'-djpeg')
+
+subfig3D = figure;
+fig_3D = copyobj(sub3D, subfig3D);
+set(fig_3D, 'Position', get(0, 'DefaultAxesPosition'));
+set(get(colorbar,'title'),'String', 'gain [dBi]', 'FontSize', 10, 'fontname', 'arial');
+print(subfig3D,strcat(Name,'_3D','.jpeg') ,'-djpeg')
 

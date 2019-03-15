@@ -1,16 +1,13 @@
-function plot2d(azi, ele, mag, plane, name, cscale)
+function plot2d(azi, ele, mag, plane, cscale)
 
-if ~exist('cscale','var')
-    cscale = [-20 30];
-end
-
-fig = figure;
 splot = surf(azi,ele,mag);
 set(get(colorbar,'title'),'String', 'gain [dBi]', 'FontSize', 10, 'fontname', 'arial');
-caxis(cscale);
 set(splot,'edgecolor','none');
-set(fig,'Name',name);
-xlabel('Azimuth: \Phi [deg]');
-ylabel('Elevation: \Theta [deg]');
+
+xlabel('Azimuth: \Phi [deg] from Z axis');
+ylabel('Elevation: \Theta [deg] from X-axis in Z-direction');
 view(plane);
+if exist('cscale','var')
+   caxis(cscale);
+end
 end

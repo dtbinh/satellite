@@ -1,27 +1,32 @@
-function plot3d(x, y, z, mag, name, cscale)
+function plot3d(x, y, z, mag, cscale,cname)
 
 
-if ~exist('cscale','var')
-    cscale = [-20 30];
+
+if ~exist('cname','var')
+    cname = 'gain [dBi]';
 end
 
 % Get Maximum
 maximum = max(max(sqrt(x.^2+y.^2+z.^2)));
 
 % Plot
-screensize = get(0,'ScreenSize');
-fig = figure;
+
 splot = surf(x,y,z,mag); 
 axis equal; axis off;hold on;
-set(fig,'Position',[screensize(3)*0.5 screensize(4)*0.25  screensize(3)*0.5 screensize(4)*0.5]);
-set(fig,'Name',upper(name));
+
 set(gca,'CameraViewAngle',8); % Set Zoom of Graph
-set(get(colorbar,'title'),'String', 'gain [dBi]', 'FontSize', 10, 'fontname', 'arial'); 
+set(get(colorbar,'title'),'String', cname, 'FontSize', 10, 'fontname', 'arial'); 
 set(splot,'edgecolor','none');
 cameratoolbar('SetMode','orbit')   
 cameratoolbar('Show')
 cameratoolbar('SetCoordSys','none')
-caxis(cscale);
+
+
+if exist('cscale','var')
+   caxis(cscale);
+end
+
+
 % shading interp;
 % caxis manual; 
 

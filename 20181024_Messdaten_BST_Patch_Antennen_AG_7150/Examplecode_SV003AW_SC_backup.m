@@ -15,20 +15,20 @@ p  = sqrt((p1 .* p1) + (p2 .* p2));
 
 % normiertes pattern
 plin = p ./ max(max(p(:,:))); % 0 bis 1
-plog = 20*log10(  max(plin, 10^(-dynamic/20))  )    + dynamic; % 0dB bis dynamic
+plog = 20*log10(  max(plin, 10^(-dynamic/20))  )    + dynamic; % [dB] bis dynamic
 
 % directivity
 PowerPatt = plin.* plin; % voltage pattern -> power pattern
 Summe = 0; 
 thetapts = length(pattern.dim(1).value);
-phipts = length(pattern.dim(2).value);
+phipts   = length(pattern.dim(2).value);
 
 for j = 1:phipts,
-  
     for i = 1:thetapts,
         Summe = Summe + (PowerPatt(j,i) * abs(sin(  (pattern.dim(1).value(i))/180*pi  ))) ; %Betrag vom Sinus notwendig wenn theta span -180??? bis + 180???
     end
 end
+
 Prad = 2*pi/phipts * pi/thetapts * Summe;
 umax=max(max(abs(plin)));
 
@@ -39,9 +39,7 @@ Dlog = 10*log10(Dlin);
 [theta,phi] = meshgrid(pattern.measurement.dim(2).value, pattern.measurement.dim(1).value-90); % f???r sph2cart theta und phi vertauschen und 90???-offset: siehe Koord.-Definition in >>doc sph2cart
 [x,y,zz] = sph2cart(theta*pi/180, phi*pi/180, plog);
 
-theta
-phi
-return
+
 %
 
 % Set
@@ -133,10 +131,11 @@ axis equal; axis off;
 
 %h2 = colorbar('peer', gca, 'location', 'eastoutside','fontname','arial','fontsize',18); 
 colorbar;
-set(get(colorbar,'title'),'String', 'gain [dBi]', 'FontSize', 18, 'fontname', 'arial'); 
-caxis manual; 
-set(h1,'visible','off');
+set(get(colorbar,'title'),'String', 'gain [dBi]', 'FontSize', 18, 'fontname', 'arial');
 
+caxis manual; 
+% set(h1,'visible','off');
+return
 
 % dargestellter dynamic-plot
 axes;
@@ -167,7 +166,7 @@ usedfreq = pattern.dim(3).value(freq);
 %text('Dmax = ',Dlog);
 
 rotate3d on; 
-
+return
 %% ---------------------------------------------------------------------------
 % 2D Plot
 fig = figure;
