@@ -17,7 +17,7 @@ azi_raw =  XI;
 ele_raw =  YI;
 mag_raw =  10.^(ZI/20); % [watt}
 
-
+return
 [x_int,y_int,z_int] = bst_sph2cart(azi_raw*pi/180, ele_raw*pi/180, mag_raw);
 
 for i = 1:1:length(x_int(:,1))

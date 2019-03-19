@@ -14,7 +14,7 @@ maximum = max(max(sqrt(x.^2+y.^2+z.^2)));
 splot = surf(x,y,z,mag); 
 axis equal; axis off;hold on;
 
-set(gca,'CameraViewAngle',8); % Set Zoom of Graph
+set(gca,'CameraViewAngle',6); % Set Zoom of Graph
 set(get(colorbar,'title'),'String', cname, 'FontSize', 10, 'fontname', 'arial'); 
 set(splot,'edgecolor','none');
 cameratoolbar('SetMode','orbit')   
