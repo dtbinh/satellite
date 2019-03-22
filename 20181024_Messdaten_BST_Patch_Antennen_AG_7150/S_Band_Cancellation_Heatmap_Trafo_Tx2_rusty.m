@@ -3,8 +3,8 @@ close all;
 clc
 
 % Raw Data
-AntType   = 'Tx2_data_adjusted';
-FileToRead=strcat(AntType,'.csv');
+AntType   = 'Rx1_data_adjusted';
+FileToRead=strcat(AntType,'.txt');
 Heatmap   = dlmread(FileToRead);
 
 
@@ -17,7 +17,7 @@ azi_raw =  XI;
 ele_raw =  YI;
 mag_raw =  10.^(ZI/20); % [watt}
 
-return
+
 [x_int,y_int,z_int] = bst_sph2cart(azi_raw*pi/180, ele_raw*pi/180, mag_raw);
 
 for i = 1:1:length(x_int(:,1))
@@ -35,7 +35,10 @@ switch FileToRead
         R_test_sc = dcm(1,-pi/2);
     case 'Tx2_data_adjusted.csv'
         R_test_sc = dcm(3,-pi/2)*dcm(1,-pi/2);
-    
+    case 'Rx1_data_adjusted.txt'
+        R_test_sc = dcm(1,-pi/2);
+    case 'Rx2_data_adjusted.txt'
+        R_test_sc = dcm(3,-pi/2)*dcm(1,-pi/2);
     otherwise
         R_test_sc = dcm(1,0);
 end
@@ -79,6 +82,7 @@ fig = figure;
 set(fig,'Name','IQ WIRELESS - SPACECRAFT');
 set(fig,'Position',[screensize(3)*0.5 screensize(4)*0.25  screensize(3)*0.75 screensize(4)*0.5]);
 [xq,yq,vq] = plotinterpolate(azi_sc,elev_sc,r_sc);
+
 sub2D=subplot(1,2,1);
 plot2d(xq*180/pi, yq*180/pi, vq, [0 90]);
 sub3D = subplot(1,2,2);
