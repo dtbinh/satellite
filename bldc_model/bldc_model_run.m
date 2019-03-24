@@ -1,3 +1,9 @@
+% -------------------------------------------------------------------------
+% BRUSHLESS DC MOTOR
+% ------------------------------------------------------------------------
+% This program runs the BLDC motor model in simulink and matlab. The BLDC
+% model is modelled in detailed with the phases and commutation.
+% ------------------------------------------------------------------------
 close all
 clear all
 clc

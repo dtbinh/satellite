@@ -1,5 +1,5 @@
 % -------------------------------------------------------------------------
-% GYRO ALLAN VARIANCE PLOT
+% GYRO ALLAN VARIANCE PLOT (DATA)
 % -------------------------------------------------------------------------
 % This program plots the gyro allan variance from .dat files. Data
 % measurements are to be at least 3 hours for good plots. The format of the
@@ -20,7 +20,7 @@ fprintf('---------ALLAN VARIANCE ANALYSIS SIMULATION--------');
 fprintf('\nInitialising Parameters\n');
 % ------------------------------------------------------------------------
 % LOAD DATA
-file   = 'trisat_gyro0.dat';
+file   = 'trisat_gyro2_long.dat';
 fileID = fopen(file);
 wdata  = textscan(fileID,'%19c %f %f %f | %4c %f %11c %f %6c');
 fclose(fileID);
@@ -40,7 +40,8 @@ fprintf('3-Std  :%8.5f | %8.5f | %8.5f [dps]\n',std(w0)*3,std(w1)*3,std(w2)*3);
 
 % ------------------------------------------------------------------------
 % PARAMETERS FOR ALLAN VARIANCE
-kk = 2;
+% Axis Selection
+kk = 0; 
 
 switch kk
     case 0
@@ -54,11 +55,10 @@ end
         
 N  = size(tout(:,1),1); % [] Size of Data
 for ii=1:1:length(tout)-1
-    
     dtarray(ii) = tout(ii+1)-tout(ii);   % [sec] Time at which the .dat file is measured
 end
-dt   = mean(dtarray);
-type = 2;              % type 1 for dt = 0.2, type 2 for dt = 1.0
+dt   = mean(dtarray);   % Get mean of dt
+type = 1;               % type 1 for dt = 0.2, type 2 for dt = 1.0
 tdur = tout(end);       % [sec] Duration of Measurement 
 
 % ------------------------------------------------------------------------
@@ -69,17 +69,15 @@ switch type
     tau_array = [0.2 0.4 0.6 0.8 1.0 1.2 1.4 1.6 1.8 2.0 2.2 2.4 2.6 2.8 3.0 4.0 5.0 6.0 7.0 8.0 9.0 10.0...
         12.0 14.0 16.0 18.0 20.0 22 24 26 28 30 34 38 42 46 50 60 70 80 90 100 120 140 160 180 200 240 280 320 ...
         360 400 500 600 700 800 900 1000 1200 1400 1600 2000 2400 2600 2800 3000 3200 3400 3600 3800 4000 ...
-        5000 6000];
+        5000 6000 7000 8000 9000];
     case 2
     tau_array = [1.0 2.0 3.0 4.0 5.0 6.0 7.0 8.0 9.0 10.0...
         12.0 14.0 16.0 18.0 20.0 22 24 26 28 30 34 38 42 46 50 60 70 80 90 100 120 140 160 180 200 240 280];
 end
 
-
 maxjj = 0;
 
 for jj = 1:1:length(tau_array)
-
     if tau_array(jj)<dt
         minjj = jj+1;
     end
@@ -167,15 +165,15 @@ ylabel('Gyro Measurement [dps]');
 
 switch kk
     case 0
-        sig_ARW = 7.00;                  % [deg/s^0.5] Adjust this value with plot
-        sig_RRW = 0.001;                 % [deg/s^1.5] Adjust this value with plot
+        sig_ARW = 0.30;                    % [deg/s^0.5] Adjust this value with plot
+        sig_RRW = 0.0015;                  % [deg/s^1.5] Adjust this value with plot
         BW      =  1/((std(y)/sig_ARW)^2); % Bandwidth                
     case 1
-        sig_ARW = 6.00;                  % [deg/s^0.5] Adjust this value with plot
-        sig_RRW = 0.0015;                 % [deg/s^1.5] Adjust this value with plot
+        sig_ARW = 6.00;                    % [deg/s^0.5] Adjust this value with plot
+        sig_RRW = 0.0015;                  % [deg/s^1.5] Adjust this value with plot
         BW      =  1/((std(y)/sig_ARW)^2); % Bandwidth                
     case 2
-        sig_ARW = 8.00;                    % [deg/s^0.5] Adjust this value with plot
+        sig_ARW = 80.00;                    % [deg/s^0.5] Adjust this value with plot
         sig_RRW = 0.002;                   % [deg/s^1.5] Adjust this value with plot
         BW      =  1/((std(y)/sig_ARW)^2); % Bandwidth
     otherwise
@@ -214,7 +212,19 @@ fprintf('\nEstimated ARW = %.6f [deg/s^0.5]', sig_ARW);
 fprintf('\nEstimated RRW = %.6f [deg/s^1.5]', sig_RRW);
 fprintf('\nEstimated BW  = %.6f [Hz]', BW);
 fprintf('\n');
-fprintf('\nBack calculate Std Dev  = %.6f [dps]', sig_ARW*(1/BW)^0.5);
+fprintf('\nCalculated Standard Dev = %.6f [deg/s]', sig_ARW/sqrt(BW));
+fprintf('\nCalculated Bias Drift   = %.6f [deg/s^2]', sig_RRW/sqrt(BW));
+fprintf('\n');
+
+% Calculating Bias Drift
+period = 50;
+for i=1:1:length(y)-period
+   biasarray(i) = mean(y(i:i+period));
+end
+std(biasarray)
+figure
+plot(biasarray);
+grid on;
 fprintf('\n');
 
 filename = strcat('trisat_hpm_gyro',num2str(kk));

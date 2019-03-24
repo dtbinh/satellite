@@ -1,5 +1,5 @@
 % -------------------------------------------------------------------------
-% GYRO ALLAN VARIANCE PLOT
+% GYRO ALLAN VARIANCE PLOT (MODEL)
 % -------------------------------------------------------------------------
 % This program runs the allan variance analysis with a defined discrete 
 % gyro model to show the plot of the allan variance with input values of
@@ -14,11 +14,13 @@ clear all
 clc
 fprintf('---------ALLAN VARIANCE ANALYSIS SIMULATION--------');
 fprintf('\nInitialising Parameters');
-dt   = 1/10;          % [s] Gyro Sampling Time 
+dt   = 1/10;           % [s] Simulation Step
 tdur = 18000;          % [s] Time Duration
 N    = tdur/dt;        % [] Number of Samples
 tout = 0:dt:tdur-dt;
 
+BW    = 20;           % [Hz] system’s band width
+tau   = 1/BW;          % [s] process time constant set according to the 
 sig_v = 0.033/180*pi;  % [rad/s^0.5] Angular Random Walk
 sig_u = 2e-4/180*pi;   % [rad/s^1.5] Rate Random Walk
 
@@ -27,8 +29,8 @@ bias(1)  = 0.2;
 %% DISCRETE GYRO MODELING MEASUREMENT
 fprintf('\nGenerating Gyro Modelling Measurement');
 for i = 1:N+1
-   bias(i+1) = bias(i)+sig_u*dt^0.5*randn(1,1);
-   y(i) = sqrt(sig_v^2/dt)*randn(1,1)+0.5*(bias(i+1)+bias(i));
+   bias(i+1) = bias(i)+sig_u*tau^0.5*randn(1,1);
+   y(i)      = sqrt(sig_v^2/tau)*randn(1,1)+0.5*(bias(i+1)+bias(i));
 end
 
 %% ALLAN VARIANCE

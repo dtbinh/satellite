@@ -11,7 +11,6 @@
 % Author: Rusty Goh
 % Date:   17 Dec 2018 
 % ------------------------------------------------------------------------
-
 close all
 clear all
 clc
@@ -31,6 +30,7 @@ fprintf(strcat('\n                [',upper(satellite),']\n'));
 for i=1:1:3
     
 fprintf('\n=================Gyro %d===================\n',i);
+fprintf('        %8c | %8c | %8c |    \n','x','y','z');
 % --------------------------------------------------------------------
 % LOAD DATA
 gyro     = i-1;
@@ -56,40 +56,45 @@ fprintf('3-Std  :%8.5f | %8.5f | %8.5f [dps]\n',std(w0)*3,std(w1)*3,std(w2)*3);
 
 % --------------------------------------------------------------------
 % BIAS STABILITY
+% Calculate the bias by averaging it at different time segments. The whole
+% period is divided by dnum. Bias of each segment is calculated.
 
 tend = 0;
 dnum = 5;
 div = ceil(length(t)/dnum);
 
-    for k=1:1:dnum
-        fprintf('Bias[%d]:',k);
-
-        sum = 0;
-        tstart = tend+1;
-        tend = min(div*k,length(t));
-            for j=tstart:1:tend
-                sum = sum + w0(j);
-            end
-        bias(k) = sum/div;
-        fprintf('%8.5f | ',bias(k));
-
-        sum = 0;
-            for j=tstart:1:tend
-                sum = sum + w1(j);
-            end
-        bias(k) = sum/div;
-        fprintf('%8.5f | ',bias(k));
-
-        sum = 0;
-            for j=tstart:1:tend
-                sum = sum + w2(j);
-            end
-        bias(k) = sum/div;
-        fprintf('%8.5f [dps]',bias(k));
-
-
-    fprintf('\n');
+for k=1:1:dnum
+    fprintf('Bias[%d]:',k);
+    
+    % X-axis
+    sum = 0;
+    tstart = tend+1;
+    tend = min(div*k,length(t));
+    for j=tstart:1:tend
+        sum = sum + w0(j);
     end
+    bias(k) = sum/div;
+    fprintf('%8.5f | ',bias(k));
+
+    % Y-axis
+    sum = 0;
+    for j=tstart:1:tend
+        sum = sum + w1(j);
+    end
+    bias(k) = sum/div;
+    fprintf('%8.5f | ',bias(k));
+
+    % Z-axis
+    sum = 0;
+    for j=tstart:1:tend
+        sum = sum + w2(j);
+    end
+    bias(k) = sum/div;
+    fprintf('%8.5f [dps]',bias(k));
+
+
+fprintf('\n');
+end
 
 % --------------------------------------------------------------------
 % PLOT
